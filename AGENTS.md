@@ -3,8 +3,9 @@
 This is the shared instruction manual for every team member and every AI coding agent working in this repository. It covers project rules and all eight role definitions, and it is the single source of truth for both.
 
 - **What to build:** [`docs/MVP_FEATURES.md`](docs/MVP_FEATURES.md). It defines modules `M1` to `M11`, acceptance criteria, permissions, the matching process and open decisions `D-xx`.
-- **How to build it:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). It sets out the final stack, repository layout, backend, frontend and matching conventions, CI, and the technical decision record.
+- **How to build it:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). It sets out the stack, the repository layout and **who owns each area** (§4), the backend, frontend and matching conventions, CI, the technical decision record (§9) and the deviations from the build manual still awaiting approval (§10).
 - **Current roles:** §C below, taken from `docs/InChi_Pilot_User_Delivery Ownership (revised).pdf`, effective 26 October 2026.
+- **Daily progress:** [`docs/daily-reports/`](docs/daily-reports/README.md). Every member records their own work each working day (§B rule 15).
 - `CLAUDE.md` only points here. Do not copy rules into other instruction files. Change them here.
 
 ---
@@ -35,19 +36,29 @@ This is the shared instruction manual for every team member and every AI coding 
 
 **Current repository state.** As of 28 Oct 2026 the repository contains documentation only. No application code, build tooling, tests or CI exist yet. Do not describe planned features as implemented.
 
-**Technology stack (final; D-01 resolved 28 Oct 2026).** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) is authoritative for the stack, layout, conventions and technical decisions.
+**Technology stack (team-selected, revised 28 Oct 2026; D-01).** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) is authoritative for the stack, layout, ownership, conventions and technical decisions. This table is a summary only.
 
 | Layer | Choice |
 |---|---|
+| Frontend | **Next.js (App Router), React, TypeScript.** TanStack Query, plain CSS Modules. Next.js renders pages and proxies `/api/` to Django; it holds no business logic, authorisation or secrets. |
 | Backend | **Python 3.12, Django 5.2 LTS, Django REST Framework.** Session auth and CSRF from Django. OpenAPI via drf-spectacular. |
-| Database | **PostgreSQL 17**, Django ORM and migrations |
-| Matching | **In-process Python package** in the backend (`backend/apps/matching/engine/`) with no Django imports. Optional local embeddings via `fastembed` + `BAAI/bge-small-en-v1.5`. Rules-only otherwise. |
-| Frontend | **React + TypeScript single-page app built with Vite.** React Router, TanStack Query, plain CSS Modules. |
+| Database | **PostgreSQL 17 with pgvector.** The Django ORM and Django migrations are authoritative for the schema, including the extension and vector columns. |
+| Matching | **In-process Python package** in the backend (`backend/apps/matching/engine/`) with no Django imports. Deterministic rules-based matching is the baseline. Semantic similarity is optional and bounded. |
+| Embeddings | **`sentence-transformers`**, run locally, optional install. **Embedding model: TBD (D-11).** |
+| LLM | **None in v0.1. Provider and model TBD (D-20).** Not a prerequisite for the MVP. |
 | Tests | pytest + pytest-django; Vitest + React Testing Library; Playwright for E2E |
 | Tooling | Ruff; ESLint, Prettier, `tsc`; pip-audit, npm audit, gitleaks, Dependabot; GitHub Actions |
-| Environment | Docker Compose (`db` + `app`). Django serves the built SPA on the same origin. |
+| Environment | Docker Compose: `db` (PostgreSQL 17 + pgvector), `backend` (Django), `frontend` (Next.js). The browser uses one origin. |
 
-This replaces the build manual's recommended baseline: no Next.js, no Spring Boot, no separate FastAPI service, no pgvector. The reasons are in ARCHITECTURE.md §2.
+**Approval status.** The build manual makes the final stack and any material deviation subject to BNCS and technical-mentor approval. **That approval is still pending** (ARCHITECTURE.md §10). The deviations are:
+
+- Django instead of Spring Boot;
+- in-process matching instead of a separate FastAPI service;
+- hosted staging made optional.
+
+Build reversible skeletons on this stack meanwhile, and never describe it as approved.
+
+**Never select an embedding model or an LLM in code, configuration defaults, examples or documentation.** Both stay TBD until D-11 and D-20 are recorded in ARCHITECTURE.md §9.
 
 Build on this stack only. Adding a language, framework, database, service or hosted dependency needs a new entry in ARCHITECTURE.md §9.
 
@@ -59,7 +70,7 @@ These apply to every role.
 
 1. **Read before you write.** Read the relevant code, this file, MVP_FEATURES and any interface contract before changing anything. Follow the existing structure, naming and idioms.
 2. **Stay in scope.** Build only what an `M#` module and its acceptance criteria require. If something is useful but not listed, propose it as Phase 2 and do not build it.
-3. **Respect ownership.** Change files in another member's area only when the task needs it. Tag the owner and get their review. See the ownership map below.
+3. **Respect ownership.** Change files in another member's area only when the task needs it. Tag the owner and get their review. Owners, reviewers and coordination triggers are in [ARCHITECTURE.md §4](docs/ARCHITECTURE.md#4-repository-layout-and-ownership).
 4. **Follow contracts.** API contracts, data contracts and the matching contract are agreed between their owners and recorded in the interface register. Do not change one on your own. Any change must be versioned or backward-compatible, and every consumer must be informed.
 5. **Keep PRs small and focused.** Each PR has one purpose and links to an issue and an `M#-AC#` ID. Do not include unrelated refactors, formatting churn or speculative abstractions.
 6. **Tests and documentation come with the change.** Add or update the tests that prove the acceptance criteria, including denied and failure paths. Update setup notes, contracts and the data dictionary when they are affected.
@@ -80,40 +91,17 @@ These apply to every role.
     - **Material residual security risk** is accepted by BNCS or the mentor, not by the team.
 13. **Report truthfully.** Never claim a test passed unless you ran it and it passed. Say what was not tested.
 14. **Raise blockers quickly.** If blocked for more than 24 hours, raise it in the team channel and tag Aryan plus the dependency owner. Do not work around authority, architecture, data, AI-governance or security blockers in undocumented ways.
+15. **Record your own work every working day.** Add an entry to your own file in [`docs/daily-reports/`](docs/daily-reports/README.md). An entry covers what you completed (with its state and evidence), what is in progress, the tests and checks you actually ran, your blockers and dependencies, and your next steps. Write `No update.` when there is nothing to report. Separate completed work from planned work, and never invent accomplishments or results. Never write in another member's file. The workflow and template are in that folder's README.
 
-### Proposed repository layout and ownership
+### Repository layout and ownership
 
-Only `README.md`, `AGENTS.md`, `CLAUDE.md` and `docs/` exist today. The rest is the **agreed target layout**, given in full in [ARCHITECTURE.md §4](docs/ARCHITECTURE.md#4-repository-layout-and-ownership). Create each directory when your work begins. Do not create empty placeholder folders.
+Only `README.md`, `AGENTS.md`, `CLAUDE.md` and `docs/` (including `docs/daily-reports/`) exist today. The agreed target layout, the purpose of each directory, where code and tests go, every area's owner and reviewers, and when to coordinate with whom are all in **[ARCHITECTURE.md §4](docs/ARCHITECTURE.md#4-repository-layout-and-ownership)**. That section is the single source of truth for ownership. The "Owns" line in each role section below must agree with it.
 
-| Path (planned unless noted) | Owner | Reviewers |
-|---|---|---|
-| `README.md`, `AGENTS.md`, `CLAUDE.md` *(exists)* | Aryan (maintainer) | Change to a role section: that member. Change to shared rules: team. |
-| `docs/MVP_FEATURES.md` *(exists)* | Adrika (requirement content), Aryan (change record) | BNCS approves material changes |
-| `docs/ARCHITECTURE.md` *(exists)* | Abhishek (backend and conventions), with Vishal, Alok and Priyanka for their sections; Aryan records §9 decisions | Ajendra for security-relevant changes |
-| `docs/*.pdf` *(exists)* | Original source documents. Do not edit, move or delete them. | — |
-| `docs/governance/` (registers, decisions, weekly evidence, handover index) | Aryan | — |
-| `docs/product/` (journeys, field dictionary, states, wireframes, user guide) | Adrika | Aryan, affected engineers |
-| `docs/security/` (threat model, data classification, access matrix, remediation register) | Ajendra | Abhishek, Vishal, Aryan |
-| `docs/api/openapi.yaml` (generated by drf-spectacular; CI checks drift) | Abhishek | Priyanka, Alok, Harish |
-| `docs/data/` (data dictionary, ERD, backup and recovery guide) | Vishal | Abhishek, Alok |
-| `docs/ai/` (match contract, evaluation pack, limitations) | Alok | Adrika, Harish, Ajendra |
-| `docs/qa/` (test strategy, traceability, defect process, QA and UAT reports) | Harish | Aryan, Adrika |
-| `frontend/` (Vite React TS SPA) | Priyanka | Abhishek for API usage |
-| `backend/config/`, and in every `backend/apps/<app>/`: `serializers.py`, `views.py`, `permissions.py`, `services.py`, `urls.py`; `requirements*.txt`, `pyproject.toml` | Abhishek | Ajendra for auth, settings and security-sensitive code |
-| `backend/apps/<app>/models.py`, `migrations/`, `dashboard/queries.py`, `backend/seed/` | Vishal | Abhishek, Alok, Harish, Ajendra |
-| `backend/apps/matching/engine/`, `matching/providers/`, `matching/criteria/`, `requirements-semantic.txt` | Alok | Abhishek (engine interface), Ajendra |
-| `backend/apps/<app>/tests/` | Owner of the code under test | Harish |
-| `e2e/` (Playwright end-to-end and regression suite) | Harish | Priyanka |
-| `docker-compose.yml`, `Dockerfile`, `.env.example` (root) | Abhishek, with Vishal for the database service | Ajendra |
-| `.github/dependabot.yml` | Ajendra | — |
-| `.github/workflows/` | Harish (test jobs), Ajendra (security and dependency jobs) | Aryan |
-| `.gitignore` | Ajendra (secrets baseline) | — |
-
-Unit tests live beside the code they test and belong to that code's owner. Harish owns the cross-stack suites and independent verification. A change that crosses an ownership seam inside a Django app (for example a model change plus a serializer change) is reviewed by both owners.
+Create each directory when your work begins. Do not create empty placeholder folders.
 
 ### Branches, commits and PRs
 
-- Branch names follow `<area>/<short-description>`, for example `frontend/supplier-list`, `backend/rbac-object-checks` or `docs/field-dictionary-v1`.
+- Branch names follow `<area>/<short-description>`, for example `frontend/supplier-list`, `backend/rbac-object-checks` or `docs/field-dictionary-v1`. Weekly daily-report branches are `reports/<first-name>-week-<n>` (see `docs/daily-reports/README.md`).
 - No direct pushes to `main`. Every change goes through a PR with at least one relevant peer review. Critical artefacts are never self-approved.
 - Every PR description contains:
 
@@ -171,19 +159,25 @@ Reviewers:
 
 **Primary responsibility.** Keep delivery visible and integrated. That covers sprint cadence, the backlog, risks, dependencies, decisions, interface coordination, integration evidence and review packs. The outcome is that each Friday shows one integrated product with evidence, and handover is never rebuilt at the last minute.
 
-**Owns:** `docs/governance/`, plus maintaining `README.md`, `AGENTS.md` and `CLAUDE.md`. Also the backlog and project board (D-18) and the change record for `docs/MVP_FEATURES.md`.
+**Owns:** `docs/governance/` and the daily-report process (`docs/daily-reports/README.md`), plus maintaining `README.md`, `AGENTS.md` and `CLAUDE.md`. Also the backlog and project board (D-18), the change record for `docs/MVP_FEATURES.md`, and the records in ARCHITECTURE.md §9 and §10. Writes only Aryan's own daily-report file.
 
 **Interfaces.** Works with every member. Chairs Monday Sprint Start and Friday Sprint Review, and prepares the weekly report for BNCS. Escalates business decisions to BNCS and material security risk to BNCS or the mentor. Records technical decisions in ARCHITECTURE.md §9.
 
 **MVP tasks, in order:**
 
-1. **Week 1.** Set up the backlog with one issue per `M#` module and acceptance criterion, each with owner, due date, evidence location and reviewer. Create the registers: risk, issue, dependency, decision (seeded with D-01 to D-19 and DS-01 to DS-16), API and interface contract, and integration issues. The technical decisions (D-01, D-10, D-11, D-12, D-16, D-17, D-18) are already resolved in ARCHITECTURE.md §9. Share that record with the mentor at the Week 1 Sprint Review for visibility. Get the business decisions D-02 and D-19 answered by BNCS this week, and D-09 (permissions) before the Week 2 auth work is finalised. Set up GitHub Issues labels (module, severity, role), the Project board, and branch protection on `main`.
+1. **Week 1.**
+   - Set up the backlog with one issue per `M#` module and acceptance criterion, each with owner, due date, evidence location and reviewer.
+   - Create the registers: risk, issue, dependency, decision (seeded with D-01 to D-20 and DS-01 to DS-16), API and interface contract, and integration issues.
+   - The technical decisions are recorded in ARCHITECTURE.md §9 with their status. Present the build-manual deviations in ARCHITECTURE.md §10 to the mentor and BNCS at the Week 1 Sprint Review, and **ask for approval**. Record each outcome with approver and date. Do not mark anything approved without that record. Keep the embedding model (D-11) and LLM (D-20) visibly open.
+   - Get the business decisions D-02 and D-19 answered by BNCS this week, and D-09 (permissions) before the Week 2 auth work is finalised.
+   - Set up GitHub Issues labels (module, severity, role, `daily-report`), the Project board, and branch protection on `main`. Once this baseline merges, start the daily-report routine (`docs/daily-reports/README.md`).
 2. **Week 1.** Write the integration plan. It lists the contracts needed and their owners: frontend↔backend (generated OpenAPI), API layer↔models (Abhishek and Vishal), orchestration↔matching engine (the `engine.run()` dataclasses: Abhishek and Alok), audit-event schema. Include the dates each must be agreed.
 3. **Week 2.** Track blockers, lock interface versions, and coordinate the Gate 1 integrated demo (6 Nov).
 4. **Weeks 3 and 4.** Track dependencies and interface changes, and build the weekly evidence index. Run the **Gate 2 rule-approval gate** (20 Nov): fields, rules, criteria and interfaces must be approved before AI integration. Record the decisions.
 5. **Weeks 5 and 6.** Run the integration and evaluation review. Prepare the **feature-freeze decision pack** for Gate 3 (4 Dec).
 6. **Week 7.** Track UAT, defect triage and acceptance.
 7. **Week 8.** Own the demo runbook, the handover index, the final report and the Phase 2 backlog.
+8. **Every working day.** Check each member's open daily-report PR for the previous working day's entry, and send reminders for missing ones. List entries still missing at the next check in the weekly report. Never write another member's entry. Use the reports, with their linked evidence, as input to the Friday review and the weekly BNCS report.
 
 **Must not decide alone.** Product policy, commercial rules, security-risk acceptance and release. Stack changes go through an ARCHITECTURE.md §9 entry reviewed by the affected owners. Does not write application features in other members' areas, and does not mark another member's work accepted without their reviewer.
 
@@ -196,7 +190,8 @@ Reviewers:
 ```
 Role: Aryan Ghai | Technical Project Coordinator, Product Operations and Integration Governance
 
-Read AGENTS.md and docs/MVP_FEATURES.md first. Act within my coordination role:
+Read AGENTS.md, docs/MVP_FEATURES.md and docs/ARCHITECTURE.md (§4, §9, §10) first.
+Act within my coordination role:
 I coordinate delivery; I do not approve product policy, security risk or release, I
 record (not invent) technical decisions in docs/ARCHITECTURE.md §9, and I do not
 implement features in other members' areas.
@@ -240,12 +235,18 @@ Report: files changed, open decisions needing escalation this week, blockers, ne
    - **Data classification** of every entity in MVP_FEATURES §6.
    - **Access-control matrix** derived from MVP_FEATURES §5.
    - **Secrets baseline**: a `.gitignore` that excludes real environment files but keeps the committed example (`.env`, `.env.*`, `!.env.example`), a convention for `.env.example` (placeholder values only), and secret scanning on the repository.
-2. **Week 2.** Auth threat review. Cover login CSRF protection (TD-05), 401/403 semantics (TD-06), session rotation on login, the restricted admin, and `create_platform_admin` (TD-08). Write denied-access and object-boundary (IDOR) test cases with Harish. Review the auth, secrets and dependency choices in the first skeletons.
+2. **Week 2.** Auth threat review. Cover:
+   - login CSRF protection (TD-05) and 401/403 semantics (TD-06);
+   - session rotation on login, the restricted admin, and `create_platform_admin` (TD-08);
+   - the Next.js single-origin proxy (TD-09): the rewrites, `CSRF_TRUSTED_ORIGINS`, `ALLOWED_HOSTS` and proxy headers;
+   - the rendering boundary (TD-10): no secrets, Route Handlers, Server Actions or authorisation logic in Next.js.
+
+   Write denied-access and object-boundary (IDOR) test cases with Harish. Review the auth, secrets and dependency choices in the first skeletons.
 3. **Week 2 onward.** Add the security jobs in ARCHITECTURE.md §8 to CI: `pip-audit`, `npm audit --audit-level=high`, gitleaks, and `manage.py check --deploy` against the non-dev settings. Add `.github/dependabot.yml` for pip, npm and GitHub Actions. Review the Django security settings in `backend/config/` (cookies, CSRF, `DEBUG`, `ALLOWED_HOSTS`, the admin path). Decide on login throttling (TD-04).
 4. **Week 3.** Review the registry and evidence-metadata handling. Evidence is metadata only (D-10, resolved).
 5. **Week 4.** Review data flow, access and permissions for readiness and requirement workflows, including unauthorised review and status changes.
-6. **Week 5.** Matching threat review: manipulated inputs, unsafe logging, match-review permissions, and confirmation that only model weights are downloaded and no pilot data leaves the machine (D-11, resolved).
-7. **Week 6.** Security regression and configuration lock. Review headers, the Compose reference environment and backup protection. If BNCS provides hosted staging (D-16), run the staging checklist before it is used.
+6. **Week 5.** Matching threat review: manipulated inputs, unsafe logging and match-review permissions. Also cover the embedding model proposal (D-11, model TBD): licence, `trust_remote_code` never enabled, only model weights downloaded, Hub telemetry off, no pilot data leaving the machine. Review the size and licences of the `sentence-transformers` and PyTorch dependencies. Confirm that no LLM dependency or configuration has been added (D-20).
+7. **Week 6.** Security regression and configuration lock. Review the security headers set in `next.config.ts`, the Compose reference environment and backup protection. If BNCS provides hosted staging (D-16), run the staging checklist before it is used.
 8. **Week 7.** Review access, secrets and dependencies, and verify each remediation.
 9. **Week 8.** Deliver the security pack: threat model and data-flow view, classification, access matrix, scan evidence, remediation register, secure staging checklist and **residual-risk statement**.
 
@@ -355,7 +356,7 @@ Report: files changed, items needing BNCS approval, questions for engineers, nex
 
 **Primary responsibility.** Owns frontend delivery: the authenticated interface, reusable components, forms, client-side validation, journey screens, dashboards and client-side integration. Coordinates every service contract the interface uses. The outcome is a responsive, accessible UI that completes the priority journey against the real backend.
 
-**Owns:** `frontend/`, a React + TypeScript SPA built with Vite, using React Router, TanStack Query and CSS Modules (ARCHITECTURE.md §1, §7). Also frontend tests (Vitest + React Testing Library) and frontend setup documentation.
+**Owns:** `frontend/`, a Next.js App Router app in React + TypeScript, using TanStack Query and CSS Modules (ARCHITECTURE.md §1, §7). This includes `next.config.ts` (rewrites to Django and security headers), `frontend/Dockerfile` and the `frontend` service in `docker-compose.yml`. Also frontend tests (Vitest + React Testing Library) and frontend setup documentation.
 
 **Interfaces.**
 
@@ -369,23 +370,31 @@ Report: files changed, items needing BNCS approval, questions for engineers, nex
 **MVP tasks, in order:**
 
 1. **Week 1.** Frontend skeleton:
-   - `npm create vite` with the React + TS template, plus React Router and TanStack Query.
-   - A Vite dev proxy for `/api` to Django.
-   - An authenticated layout and the navigation shell for the MVP sections (MVP_FEATURES §9 #4). User management is in the restricted Django admin, so there is no SPA admin screen.
+   - `create-next-app` with TypeScript, ESLint, the App Router and a `src/` directory, plus TanStack Query. Standalone output and a `frontend/Dockerfile`.
+   - `next.config.ts` rewrites that forward `/api/`, the admin path and Django's static prefix to `BACKEND_ORIGIN`, so the browser sees one origin (TD-09). Agree the details with Abhishek and get Ajendra's review.
+   - An authenticated `(workspace)` layout and the navigation shell for the MVP sections (MVP_FEATURES §9 #4). User management is in the restricted Django admin, so there is no frontend admin screen.
    - Shared form, table, status and empty-state components.
    - The `apiFetch()` wrapper: `X-CSRFToken` from the cookie and the standard error shape. Log out **only** on 401 `not_authenticated`. 403 `permission_denied` shows the access-denied state. 403 `csrf_failed` refreshes the token once and retries (ARCHITECTURE.md §7).
-   - React Router with browser history and a not-found route. Django serves `index.html` on refresh (ARCHITECTURE.md §5).
+   - App Router routes with a `not-found.tsx`. Data pages are Client Components. There are no Route Handlers, Server Actions or `src/app/api/` directory (TD-10).
    - Types generated by `openapi-typescript` from `docs/api/openapi.yaml`.
    - npm scripts for `lint`, `typecheck`, `test` and `build`.
 2. **Week 2.** Login and logout (session cookie, no tokens, `GET /api/v1/auth/csrf/` before the login form), route guards driven by `/api/v1/auth/me/`, role-aware navigation, supplier and product create, edit and detail screens, all UI states. Gate 1.
 3. **Week 3.** Registry list, search and filters. **[DEFERRABLE]** pagination UI and duplicate-warning display (MVP_FEATURES §2). Readiness assessment UI with the missing-information list.
 4. **Week 4.** Readiness review screen for Reviewers. Buyer requirement form with the mandatory/preference distinction and the completeness gate.
 5. **Week 5.** Match request, ranked results, per-criterion breakdown, explanation, warnings, fallback label and disposition screens.
-6. **Week 6.** Opportunity list and detail, dashboard, audit and history views. Stabilise integration. Feature freeze.
+6. **Week 6.** Opportunity list and detail, dashboard, audit and history views. Security headers in `next.config.ts` for Ajendra's review. Stabilise integration. Feature freeze.
 7. **Week 7.** Fix approved UI defects. Accessibility (keyboard, labels, contrast, focus), responsiveness, perceived speed.
 8. **Week 8.** Frontend documentation, component notes, limitations, stable demo.
 
-**Must not decide alone.** API shapes (agree them with Abhishek), business rules or scores (never compute eligibility or scores client-side), or authorisation. UI hiding is not access control. Do not store tokens or secrets in `localStorage` or in client bundles, add a UI framework, global state library or form library without an ARCHITECTURE.md §9 entry, or build pages outside MVP_FEATURES.
+**Must not decide alone.** API shapes (agree them with Abhishek), business rules or scores (never compute eligibility or scores client-side), or authorisation. UI hiding is not access control.
+
+Do not:
+
+- store tokens or secrets in `localStorage`, in `NEXT_PUBLIC_*` variables or in client bundles;
+- turn Next.js into a second backend. That means no Route Handlers, Server Actions, middleware authorisation or direct database access;
+- change the rewrites, cookie or CSRF handling without Ajendra's review;
+- add a UI framework, global state library or form library without an ARCHITECTURE.md §9 entry;
+- build pages outside MVP_FEATURES.
 
 **Evidence before done.** Component and page tests pass locally. Each screen shows loading, empty, error, denied and success states. A screenshot or recording goes in the PR for each new screen. Lint and type-check are clean.
 
@@ -398,9 +407,9 @@ Role: Priyanka Singh | Frontend Web and Client-Side Integration Engineer
 
 Read AGENTS.md, docs/MVP_FEATURES.md, docs/ARCHITECTURE.md (§1, §7) and
 docs/api/openapi.yaml (if present) first.
-I own frontend/ (React + TypeScript + Vite SPA, React Router, TanStack Query, CSS
-Modules) and client-side integration. The backend is the authority for
-auth, permissions, validation and scoring.
+I own frontend/ (Next.js App Router, React + TypeScript, TanStack Query, CSS
+Modules) and client-side integration. The Django backend is the authority for
+auth, permissions, validation and scoring; Next.js only renders and proxies /api/.
 
 Task: <describe, e.g. "build the supplier list with search and filters (M2-AC3)">
 
@@ -416,8 +425,9 @@ Do the following:
    for Abhishek instead of mocking silently. Label any mock clearly.
 5. Accessibility: labels, keyboard, focus, contrast; responsive layout.
 6. Use apiFetch() and TanStack Query for all server calls (same-origin session cookie +
-   X-CSRFToken). No secrets or tokens in client storage or bundles; no client-side
-   scoring or authorisation logic. No new UI/state/form libraries.
+   X-CSRFToken), from Client Components. No secrets or tokens in client storage,
+   NEXT_PUBLIC_* variables or bundles; no client-side scoring or authorisation logic;
+   no Route Handlers or Server Actions. No new UI/state/form libraries.
 7. Add/update Vitest + React Testing Library tests; run `npm run lint`, `npm run
    typecheck` and `npm run test` and report actual output.
 Report: files changed, tests run with results, contract questions, limitations, next step.
@@ -429,7 +439,7 @@ Report: files changed, tests run with results, contract questions, limitations, 
 
 **Primary responsibility.** Owns the application services: authentication, RBAC with object-level checks, application APIs, workflow states and transitions, request validation, structured errors, match orchestration, and backend integration tests. The outcome is a secure, consistent API that enforces every rule in MVP_FEATURES. **Security review stays with Ajendra.**
 
-**Owns:** the Django and DRF application layer: `backend/config/` and, in every app, serializers, views, permissions, services and URLs (ARCHITECTURE.md §4, §5). Models, migrations and seed data are Vishal's. The matching engine is Alok's. Also the generated `docs/api/openapi.yaml`, `requirements*.txt` (except the semantic extra), `Dockerfile`, `docker-compose.yml` and `.env.example` (with Vishal), and backend setup notes.
+**Owns:** the Django and DRF application layer: `backend/config/` and, in every app, serializers, views, permissions, services and URLs (ARCHITECTURE.md §4, §5). Models, migrations and seed data are Vishal's. The matching engine is Alok's. Also the generated `docs/api/openapi.yaml`, `requirements*.txt` (except the semantic extra), `backend/Dockerfile`, `docker-compose.yml` (with Vishal for `db` and Priyanka for `frontend`), `.env.example`, and backend setup notes.
 
 **Interfaces.**
 
@@ -447,18 +457,19 @@ Report: files changed, tests run with results, contract questions, limitations, 
    - The **custom `User` model with a `role` field**, agreed with Vishal, in the very first migration.
    - The conventions in ARCHITECTURE.md §5 as code: `SessionAuthentication`, deny-by-default permissions, the structured exception handler, the correlation-ID middleware, `version` conflict handling, pagination, and `accounts/policy.py` holding the whole `UNAPPROVED` permission matrix.
    - The exception handler maps `NotAuthenticated` to **401** `not_authenticated`, keeps permission denials at 403 `permission_denied`, and returns CSRF failures as 403 `csrf_failed` (TD-06).
-   - The URLconf order with the SPA catch-all (TD-07).
-   - The `Dockerfile` and a `docker-compose.yml` (db + app) with Vishal.
-   - `.env.example`.
+   - The URLconf: `/api/v1/` with JSON 404s for unmatched `/api/` paths, the admin path, admin static files and the health endpoint. There is no frontend catch-all, because Next.js serves the UI (TD-09, which supersedes TD-07).
+   - Proxy-aware settings from environment variables: `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`, and `SECURE_PROXY_SSL_HEADER` only behind a trusted HTTPS proxy. Ajendra reviews them.
+   - `backend/Dockerfile` and a `docker-compose.yml` (`db`, `backend`, `frontend`) with Vishal and Priyanka.
+   - `.env.example`. It includes `SEMANTIC_PROVIDER=none` and an **empty** `EMBEDDING_MODEL` marked "TBD (D-11)", and has no LLM variables (D-20).
 2. **Week 2.** The `csrf` (with `ensure_csrf_cookie`), `login` (explicit `csrf_protect`; TD-05), `logout` and `me` endpoints. The `create_platform_admin` management command (TD-08). role and object-level authorisation, the restricted Django admin for user management (`platform_admin` only, `User` model only, path from environment), and validated supplier and product APIs that emit audit events. Generate `docs/api/openapi.yaml`. Gate 1.
 3. **Week 3.** Registry search and filter APIs (using Vishal's queries) and the readiness assessment services with transitions.
 4. **Week 4.** Readiness review and buyer-requirement APIs: completeness gate, versioning, workflow transitions, reviewer actions.
-5. **Week 5.** Match orchestration in `matching/services.py`, following ARCHITECTURE.md §6. It checks the requirement gate, loads candidates through Vishal's query, selects the provider from `SEMANTIC_PROVIDER`, and calls `engine.run()`. It persists the run, results and audit event in one transaction. If the engine raises, the run is stored as `failed` with no results. Disposition API with permissions and traceability. The API rejects `Accepted` for any candidate that is not eligible under the run's criteria version (M7-AC5).
+5. **Week 5.** Match orchestration in `matching/services.py`, following ARCHITECTURE.md §6. It checks the requirement gate, selects the provider from `SEMANTIC_PROVIDER`, and embeds the requirement text when a provider is available. It then loads candidates through Vishal's query, with pgvector similarity when a vector is available, and calls `engine.run()`. It persists the run, results and audit event in one transaction. If the engine raises, the run is stored as `failed` with no results. Disposition API with permissions and traceability. The API rejects `Accepted` for any candidate that is not eligible under the run's criteria version (M7-AC5).
 6. **Week 6.** Opportunity APIs (create only from an accepted disposition, one opportunity per accepted disposition, with transitions), dashboard and audit APIs with access scoping. Feature freeze.
 7. **Week 7.** Fix approved API, authorisation, validation and stability defects.
 8. **Week 8.** API documentation, auth and RBAC notes, environment variables, backend setup and integration notes.
 
-**Must not decide alone.** Schema changes (Vishal prepares them), business rules, weights or states (Adrika and BNCS), changes to the `engine.run()` interface (with Alok), or accepting security risk (Ajendra and the mentor). Never disable or weaken auth, CSRF or `DEBUG=False` to "unblock" testing. Do not add queues, caches, extra services or token-based auth without an ARCHITECTURE.md §9 entry.
+**Must not decide alone.** Schema changes (Vishal prepares them), business rules, weights or states (Adrika and BNCS), changes to the `engine.run()` interface (with Alok), or accepting security risk (Ajendra and the mentor). Never disable or weaken auth, CSRF or `DEBUG=False` to "unblock" testing, including to make the Next.js proxy work. Do not add queues, caches, extra services, token-based auth, CORS or any LLM integration without an ARCHITECTURE.md §9 entry.
 
 **Evidence before done.** pytest API tests pass for allowed **and** denied paths, per role, on each endpoint. The OpenAPI drift check passes. Each material action has an audit-event assertion. The error format is consistent.
 
@@ -514,7 +525,7 @@ schema requests, security items for Ajendra, next step.
 
 **Primary responsibility.** Owns platform data services: the relational schema, migrations, constraints, seed data, search, analytics and reporting queries, audit storage, data contracts, and backup and recovery evidence. The outcome is reliable, consistent data that every service can depend on. **Does not define commercial meaning alone.** Field meaning comes from Adrika and BNCS.
 
-**Owns:** the Django data layer (ARCHITECTURE.md §4): `models.py` and `migrations/` in every app, `dashboard/queries.py` and candidate queries, and `backend/seed/` with the `seed_demo` management command. Also `docs/data/` (data dictionary, ERD, backup and recovery guide) and the PostgreSQL 17 service in `docker-compose.yml`.
+**Owns:** the Django data layer (ARCHITECTURE.md §4): `models.py` and `migrations/` in every app, `dashboard/queries.py` and candidate queries, and `backend/seed/` with the `seed_demo` management command. Also `docs/data/` (data dictionary, ERD, backup and recovery guide), the pgvector extension and vector-column migrations, and the PostgreSQL 17 + pgvector `db` service in `docker-compose.yml`.
 
 **Interfaces.**
 
@@ -526,16 +537,16 @@ schema requests, security items for Ajendra, next step.
 
 **MVP tasks, in order:**
 
-1. **Week 1.** Domain model and ERD from MVP_FEATURES §6. The custom `User` model with `role`, agreed with Abhishek, in the first migration. Initial models and migrations for suppliers and products. The `AuditEvent` model, plus a migration adding a PostgreSQL trigger that rejects `UPDATE` and `DELETE`. The seed-data plan.
+1. **Week 1.** Domain model and ERD from MVP_FEATURES §6. The `db` service on the `pgvector/pgvector` PostgreSQL 17 image, with the exact tag pinned. The custom `User` model with `role`, agreed with Abhishek, in the first migration. Initial models and migrations for suppliers and products. The `AuditEvent` model, plus a migration adding a PostgreSQL trigger that rejects `UPDATE` and `DELETE`. The seed-data plan.
 2. **Week 2.** Models and migrations with constraints (foreign keys, not-null where approved, `CheckConstraint` for enums and units, a `version` field), the `seed_demo` command with synthetic data, and basic queries. Gate 1.
 3. **Week 3.** Indexes, integrity rules, search (ORM `icontains` on indexed columns; no external search engine), readiness models, data dictionary v1.
 4. **Week 4.** Buyer-requirement versioning, criteria storage, `CriteriaVersion`, and question-set version storage.
-5. **Week 5.** Candidate retrieval queries. Storage of match runs, results, explanations, versions and dispositions. The `Product.embedding` `real[]` column, with `embedding_model` and `embedding_source_hash` (TD-01; no pgvector).
-6. **Week 6.** Reporting queries for the dashboard, opportunity storage, and backup and restore evidence (for example `pg_dump` and restore, tested). Feature freeze.
+5. **Week 5.** Candidate retrieval queries, including pgvector cosine distance against embeddings from the same `embedding_model` (ARCHITECTURE.md §6). Storage of match runs, results, explanations, versions and dispositions. A Django migration enables the pgvector extension. The `Product.embedding` pgvector column, with `embedding_model` and `embedding_source_hash` (TD-01), is added **only after the embedding model is decided (D-11)**, because its dimension depends on the model. Do not guess a dimension.
+6. **Week 6.** Reporting queries for the dashboard, opportunity storage, and backup and restore evidence (for example `pg_dump` and restore into a database with pgvector, tested). Feature freeze.
 7. **Week 7.** Verify integrity, migrations from empty, performance on seed volume, audit and recovery. Freeze the schema.
 8. **Week 8.** Final data dictionary, schema, migration notes, seed guide, and backup and recovery guide.
 
-**Must not decide alone.** Field meanings, required-ness or allowed values (Adrika and BNCS), or adding a database engine, search service or data platform. Do not use real or scraped data. Do not edit applied migrations; add new ones.
+**Must not decide alone.** Field meanings, required-ness or allowed values (Adrika and BNCS), or adding a database engine, another extension, a search service or a data platform. Do not use real or scraped data. Do not edit applied migrations; add new ones.
 
 **Evidence before done.** Migrations run cleanly on an empty database. The seed reaches ≥15 suppliers, ≥30 products and ≥10 requirements, all synthetic. Constraints are tested. Each dashboard query is reconciled with Harish. Restore has been demonstrated.
 
@@ -548,7 +559,7 @@ Role: Vishal Chauhan | Data and Platform Services Engineer
 
 Read AGENTS.md, docs/MVP_FEATURES.md (§6, M9, M10), docs/ARCHITECTURE.md (§4, §5)
 and the docs/product/ field dictionary first. The stack is Django 5.2 models and
-migrations on PostgreSQL 17.
+migrations on PostgreSQL 17 with pgvector; Django migrations are authoritative.
 I own schema, migrations, constraints, seed data, search, reporting queries, audit
 storage, data contracts and backup/recovery evidence. I do not define commercial
 meaning; field meanings come from Adrika/BNCS.
@@ -563,8 +574,10 @@ Do the following:
    for optimistic concurrency, created/updated metadata.
 3. Audit events: append-only (no update/delete path from the application, plus the
    DB trigger), no secrets.
-4. Use the Django ORM and PostgreSQL built-ins for search; no extensions or new
-   database services. Embeddings are real[] columns (no pgvector).
+4. Use the Django ORM and PostgreSQL built-ins for search; no new database services.
+   The only extension is pgvector, enabled by a Django migration; embeddings use the
+   pgvector Django field, and the vector dimension comes from the D-11 model decision
+   (TBD) — never guess one.
 5. Seed data must be synthetic and clearly fake; target ≥15 suppliers, ≥30 products,
    ≥10 requirements, including edge cases (missing data, duplicates, ineligible items).
 6. Write a migration-impact note listing affected APIs, matching inputs and tests.
@@ -583,10 +596,10 @@ questions for Adrika, next step.
 **Owns:** the in-process matching package (ARCHITECTURE.md §4, §6):
 
 - `backend/apps/matching/engine/`, pure Python with no Django imports
-- `matching/providers/` (`NullProvider`, `FastEmbedProvider`)
+- `matching/providers/` (`NullProvider`, `SentenceTransformerProvider`)
 - `matching/criteria/`, the versioned criteria JSON
-- `requirements-semantic.txt`
-- `docs/ai/`: engine interface, criteria configuration notes, evaluation dataset and pack, limitations
+- `requirements-semantic.txt` (`sentence-transformers` with CPU-only PyTorch, optional)
+- `docs/ai/`: engine interface, criteria configuration notes, the embedding-model proposal (D-11), evaluation dataset and pack, limitations
 
 **Interfaces.**
 
@@ -600,14 +613,14 @@ questions for Adrika, next step.
 
 1. **Week 1.** Define the `engine.run()` input and output dataclasses, the decision boundary, the evaluation approach and the fallback design (MVP_FEATURES §7, ARCHITECTURE.md §6). Document them in `docs/ai/`.
 2. **Week 2.** Commit the engine package with the dataclasses, `NullProvider` and a stub `run()` that returns fixed example output, plus synthetic test examples. This lets Abhishek and Priyanka integrate early.
-3. **Week 3.** Normalisation of approved fields, quality flags and embedding-ready records. Readiness-rule inputs, supporting Adrika.
-4. **Week 4.** **Deterministic baseline**: mandatory filters with pass, fail and unknown, plus weighted scoring from versioned criteria JSON. Use `v0-UNAPPROVED.json` placeholder weights until BNCS approves them at Gate 2. Per-criterion explanation output. pytest unit tests that need no database.
-5. **Week 5.** **Hybrid matching**: add `FastEmbedProvider` with `BAAI/bge-small-en-v1.5` (D-11, resolved: local, no external API) and NumPy cosine similarity as a bounded signal. Keep `SEMANTIC_PROVIDER=none` as the default until the evaluation supports turning it on. Implement and label the rules-only fallback. Run the evaluation set: expected, false, missed, missing-data, manipulated-input, service-failure and fallback cases. Record the results.
+3. **Week 3.** Normalisation of approved fields, quality flags and embedding-ready records. Readiness-rule inputs, supporting Adrika. Start the embedding-model shortlist for D-11, against the criteria in ARCHITECTURE.md §6.
+4. **Week 4.** **Deterministic baseline**: mandatory filters with pass, fail and unknown, plus weighted scoring from versioned criteria JSON. Use `v0-UNAPPROVED.json` placeholder weights until BNCS approves them at Gate 2. Per-criterion explanation output. pytest unit tests that need no database. Write the D-11 model proposal in `docs/ai/` for Ajendra's review, ideally by Gate 2. Aryan records the decision in ARCHITECTURE.md §9.
+5. **Week 5.** **Hybrid matching**, once D-11 is recorded. Add `SentenceTransformerProvider`, which loads the model named by `EMBEDDING_MODEL` locally, with no external API and `trust_remote_code` never enabled. Pass the database-computed pgvector similarity into the engine as a bounded signal. Keep `SEMANTIC_PROVIDER=none` as the default until the evaluation supports turning it on. If D-11 is still open, deliver the provider against a test double and keep the run rules-only. Implement and label the rules-only fallback. Run the evaluation set: expected, false, missed, missing-data, manipulated-input, service-failure and fallback cases. Record the results.
 6. **Week 6.** Final integration, fallback telemetry, match metrics. Lock the configuration. Stop feature expansion.
 7. **Week 7.** Rerun the evaluation, analyse errors, document limitations, freeze rules, weights and model settings.
 8. **Week 8.** AI evaluation pack: rules, weights and model configuration with versions, the dataset with expected outcomes, failure evidence, limitations and recommendations.
 
-**Must not decide alone.** Criteria, weights, the semantic weight, readiness rules or regulatory interpretation (BNCS approves). Do not switch to an external AI or embedding API, a different model family, PyTorch, or a vector database without an ARCHITECTURE.md §9 entry. Pilot data must never leave the environment. Never let semantic similarity override a mandatory failure, auto-approve suppliers, create opportunities, or present scores as certainty or accuracy beyond the evaluation evidence. No LLM-generated explanations unless approved. Use deterministic, template-based explanations built from criterion results.
+**Must not decide alone.** Criteria, weights, the semantic weight, readiness rules or regulatory interpretation (BNCS approves). The embedding model: propose it, but it is recorded only through a §9 entry with Ajendra's review (D-11). Until then, **never write a model name into code, defaults or examples.** Do not switch to an external AI or embedding API, another embedding library, or a vector store other than pgvector without an ARCHITECTURE.md §9 entry. Do not add an LLM, LLM SDK or prompt (D-20 is TBD and needs BNCS approval). Pilot data must never leave the environment. Never let semantic similarity override a mandatory failure, auto-approve suppliers, create opportunities, or present scores as certainty or accuracy beyond the evaluation evidence. Explanations are deterministic templates built from criterion results.
 
 **Evidence before done.** Unit tests cover each filter outcome (pass, fail, unknown), scoring, ordering ties, empty candidates, fallback and malformed input. The evaluation results file records model and configuration versions. The contract matches what Abhishek calls.
 
@@ -629,20 +642,24 @@ Do the following:
 1. Inspect matching/engine/, docs/ai/ and Vishal's models first. The engine is pure
    Python (dataclasses in, dataclasses out); it must not import Django or touch the DB.
 2. Pipeline order is fixed: gate → mandatory filters (pass/fail/unknown; unknown is not
-   a pass) → approved weighted score → bounded semantic signal → explanation + warnings.
+   a pass) → approved weighted score → optional bounded semantic signal → explanation +
+   warnings. Rules-based matching is the baseline and must work on its own.
    Semantic similarity can never override a mandatory failure.
 3. Load criteria/weights from versioned configuration; mark placeholders UNAPPROVED and
    include the config version in every output.
 4. Always support rules-only mode; label it in the output. Return explicit errors for
    invalid input or internal failure — never partial results presented as complete.
-5. Explanations are deterministic templates from criterion results (no LLM). Semantic
-   similarity uses the provider interface only: NullProvider or FastEmbedProvider
-   (fastembed + BAAI/bge-small-en-v1.5, local). Any provider error → rules-only, labelled.
+5. Explanations are deterministic templates from criterion results (no LLM; D-20 is
+   TBD). Semantic similarity uses the provider interface only: NullProvider or
+   SentenceTransformerProvider (sentence-transformers, local). The embedding model is
+   TBD (D-11): read it from EMBEDDING_MODEL and never hard-code or default a model name.
+   Any provider error or unset model → rules-only, labelled.
 6. Add unit tests and evaluation cases (expected, false, missed, missing-data,
    manipulated input, failure, fallback); run them and report actual results without
    overstating accuracy.
-7. Keep the model replaceable behind the provider interface; no PyTorch, LangChain,
-   vector DB or external API. Run `pytest` for the engine and report actual results.
+7. Keep the model replaceable behind the provider interface; no LLM or LLM framework
+   (e.g. LangChain), no vector store other than pgvector, no external API, never
+   trust_remote_code. Run `pytest` for the engine and report actual results.
 Report: files changed, contract changes (notify Abhishek/Vishal), tests and evaluation
 results, limitations, next step.
 ```
@@ -666,11 +683,11 @@ results, limitations, next step.
 
 **MVP tasks, in order:**
 
-1. **Week 1.** Test strategy covering levels, tools (fixed in ARCHITECTURE.md §1: pytest + pytest-django, Vitest + React Testing Library, Playwright), environments (the Compose reference environment and the CI Postgres service), and entry and exit criteria. A traceability matrix keyed on `M#-AC#`. Smoke cases. A defect workflow using GitHub Issues with severity labels from the build manual.
-2. **Week 2.** Set up the CI test jobs (ARCHITECTURE.md §8) and the `e2e/` Playwright project. Automate smoke, authentication, CRUD, permission, validation and API tests. Include: login without a CSRF token is rejected; an expired or absent session returns 401 `not_authenticated`; a role denial returns 403 and the UI keeps the session; a refresh on a deep client route loads the SPA; an unknown `/api/` path returns JSON 404. Log defects. Gate 1 evidence.
+1. **Week 1.** Test strategy covering levels, tools (fixed in ARCHITECTURE.md §1: pytest + pytest-django, Vitest + React Testing Library, Playwright), environments (the Compose reference environment and the CI PostgreSQL + pgvector service), and entry and exit criteria. A traceability matrix keyed on `M#-AC#`. Smoke cases. A defect workflow using GitHub Issues with severity labels from the build manual.
+2. **Week 2.** Set up the CI test jobs (ARCHITECTURE.md §8) and the `e2e/` Playwright project. Automate smoke, authentication, CRUD, permission, validation and API tests. Include: login without a CSRF token is rejected; an expired or absent session returns 401 `not_authenticated`; a role denial returns 403 and the UI keeps the session; a refresh on a deep route loads the page from the Next.js server; an unknown `/api/` path returns Django's JSON 404 through the Next.js rewrite, not a Next.js page. Log defects. Gate 1 evidence.
 3. **Week 3.** Expand functional, API, permission and regression tests for the registry and readiness.
 4. **Week 4.** Boundary, workflow-transition, permission and deterministic-scoring tests.
-5. **Week 5.** Matching tests: expected, false, missed, missing-data, manipulated-input, service-failure and fallback cases (with Alok and Ajendra).
+5. **Week 5.** Matching tests: expected, false, missed, missing-data, manipulated-input, service-failure and fallback cases (with Alok and Ajendra). Include the rules-only run with `SEMANTIC_PROVIDER=sentence_transformers` and no usable model.
 6. **Week 6.** Automate the full priority journey E2E and publish the **feature-freeze quality baseline**.
 7. **Week 7.** Lead UAT with Adrika, run regression and retests, prepare the QA recommendation.
 8. **Week 8.** Final QA report, traceability, defect status, UAT record and the repeatable demo script.
@@ -728,6 +745,7 @@ Role: Priyanka Singh | Frontend Web and Client-Side Integration Engineer
 3. **Never infers a role** from a Git username, email, commit author, machine name or file being edited. If no role is given and the task changes files, it asks once which role applies. Read-only questions about the project need no role.
 4. If a task crosses workstreams, it names the other owners and interfaces involved, limits its changes to the active role's area, and writes down what each other owner needs to do. It does not quietly implement their part.
 5. Takes on one role per session. To switch, the user states a new role explicitly.
+6. Writes daily-report entries only in the active member's own file in `docs/daily-reports/`, and only from verifiable facts (`docs/daily-reports/README.md`, *Using an AI coding agent*).
 
 ---
 
@@ -743,6 +761,7 @@ Every agent follows these steps for every task:
 6. **Add or update** the tests and documentation affected.
 7. **Run** the available checks (lint, type-check, tests, migrations) and record the **actual** results.
 8. **Summarise** what changed, what was tested and its result, what is incomplete or assumed, and the next integration step and who owns it.
+9. **Record** the day's outcome in the member's own daily report (§B rule 15), when the member asks for it. Separate completed work from planned work, and do not claim anything that step 7 did not actually show.
 
 ---
 

@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Working baseline for team and BNCS review. Business rules marked [OPEN] await BNCS. The technology stack and technical decisions are **final**: see [`ARCHITECTURE.md`](ARCHITECTURE.md). |
+| **Status** | Working baseline for team and BNCS review. Business rules marked [OPEN] await BNCS. The technology stack and technical decisions are recorded in [`ARCHITECTURE.md`](ARCHITECTURE.md) (§9 status, §10 build-manual deviations awaiting BNCS and mentor approval). The embedding model (D-11) and any LLM (D-20) are TBD. |
 | **Prepared** | 28 October 2026 (revised Week 1) |
 | **Maintained by** | Aryan Ghai (coordination and change record). Requirement content: Adrika T Kumar. Material changes need BNCS approval. |
 | **Applies to** | Every contributor and every AI coding agent working in this repository. See [`../AGENTS.md`](../AGENTS.md). |
@@ -16,7 +16,7 @@ Every statement is one of four kinds. Where it matters, it is tagged:
 | **[SRC]** | Set by the project source documents listed below. |
 | **[REC]** | Recommended by the feature audit (28 Oct 2026). Recommendations that touch scope or business rules need BNCS confirmation. Purely technical recommendations are decided in [ARCHITECTURE.md](ARCHITECTURE.md). |
 | **[REPO]** | Checked against this repository. |
-| **[OPEN]** | Needs a business decision from BNCS. Each one has a `D-xx` reference in [§12](#12-open-decisions). Technical decisions are resolved in [ARCHITECTURE.md §9](ARCHITECTURE.md#9-technical-decision-record). |
+| **[OPEN]** | Needs a business decision from BNCS. Each one has a `D-xx` reference in [§12](#12-open-decisions). Technical decisions and their status are recorded in [ARCHITECTURE.md §9](ARCHITECTURE.md#9-technical-decision-record). |
 
 **Source documents reviewed** (all in [`docs/`](./)):
 
@@ -250,7 +250,7 @@ Module IDs (`M1` to `M11`) and acceptance-criterion IDs (`M2-AC3`) are stable. U
 | **What** | Run matching for a ready requirement. The pipeline is in [§7](#7-matching-process). Results are ranked eligible candidates, plus a separate list of candidates excluded or lacking data, with reasons. |
 | **Why** | Stage 5 and Component 2 [SRC]. |
 | **Owner** | Alok (matching engine, rules, scoring, semantic signal, explanations, evaluation, fallback), Abhishek (orchestration API, failure handling), Vishal (candidate queries, storage of runs, results and versions). |
-| **Depends on** | M3, M5, approved criteria and weights (D-04, D-05). Embedding model fixed by D-11 (ARCHITECTURE.md §6). |
+| **Depends on** | M3, M5, approved criteria and weights (D-04, D-05). The semantic signal needs the embedding model, which is TBD (D-11, ARCHITECTURE.md §6). Rules-only matching does not depend on it. |
 | **Simplifications [REC]** | Synchronous run with no job queue. Run status: `Completed`, `Completed – rules-only fallback` or `Failed`. The candidate is a product together with its supplier. Semantic comparison is English-only. |
 
 | ID | Acceptance criterion |
@@ -454,13 +454,15 @@ Ready requirement (version N) + active CriteriaVersion
 
 **Failure.** If the matching engine raises an error, the run is stored as `Failed` with no results, and the backend returns a clear error.
 
-**Implementation (decided; see [ARCHITECTURE.md §6](ARCHITECTURE.md#6-matching-implementation)).**
+**Implementation (team-selected; see [ARCHITECTURE.md §6](ARCHITECTURE.md#6-matching-implementation)).**
 
-- **The engine.** Matching is an in-process, pure-Python package inside the Django backend (`backend/apps/matching/engine/`). It has no Django imports, no database access and one `engine.run()` function. It is replaceable as a package, so no separate service is needed.
+- **The engine.** Matching is an in-process, pure-Python package inside the Django backend (`backend/apps/matching/engine/`). It has no Django imports, no database access and one `engine.run()` function. It is replaceable as a package. This deviates from the build manual's isolated matching service, and BNCS and mentor approval is pending (ARCHITECTURE.md §10).
+- **Baseline.** Deterministic rules-based matching (steps 1 to 4 and 6 to 7) is the baseline and works on its own. Semantic similarity is an optional capability.
 - **Orchestration.** The backend's service layer loads the requirement and candidates, calls the engine and persists the run.
-- **Embeddings.** Stored as a PostgreSQL `real[]` column, compared with NumPy cosine similarity (no pgvector).
-- **Model (D-11, resolved).** `fastembed` with `BAAI/bge-small-en-v1.5`, run locally on CPU, so pilot data never leaves the environment. Only model weights are downloaded. No external AI API and no LLM.
-- **Default mode.** The semantic provider is off by default (`SEMANTIC_PROVIDER=none`, rules-only) until the Week 5 evaluation supports enabling it.
+- **Embeddings.** Stored in PostgreSQL with the pgvector extension, created through Django migrations. Cosine distance is computed in the database.
+- **Model (D-11).** The library is `sentence-transformers`, run locally, so pilot data never leaves the environment. **The embedding model is TBD.** No external embedding API.
+- **LLM (D-20).** **Provider and model TBD.** No LLM is used in the MVP, and none is needed for it.
+- **Default mode.** The semantic provider is off by default (`SEMANTIC_PROVIDER=none`, rules-only) until a model is chosen and the Week 5 evaluation supports enabling it.
 
 **Evaluation [SRC].** Alok and Harish build a synthetic evaluation set with expected outcomes. It covers expected matches, false matches, missed matches, missing data, manipulated input, service failure and rules-only fallback. Report results as observed on that set. Do not claim accuracy beyond it.
 
@@ -553,7 +555,8 @@ Not commitments. Each needs BNCS approval, an owner and an effort trade-off [SRC
 - External supplier self-service onboarding and document submission.
 - Public or partner supplier discovery portal; public informational website.
 - Evidence file upload with malware scanning and document access control.
-- A separate matching service or vector database, if candidate volumes grow well beyond pilot scale (ARCHITECTURE.md TD-01, TD-02).
+- A separate matching service, or an approximate-nearest-neighbour index on pgvector, if candidate volumes grow well beyond pilot scale (ARCHITECTURE.md TD-01, TD-02).
+- LLM-assisted features, only after D-20 is decided with security review and BNCS approval.
 - In-app China-market policy register with versioned sources.
 - Bilingual profile preview, translation management, bilingual or multilingual semantic search.
 - Notifications for pending reviews, stale records and document expiry.
@@ -580,12 +583,12 @@ Not commitments. Each needs BNCS approval, an owner and an effort trade-off [SRC
 | **DS-07** | Internship brief vs blueprint §11 vs manual | The brief lists introductions, meetings, RFQs, samples, quotations, negotiations, POs and outcome. The blueprint has five illustrative stages. The manual says "approved states". | Risk of a long pipeline with document tracking. | A small stage set (§4, M8). Decide under D-07. |
 | **DS-08** | Internship brief (Profile Preview module; Week 6 "controlled bilingual supplier profile") vs build manual §2 | The brief implies a bilingual presentation. The manual allows only structured Mandarin-ready fields and promises no bilingual interface. | Possible scope creep into translation. | Follow the manual. The preview page is Phase 2. |
 | **DS-09** | Internship brief Week 4 ("buyer profiles") vs manual and journey | The brief mentions buyer profiles. The manual and journey mention only buyer requirements. | A possible extra entity and screens. | Buyer organisation as fields on the requirement. Decide under D-13. |
-| **DS-10** | Internship brief Week 2 ("in staging") vs build manual Week 6 (staging) | Different staging timing. | Infrastructure effort in Week 2. | Local containerised setup is the reference environment. Hosted staging is optional (D-16, resolved). |
+| **DS-10** | Internship brief Week 2 ("in staging") vs build manual Week 6 (staging) | Different staging timing. | Infrastructure effort in Week 2. | Local containerised setup is the reference environment. Hosted staging is optional (D-16; BNCS confirmation pending, ARCHITECTURE.md §10). |
 | **DS-11** | Internship brief AI framework ("multilingual terminology") vs build manual ("bounded semantic comparison") | The brief suggests multilingual semantic matching. | Model and evaluation scope. | English-only semantic signal in the MVP. Multilingual is Phase 2. |
 | **DS-12** | Internship brief ("verification status" on buyer requirements) | What is being verified, and by whom, is not defined anywhere. | Unclear field. | Decide under D-13 or D-15. Do not implement until defined. |
 | **DS-13** | Internship brief ("one pilot sector") | The sector is never named. | Blocks the category list, seed data and filter design. | Decide under D-02 urgently (Week 1). |
 | **DS-14** | User journey PDF filename vs footer | The filename says "Proposed". The footer says "Current 26 October 2026", and it shares a page sequence with the revised ownership and timeline. | Status unclear. | Treat as the current working journey. Aryan confirms with BNCS. |
-| **DS-15** | Build manual §7 | The stack is a "recommended baseline … subject to BNCS and appointed technical-mentor approval". | Engineers cannot be sure which stack to scaffold. | **Resolved (D-01).** The team selected a simpler stack (Django + DRF, PostgreSQL, in-process matching, Vite React SPA). Rationale in ARCHITECTURE.md §2; shared with the mentor for visibility. |
+| **DS-15** | Build manual §7 | The stack is a "recommended baseline … subject to BNCS and appointed technical-mentor approval". | Engineers cannot be sure which stack to scaffold. | **Stack selected (D-01, revised 28 Oct 2026); approval pending.** Next.js (App Router) + React + TypeScript; Django 5.2 + DRF; PostgreSQL 17 + pgvector; in-process Python matching. Next.js, PostgreSQL and pgvector follow the manual. **Django instead of Spring Boot**, **in-process matching instead of a FastAPI service**, and optional hosted staging are deviations. They need BNCS and mentor approval, which is not yet recorded (ARCHITECTURE.md §10). |
 | **DS-16** | `InChi_Internship_Role_Assignment_Brief.pdf` | Not in the repository. | The original assignment cannot be checked directly. | Add it to `docs/` if available. It does not change current roles, because the revised ownership governs. |
 
 ---
@@ -613,19 +616,20 @@ These are business-owned. Until one is decided, implement only reversible placeh
 | D-15 | Does a Reviewer approve a requirement before matching? | BNCS | Week 4 | No. The completeness gate is enough for the pilot. |
 | D-19 | Confirm revised programme dates and final acceptance date | BNCS + university coordinator | Week 1 | 18 Dec 2026, per the revised timeline. |
 
-### Technical decisions — resolved 28 Oct 2026
+### Technical decisions — recorded 28 Oct 2026
 
-Full reasoning is in [ARCHITECTURE.md §9](ARCHITECTURE.md#9-technical-decision-record). These are final and need no further approval. Changes go through a new ARCHITECTURE.md §9 entry.
+Full reasoning and the authoritative status of each decision are in [ARCHITECTURE.md §9](ARCHITECTURE.md#9-technical-decision-record). Changes go through a new ARCHITECTURE.md §9 entry. Where a decision deviates from the build manual, BNCS and mentor approval is tracked in ARCHITECTURE.md §10. **None of that approval has been recorded yet.**
 
-| ID | Decision | Resolution |
-|---|---|---|
-| D-01 | Technology stack | Python 3.12, Django 5.2 LTS + DRF, PostgreSQL 17, in-process matching package, React + TypeScript (Vite) SPA, Docker Compose, GitHub Actions. |
-| D-10 | Evidence uploads | Metadata only. Uploads are Phase 2. |
-| D-11 | Embedding model | `fastembed` + `BAAI/bge-small-en-v1.5`, local. No external AI API. Rules-only by default until the Week 5 evaluation. |
-| D-12 | Authentication and provisioning | Django session auth + CSRF. Admin-provisioned accounts via a restricted Django admin. |
-| D-16 | Staging | The Docker Compose reference environment is the demo and UAT environment. Hosted staging is optional. |
-| D-17 | Results after data changes | Runs are immutable and versioned. The UI shows "data changed since this run". |
-| D-18 | Tracking tool | GitHub Issues + Projects in this repository. |
+| ID | Decision | Resolution | Status |
+|---|---|---|---|
+| D-01 | Technology stack | Next.js (App Router) + React + TypeScript; Python 3.12, Django 5.2 LTS + DRF; PostgreSQL 17 + pgvector with Django migrations authoritative; in-process Python matching (rules baseline, optional semantic signal); Docker Compose; GitHub Actions. | Selected; BNCS + mentor approval pending |
+| D-10 | Evidence uploads | Metadata only. Uploads are Phase 2. | Resolved |
+| D-11 | Embedding library and model | Library: `sentence-transformers`, local, optional. **Model: TBD.** No external embedding API. Rules-only by default until a model is chosen and the Week 5 evaluation supports it. | Model **Open**; needed before Week 5 hybrid work |
+| D-12 | Authentication and provisioning | Django session auth + CSRF. Admin-provisioned accounts via a restricted Django admin. | Resolved |
+| D-16 | Staging | The Docker Compose reference environment is the demo and UAT environment. Hosted staging is optional. | Selected; BNCS confirmation pending (deviates from the manual) |
+| D-17 | Results after data changes | Runs are immutable and versioned. The UI shows "data changed since this run". | Resolved |
+| D-18 | Tracking tool | GitHub Issues + Projects in this repository. | Resolved |
+| D-20 | LLM provider and model | **TBD.** Not a prerequisite for the MVP and not used in v0.1. Any future use needs a §9 entry, Ajendra's review and BNCS approval. | **Open** (later stage) |
 
 ---
 

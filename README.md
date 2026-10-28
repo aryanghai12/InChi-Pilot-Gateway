@@ -50,19 +50,27 @@ Full scope, acceptance criteria and the permission matrix are in [docs/MVP_FEATU
 
 ## Architecture and technology
 
-**The stack is final (decision D-01, 28 Oct 2026). Nothing is implemented yet.** Full details, conventions and rationale are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+**The team has selected this stack (decision D-01, revised 28 Oct 2026). Nothing is implemented yet.** Full details, conventions and rationale are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 | Layer | Choice |
 |---|---|
-| Frontend | React + TypeScript single-page app (Vite), React Router, TanStack Query |
+| Frontend | Next.js (App Router), React, TypeScript, TanStack Query. Next.js renders pages and forwards `/api/` to Django; it holds no business logic. |
 | Backend | Python 3.12, Django 5.2 LTS, Django REST Framework. Session auth with CSRF. OpenAPI via drf-spectacular. |
-| Database | PostgreSQL 17 (Django ORM and migrations) |
-| Matching | In-process Python package inside the backend. Rules first, with optional local embeddings (`fastembed`, `BAAI/bge-small-en-v1.5`) and a rules-only fallback. No external AI API. |
+| Database | PostgreSQL 17 with pgvector. Django ORM and Django migrations are authoritative for the schema. |
+| Matching | In-process Python package inside the backend. Deterministic rules-based matching is the baseline. Semantic similarity is an optional, bounded signal, with a rules-only fallback. |
+| Embeddings | `sentence-transformers`, run locally (optional install). **Embedding model: TBD (D-11).** |
+| LLM | **None in v0.1. Provider and model TBD (D-20).** Not needed for the MVP. |
 | Tests | pytest, Vitest + React Testing Library, Playwright |
-| Environment | Docker Compose (PostgreSQL + one app container that serves the API and the built SPA) |
+| Environment | Docker Compose: PostgreSQL + pgvector, Django backend, Next.js frontend, all on one browser origin |
 | Delivery | GitHub pull requests and GitHub Actions CI. Hosted staging is optional. |
 
-This is simpler than the build manual's suggested baseline. It uses one backend language and one deployable, has no separate matching service and no vector database, and relies on Django's built-in authentication and security. The reasons are in ARCHITECTURE.md §2.
+**Approval status.** The build manual makes the final stack subject to BNCS and technical-mentor approval. **That approval has not been recorded yet.** The material deviations from the manual's baseline are:
+
+- Django instead of Spring Boot;
+- matching inside the backend instead of a separate FastAPI service;
+- hosted staging made optional.
+
+They are listed with their status in [ARCHITECTURE.md §10](docs/ARCHITECTURE.md#10-build-manual-deviations-and-pending-approvals).
 
 ## Repository structure
 
@@ -74,8 +82,9 @@ What exists today:
 ├── CLAUDE.md        Points Claude Code to AGENTS.md
 ├── README.md
 └── docs/
-    ├── MVP_FEATURES.md                                     Definitive v0.1 scope, acceptance criteria, decisions
-    ├── ARCHITECTURE.md                                     Final stack, layout, conventions, technical decisions
+    ├── MVP_FEATURES.md                                     v0.1 scope, acceptance criteria, business decisions
+    ├── ARCHITECTURE.md                                     Stack, repository layout and ownership, conventions, technical decisions
+    ├── daily-reports/                                      Daily progress log: process README and one file per member
     ├── InChi_Pilot_Gateway_Build_Manual.pdf                Source: scope, governance (roles and dates superseded)
     ├── InChi_Pilot_User_Delivery Ownership (revised).pdf   Source: current roles (from 26 Oct 2026)
     ├── InChi_Pilot_Build Sequence Timeline (revised).pdf   Source: current weekly plan (26 Oct – 18 Dec 2026)
@@ -84,11 +93,22 @@ What exists today:
     └── InChi_Mapped_Website_Feature_Blueprint.pdf          Source: proposed feature blueprint (audited)
 ```
 
-The planned layout (`backend/` Django project with one app per module, `frontend/`, `e2e/`, `docker-compose.yml`, and subfolders of `docs/`) and its owners are set out in [docs/ARCHITECTURE.md §4](docs/ARCHITECTURE.md#4-repository-layout-and-ownership) and [AGENTS.md § B](AGENTS.md#proposed-repository-layout-and-ownership). Directories will be created as work begins.
+Planned top-level layout. Each directory is created when work on it starts:
+
+| Path | What goes there | Primary owner |
+|---|---|---|
+| `frontend/` | Next.js App Router app: pages, shared components, API client and frontend unit tests | Priyanka |
+| `backend/` | Django project: API, auth and permissions, workflow services (Abhishek); models, migrations, queries and seed data (Vishal); matching engine and providers (Alok); unit and API tests beside each app | Abhishek, Vishal, Alok |
+| `e2e/` | Playwright end-to-end and regression suite | Harish |
+| `docker-compose.yml`, `.env.example` | Local and demo environment: `db`, `backend`, `frontend` | Abhishek (with Vishal and Priyanka) |
+| `.github/` | CI workflows and Dependabot | Harish (tests), Ajendra (security) |
+| `docs/governance/`, `docs/product/`, `docs/security/`, `docs/data/`, `docs/ai/`, `docs/qa/`, `docs/api/` | Registers and reports; product definitions; security pack; data dictionary; matching and evaluation; QA evidence; generated OpenAPI | Aryan, Adrika, Ajendra, Vishal, Alok, Harish, Abhishek |
+
+The full tree, file-level ownership, reviewers and "when to coordinate with whom" are in **[docs/ARCHITECTURE.md §4](docs/ARCHITECTURE.md#4-repository-layout-and-ownership)**, the single source of truth for ownership.
 
 ## Setup and running
 
-There is nothing to run yet. Setup steps, environment variables (via `.env.example`) and seed-data loading will be documented here once the backend and frontend skeletons land (Week 1 target). The planned entry point is `docker compose up`, followed by the `seed_demo` command (ARCHITECTURE.md §8). These commands do not exist yet.
+There is nothing to run yet. Setup steps, environment variables (via `.env.example`) and seed-data loading will be documented here once the backend and frontend skeletons land (Week 1 target). The planned entry point is `docker compose up`, followed by the `create_platform_admin` and `seed_demo` commands, with the app opened at `http://localhost:3000` (ARCHITECTURE.md §8). These commands do not exist yet.
 
 ## Tests and validation
 
@@ -97,30 +117,32 @@ No test suites or CI workflows exist yet. The test strategy and traceability mat
 ## Documentation
 
 - [docs/MVP_FEATURES.md](docs/MVP_FEATURES.md): what is in v0.1, acceptance criteria, permissions, matching process, feature-blueprint audit, Phase 2 list, source discrepancies and open decisions.
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): final technology stack, repository layout, backend, frontend and matching conventions, CI, technical decision record.
-- [AGENTS.md](AGENTS.md): engineering rules, ownership, role prompts and Definition of Done.
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): technology stack, repository layout and ownership, backend, frontend and matching conventions, CI, technical decision record, build-manual deviations awaiting approval.
+- [AGENTS.md](AGENTS.md): engineering rules, role definitions and prompts, and the Definition of Done.
+- [docs/daily-reports/](docs/daily-reports/README.md): how each member records daily progress, and the shared log.
 - [docs/](docs/): original project source documents (PDF). Where they conflict with the revised ownership and timeline, the revised documents take precedence. See MVP_FEATURES §11.
 
 ## Team and contribution
 
 The pilot is built by eight interns under BNCS and mentor supervision. Current roles are from the revised ownership, effective 26 October 2026:
 
-| Member | Workstream |
-|---|---|
-| Aryan Ghai | Project coordination, product operations and integration governance |
-| Ajendra Nath Tripathi | Cybersecurity and DevSecOps |
-| Adrika T Kumar | Product UX and commercial workflow |
-| Priyanka Singh | Frontend and client-side integration |
-| Abhishek Kumar | Application backend and access control |
-| Vishal Chauhan | Data and platform services |
-| Alok Tiwari | AI matching and data intelligence |
-| Harish Pal | QA and test automation |
+| Member | Role | Primary areas |
+|---|---|---|
+| Aryan Ghai | Technical Project Coordinator, Product Operations and Integration Governance | `docs/governance/`, backlog and decision records, README/AGENTS/CLAUDE, daily-report process |
+| Ajendra Nath Tripathi | Cybersecurity and DevSecOps Engineer | `docs/security/`, security CI jobs, Dependabot, `.gitignore` |
+| Adrika T Kumar | Product UX and Commercial Workflow Analyst | `docs/product/`, requirement content of MVP_FEATURES |
+| Priyanka Singh | Frontend Web and Client-Side Integration Engineer | `frontend/` (Next.js) |
+| Abhishek Kumar | Application Backend and Access-Control Engineer | Django config and API layer, `docs/api/`, Compose and backend image |
+| Vishal Chauhan | Data and Platform Services Engineer | Models, migrations (including pgvector), queries, seed data, `docs/data/` |
+| Alok Tiwari | AI Matching and Data Intelligence Engineer | `backend/apps/matching/engine/`, providers, criteria, `docs/ai/` |
+| Harish Pal | QA and Test Automation Engineer | `e2e/`, test CI jobs, `docs/qa/` |
 
 **How we work:**
 
 - Every change goes through a focused pull request with at least one relevant peer review.
 - Each PR links to an `M#-AC#` requirement and reports the tests that were actually run.
-- Technical decisions are made by the team and recorded in ARCHITECTURE.md §9. Business decisions (commercial policy, readiness criteria, eligibility rules and weights, decision labels, permissions, scope) and acceptance of material security risk go to BNCS.
+- Every member records their own progress each working day in [docs/daily-reports/](docs/daily-reports/README.md), including completed work with evidence, work in progress, tests run, blockers and next steps.
+- Technical decisions are recorded in ARCHITECTURE.md §9. Deviations from the build manual need BNCS and mentor approval (ARCHITECTURE.md §10). Business decisions (commercial policy, readiness criteria, eligibility rules and weights, decision labels, permissions, scope) and acceptance of material security risk go to BNCS.
 - If you use an AI coding agent, state your role at the start of your prompt (for example `@role: backend`). See [AGENTS.md § D](AGENTS.md#d-role-activation).
 
 The pilot runs from 26 October to 18 December 2026, with feature freeze after Week 6 (4 December).

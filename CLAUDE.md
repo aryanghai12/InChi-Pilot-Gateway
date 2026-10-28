@@ -6,6 +6,6 @@ Before starting any task:
 
 1. Follow `AGENTS.md`, imported below.
 2. Activate the role the user states (`Role: <Name> | <Role>` or `@role: <alias>`), following AGENTS.md §D. Never infer a role from a Git username or email.
-3. Check scope and acceptance criteria in [`docs/MVP_FEATURES.md`](docs/MVP_FEATURES.md).
+3. Check scope and acceptance criteria in [`docs/MVP_FEATURES.md`](docs/MVP_FEATURES.md), and the stack, ownership (§4) and decision status (§9, §10) in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 @AGENTS.md
