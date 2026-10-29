@@ -1,0 +1,94 @@
+# Products Schema V1 — InChi Pilot Gateway
+
+## 1. Purpose
+
+The `products` table stores basic information about products registered in the InChi Pilot Gateway.
+
+A single product can be supplied by multiple suppliers. The many-to-many relationship will be maintained separately through the `supplier_products` junction table.
+
+## 2. Table Definition
+
+- **Table name:** `products`
+- **Database:** PostgreSQL
+- **Schema version:** V1
+- **Primary key:** `id`
+
+## 3. Field Definitions
+
+| Field | PostgreSQL Type | Nullable | Default | Description |
+|---|---|---|---|---|
+| `id` | UUID | No | Generated UUID | Unique identifier for each product record |
+| `product_name` | VARCHAR(255) | No | None | Name of the product |
+| `description` | TEXT | Yes | NULL | Description of the product |
+| `category` | VARCHAR(100) | Yes | NULL | Category to which the product belongs |
+| `created_at` | TIMESTAMPTZ | No | Current timestamp | Timestamp when the record was created |
+| `updated_at` | TIMESTAMPTZ | No | Current timestamp | Timestamp when the record was last updated |
+
+## 4. Constraints and Data Integrity
+
+### 4.1 Primary Key
+- `id` is the primary key.
+- Each product must have a unique UUID.
+
+### 4.2 Product Name
+- `product_name` is mandatory.
+- Product names are not globally unique because different products may have similar names.
+
+### 4.3 Optional Fields
+- `description` and `category` may be NULL when the information is unavailable.
+- Category validation rules can be introduced when the project defines its product taxonomy.
+
+### 4.4 Timestamps
+- `created_at` and `updated_at` must be non-null.
+- Both fields default to the current database timestamp.
+- The mechanism for maintaining `updated_at` must be agreed upon with the backend developer.
+
+## 5. Supplier Relationship
+
+A product can be associated with multiple suppliers, and a supplier can offer multiple products.
+
+This many-to-many relationship will be represented through the `supplier_products` junction table.
+
+The `products` table will not contain a direct `supplier_id` foreign key.
+
+## 6. Indexing Strategy
+
+- The primary key automatically provides an index on `id`.
+- Additional indexes on `product_name` or `category` should be introduced only when justified by actual search and filtering requirements.
+
+## 7. Auditability
+
+Important product changes should be captured by the project's separate append-only audit mechanism.
+
+Historical matching results and decisions should remain interpretable even when current product information changes.
+
+## 8. Fields Excluded from V1
+
+The following fields are excluded from this initial schema:
+
+- Product code or SKU
+- Supplier ID
+- Product pricing
+- Inventory quantity
+- Certifications and readiness evidence
+- Additional product specifications
+- Product images and document uploads
+
+These fields can be considered in future versions if approved requirements justify them.
+
+## 9. Open Assumptions
+
+1. Whether product categories will use a controlled vocabulary.
+2. How `updated_at` will be maintained.
+3. Which product changes must generate audit events.
+4. Whether additional product attributes are required for matching and readiness assessments.
+
+These assumptions require confirmation with the project team.
+
+## 10. Version History
+
+**Version:** V1
+
+**Scope:** Basic product identity, description, category, and timestamps.
+
+**Status:** Initial schema proposal pending team review and approval.

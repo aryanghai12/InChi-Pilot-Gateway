@@ -1,0 +1,152 @@
+# Supplier Schema V1 — InChi Pilot Gateway
+
+## 1. Purpose
+
+The `suppliers` table stores the basic identity and contact information of suppliers registered in the InChi Pilot Gateway system.
+
+This is the initial database schema for the Supplier Registry module. It contains only the essential fields required for supplier registration and lifecycle management.
+
+## 2. Table Definition
+
+**Table name:** `suppliers`
+
+**Database:** PostgreSQL
+
+**Schema version:** V1
+
+**Primary key:** `id`
+
+## 3. Field Definitions
+
+| Field | PostgreSQL Type | Nullable | Default | Description |
+|---|---|---|---|---|
+| `id` | UUID | No | Generated UUID | Unique identifier for each supplier |
+| `legal_name` | VARCHAR(255) | No | None | Official legal name of the supplier |
+| `country_code` | CHAR(2) | No | None | Two-letter country code based on ISO 3166-1 alpha-2 |
+| `city` | VARCHAR(100) | Yes | NULL | City where the supplier is located |
+| `business_email` | VARCHAR(254) | Yes | NULL | Business contact email address |
+| `website_url` | VARCHAR(2048) | Yes | NULL | Supplier's website URL |
+| `status` | VARCHAR(20) | No | `active` | Current status of the supplier |
+| `created_at` | TIMESTAMPTZ | No | Current timestamp | Timestamp when the supplier record was created |
+| `updated_at` | TIMESTAMPTZ | No | Current timestamp | Timestamp when the supplier record was last updated |
+
+## 4. Constraints and Data Integrity
+
+### 4.1 Primary Key
+- `id` must uniquely identify each supplier.
+- The primary key must never be NULL.
+- UUIDs provide stable identifiers for relationships with other tables.
+
+### 4.2 Required Fields
+The following fields are mandatory:
+- `id`
+- `legal_name`
+- `country_code`
+- `status`
+- `created_at`
+- `updated_at`
+
+A supplier record must not be created without a legal name or country code.
+
+### 4.3 Country Code
+- `country_code` must contain a two-letter country code.
+- The intended format is ISO 3166-1 alpha-2.
+- The database type alone does not guarantee that the code represents a valid country.
+- Country-code validation must be implemented through an agreed database constraint or application-level validation.
+
+### 4.4 Supplier Status
+The initial permitted status values are:
+- `active`
+- `inactive`
+
+The database should enforce these allowed values using a CHECK constraint.
+
+Suppliers should generally be deactivated rather than permanently deleted, helping preserve historical references and business records.
+
+### 4.5 Timestamps
+- `created_at` records when the supplier was created.
+- `updated_at` records when the supplier was last modified.
+- Both fields must be non-null.
+- The initial timestamp can default to the current database timestamp.
+- The mechanism for automatically updating `updated_at` must be agreed upon with the backend developer.
+
+### 4.6 Optional Contact Information
+`city`, `business_email`, and `website_url` are nullable because this information may not be available when a supplier is first registered.
+
+Where provided, email addresses and website URLs should be validated according to the agreed application validation rules.
+
+## 5. Design Decisions
+
+### 5.1 UUID Primary Key
+UUIDs provide stable supplier identifiers and reduce dependence on sequential database IDs.
+
+### 5.2 Legal Name Is Not Globally Unique
+The `legal_name` field is not globally unique in V1 because different suppliers may share similar or identical names.
+
+If duplicate prevention becomes necessary, it should be designed using additional business rules rather than assuming that legal names are always unique.
+
+### 5.3 Controlled Status Values
+A restricted status vocabulary prevents inconsistent values such as `enabled`, `Active`, and `disabled` from being stored interchangeably.
+
+### 5.4 Soft Deactivation
+The initial design supports deactivation through the `status` field. Permanent deletion rules will be defined when relationships with other tables are designed.
+
+### 5.5 Minimal Initial Schema
+V1 intentionally excludes additional fields such as registration numbers, supplier categories, certifications, capabilities, and multiple contact records. These can be introduced through future schema migrations if required by approved project requirements.
+
+## 6. Indexing Strategy
+
+For V1, the primary key index on `id` is sufficient by default.
+
+Additional indexes should be introduced based on confirmed query patterns, such as:
+- Searching suppliers by legal name.
+- Filtering suppliers by status.
+- Filtering suppliers by country.
+
+Indexes should not be added without a clear query-performance requirement.
+
+## 7. Auditability
+
+Supplier records may be referenced by assessments, buyer matching results, opportunities, and other business entities.
+
+Important supplier changes should be captured by the system's separate append-only audit mechanism, according to the project's audit requirements.
+
+The audit history should preserve relevant information about changes rather than relying only on the current values in the `suppliers` table.
+
+The exact audit event structure will be defined separately.
+
+## 8. Fields Excluded from V1
+
+The following fields are intentionally excluded from this initial version:
+
+- Supplier registration number.
+- Supplier category or type.
+- Product capabilities.
+- Certifications and readiness evidence.
+- Multiple contact persons.
+- `created_by` and `updated_by`.
+
+These fields should be added only when supported by confirmed business requirements and the overall database design.
+
+## 9. Open Assumptions
+
+The following decisions require confirmation with the project team:
+
+1. Whether the supplier status values `active` and `inactive` are sufficient.
+2. Whether ISO country-code validation will be enforced in PostgreSQL or in the backend.
+3. Which validation rules will apply to business email addresses and website URLs.
+4. Whether `updated_at` will be maintained by the backend or a database trigger.
+5. How supplier deletion and foreign-key relationships will be handled.
+6. Which supplier changes must generate audit events.
+
+Until these decisions are approved, they should be treated as design assumptions rather than finalized project requirements.
+
+## 10. Version History
+
+**Version:** V1
+
+**Scope:** Basic supplier identity, contact information, status, and timestamps.
+
+**Status:** Initial schema proposal pending team review and approval.
+
+Future structural changes should be introduced through database migrations rather than silently changing the existing schema.
