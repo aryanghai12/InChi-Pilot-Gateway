@@ -1,0 +1,105 @@
+# Supplier Products Schema V1 — InChi Pilot Gateway
+
+## 1. Purpose
+
+The `supplier_products` table connects suppliers and products through a many-to-many relationship.
+
+It also stores supplier-specific information about each product, including its price and availability.
+
+## 2. Table Definition
+
+- **Table name:** `supplier_products`
+- **Database:** PostgreSQL
+- **Schema version:** V1
+- **Primary key:** Composite primary key (`supplier_id`, `product_id`)
+
+## 3. Field Definitions
+
+| Field | PostgreSQL Type | Nullable | Default | Description |
+|---|---|---|---|---|
+| `supplier_id` | UUID | No | None | References the supplier offering the product |
+| `product_id` | UUID | No | None | References the product offered by the supplier |
+| `price` | NUMERIC(12,2) | Yes | NULL | Price offered by this supplier for this product |
+| `availability` | VARCHAR(20) | No | `available` | Availability of this product from this supplier |
+| `created_at` | TIMESTAMPTZ | No | Current timestamp | When the relationship was created |
+| `updated_at` | TIMESTAMPTZ | No | Current timestamp | When the relationship was last updated |
+
+## 4. Constraints and Data Integrity
+
+### 4.1 Composite Primary Key
+- The combination of `supplier_id` and `product_id` must be unique.
+- The same product cannot be linked to the same supplier more than once.
+- Both fields are mandatory.
+
+### 4.2 Foreign Keys
+- `supplier_id` references `suppliers(id)`.
+- `product_id` references `products(id)`.
+- Foreign-key deletion behavior must be agreed upon when implementing migrations, considering historical records and auditability.
+
+### 4.3 Price
+- `price` may be NULL when the price is unknown or not yet provided.
+- If present, the price must be greater than or equal to zero.
+- Currency is not included in V1 and requires confirmation before prices from different currencies are compared.
+
+### 4.4 Availability
+The proposed permitted values are:
+- `available`
+- `unavailable`
+
+The database should enforce the permitted values through a CHECK constraint.
+
+Availability describes whether a particular supplier can currently provide the associated product. It does not represent the supplier's overall account status.
+
+### 4.5 Timestamps
+- `created_at` and `updated_at` must be non-null.
+- Both fields default to the current database timestamp.
+- The backend or a database trigger must maintain `updated_at` when a record changes.
+
+## 5. Design Decisions
+
+### 5.1 Many-to-Many Relationship
+A supplier can offer multiple products, and a product can be offered by multiple suppliers.
+
+The junction table represents this relationship without duplicating supplier or product records.
+
+### 5.2 Supplier-Specific Price
+Price belongs to the supplier-product relationship because different suppliers may offer the same product at different prices.
+
+### 5.3 Supplier-Specific Availability
+Availability belongs to the supplier-product relationship because a product may be available from one supplier and unavailable from another.
+
+### 5.4 Composite Primary Key
+The combination of `supplier_id` and `product_id` identifies a unique supplier-product relationship in V1.
+
+If the system later needs multiple offers for the same product from the same supplier, this key design must be revisited.
+
+## 6. Indexing Strategy
+
+- The composite primary key provides an index beginning with `supplier_id`.
+- An additional index on `product_id` may be useful when searching all suppliers offering a particular product.
+- Additional indexes should be introduced based on actual query patterns.
+
+## 7. Auditability
+
+Changes to price and availability may affect supplier comparisons and matching results.
+
+Important changes should be captured by the project's separate append-only audit mechanism. Historical matching results should remain interpretable even when the current price or availability changes.
+
+## 8. Open Assumptions
+
+1. Whether prices will use one currency or require an explicit currency field.
+2. Whether availability should eventually include stock quantities or lead times.
+3. Whether `available` and `unavailable` are sufficient status values.
+4. How `updated_at` will be maintained.
+5. How supplier-product records will be handled when a supplier or product is deactivated or deleted.
+6. Which changes must generate audit events.
+
+These assumptions require confirmation with the project team.
+
+## 9. Version History
+
+**Version:** V1
+
+**Scope:** Supplier-product relationships, supplier-specific price and availability, and timestamps.
+
+**Status:** Initial schema proposal pending team review and approval.
