@@ -1,4 +1,4 @@
-# InChi-Pilot-Gateway# ⚡ InChi-Pilot-Gateway — Backend Core Service ⚙️
+# InChi-Pilot-Gateway ⚡ InChi-Pilot-Gateway - Backend Core Service ⚙️
 
 > **The high-performance engine for API Routing, Role-Based Access Control & Data Pipelines.**  
 > 👑 **Module Owner:** [Abhishek Kumar](https://github.com/Abhishekkumar071)  
