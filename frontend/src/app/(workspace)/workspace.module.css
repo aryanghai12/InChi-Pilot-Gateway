@@ -1,20 +1,29 @@
-.workspaceRoot {
-  min-height: 100vh;
+.container {
   display: flex;
-  flex-direction: column;
+  min-height: 100vh;
   background-color: var(--color-bg-app);
 }
 
-.layoutBody {
+.body {
   display: flex;
   flex: 1;
+  min-width: 0;
 }
 
-.mainContent {
+.contentWrapper {
   flex: 1;
-  padding: 2rem 2.5rem;
-  max-width: 1400px;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 100vh;
+}
+
+.main {
+  flex: 1;
+  padding: 1.5rem 2.25rem 3rem;
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
 }
 
 .centerLoading {

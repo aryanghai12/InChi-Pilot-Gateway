@@ -9,7 +9,14 @@ import { AppHeader } from "@/components/navigation/AppHeader";
 import { AppSidebar } from "@/components/navigation/AppSidebar";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 import { AlertBanner } from "@/components/feedback/AlertBanner";
-import { Button } from "@/components/forms/Button";
+
+const FALLBACK_DEMO_USER: CurrentUser = {
+  id: "demo-user-1",
+  username: "priyanka.singh",
+  email: "priyanka@bncs.local",
+  role: "commercial_analyst",
+  is_active: true,
+};
 
 export default function WorkspaceLayout({
   children,
@@ -17,52 +24,42 @@ export default function WorkspaceLayout({
   children: React.ReactNode;
 }) {
   const {
-    data: user,
+    data: fetchedUser,
     isLoading,
     isError,
-    error,
-    refetch,
   } = useQuery<CurrentUser>({
     queryKey: ["currentUser"],
     queryFn: () => apiFetch<CurrentUser>("/api/v1/auth/me/"),
     staleTime: 5 * 60 * 1000,
+    retry: false,
   });
+
+  const isDemo = isError || !fetchedUser;
+  const user = fetchedUser || FALLBACK_DEMO_USER;
 
   if (isLoading) {
     return (
       <div className={styles.centerLoading}>
-        <LoadingSpinner label="Authenticating session..." />
-      </div>
-    );
-  }
-
-  if (isError) {
-    return (
-      <div className={styles.centerLoading}>
-        <div style={{ maxWidth: 500, padding: "2rem" }}>
-          <AlertBanner
-            type="error"
-            title="Session Error"
-            message={
-              error instanceof Error
-                ? error.message
-                : "Failed to establish authenticated session with backend."
-            }
-          />
-          <Button variant="primary" onClick={() => refetch()}>
-            Retry
-          </Button>
-        </div>
+        <LoadingSpinner label="Connecting to workspace..." />
       </div>
     );
   }
 
   return (
-    <div className={styles.workspaceRoot}>
-      <AppHeader user={user} />
-      <div className={styles.layoutBody}>
-        <AppSidebar userRole={user?.role} />
-        <main className={styles.mainContent}>{children}</main>
+    <div className={styles.container}>
+      <AppSidebar userRole={user?.role} />
+      <div className={styles.contentWrapper}>
+        <AppHeader user={user} />
+        {isDemo && (
+          <div style={{ padding: "0.75rem 2.25rem 0", maxWidth: 1440, width: "100%", margin: "0 auto" }}>
+            <AlertBanner
+              type="info"
+              title="Frontend Demo Mode"
+              message="Backend API (Django :8000) is not connected yet. Rendering authenticated workspace with synthetic session for Priyanka Singh (commercial_analyst)."
+            />
+          </div>
+        )}
+        <main className={styles.main}>{children}</main>
       </div>
     </div>
   );

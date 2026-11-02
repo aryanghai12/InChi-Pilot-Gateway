@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import styles from "./login.module.css";
 import { apiFetch, ensureCsrfToken } from "@/lib/api/client";
 import { ApiError } from "@/lib/api/types";
@@ -13,6 +14,7 @@ import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 
 function LoginForm() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const searchParams = useSearchParams();
   const nextUrl = searchParams.get("next") || "/dashboard";
 
@@ -26,6 +28,17 @@ function LoginForm() {
   useEffect(() => {
     ensureCsrfToken();
   }, []);
+
+  const handleDemoSignIn = () => {
+    queryClient.setQueryData(["currentUser"], {
+      id: "demo-user-1",
+      username: "priyanka.singh",
+      email: "priyanka@bncs.local",
+      role: "commercial_analyst",
+      is_active: true,
+    });
+    router.push(nextUrl);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +56,11 @@ function LoginForm() {
       router.push(nextUrl);
     } catch (err) {
       if (err instanceof ApiError) {
-        setErrorMessage(err.message || "Invalid credentials provided.");
+        setErrorMessage(
+          err.status === 404
+            ? "Backend API (:8000) not detected. Use 'Explore with Demo Session' to preview the frontend."
+            : err.message || "Invalid credentials provided."
+        );
         if (err.fieldErrors) {
           setFieldErrors(err.fieldErrors);
         }
@@ -114,6 +131,15 @@ function LoginForm() {
           style={{ width: "100%", marginTop: "0.5rem" }}
         >
           Sign In
+        </Button>
+
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={handleDemoSignIn}
+          style={{ width: "100%", marginTop: "0.5rem" }}
+        >
+          Explore with Demo Session
         </Button>
       </form>
 
