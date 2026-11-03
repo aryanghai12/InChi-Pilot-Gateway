@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Status** | Working baseline for team and BNCS review. Business rules marked [OPEN] await BNCS. The technology stack and technical decisions are recorded in [`ARCHITECTURE.md`](ARCHITECTURE.md) (§9 status, §10 build-manual deviations awaiting BNCS and mentor approval). The embedding model (D-11) and any LLM (D-20) are TBD. |
-| **Prepared** | 28 October 2026 (revised Week 1) |
+| **Status** | Working baseline for team and BNCS review. Business rules marked [OPEN] await BNCS. The technology stack and technical decisions are recorded in [`ARCHITECTURE.md`](ARCHITECTURE.md) (§9 status, §10 build-manual deviations awaiting BNCS and mentor approval). The embedding model (D-11) and any LLM (D-20) are TBD. Proposed revised timeline (26 Oct–18 Dec 2026) is pending formal BNCS and university coordinator approval (D-19). |
+| **Prepared** | 28 October 2026 (revised Week 1). Scope and Build Manual alignment revision: 3 November 2026. |
 | **Maintained by** | Aryan Ghai (coordination and change record). Requirement content: Adrika T Kumar. Material changes need BNCS approval. |
 | **Applies to** | Every contributor and every AI coding agent working in this repository. See [`../AGENTS.md`](../AGENTS.md). |
 
@@ -31,7 +31,7 @@ Every statement is one of four kinds. Where it matters, it is tagged:
 
 **Not available:** `InChi_Internship_Role_Assignment_Brief.pdf` is not in the repository. The original role assignment was therefore checked only through the build manual's role table, which shows the pre-swap assignments.
 
-**Repository state [REPO]:** as of 28 Oct 2026 the repository holds only documentation. There is no application code, build configuration, test suite or CI pipeline yet. Everything below describes **planned** functionality.
+**Repository state [REPO]:** as of 3 Nov 2026 (Week 3 under the original Build Manual schedule; Week 2 under the proposed revised timeline) the repository holds documentation only. No application code, build configuration, test suite or CI pipeline exists yet. Everything below describes **planned** functionality.
 
 ---
 
@@ -87,6 +87,33 @@ It is a **supervised, demonstrable, non-production pilot**. It is not a public m
 - Readiness criteria, eligibility rules, weights, decision labels and opportunity stages are **not yet approved** [OPEN D-03 to D-07]. Until approval, implementations must use clearly labelled placeholder configuration.
 - The app uses synthetic data only. Results on synthetic data do not show performance on real data.
 - The internship does not provide penetration-test certification or production security assurance [SRC].
+
+### Build risks and required guardrails [SRC, build manual §8]
+
+The Build Manual identifies 13 build risks and mandates specific guardrails for each. This specification embeds these controls directly across its modules, definitions of done, and governance rules:
+
+| # | Build risk [SRC §8] | Required guardrail [SRC §8] | MVP control & evidence mapping |
+|---|---|---|---|
+| 1 | **Scope creep** | Do not expand into a public platform, supplier self-service, payments, mobile applications or unapproved integrations. Substitute scope rather than stacking it. | Explicitly out-of-scope list (§2); [DEFERRABLE] tags; Phase 2 backlog (§10); PR review rule (AGENTS.md §B rule 2). |
+| 2 | **Late integration** | Connect workstreams progressively and demonstrate the integrated product every Friday. Do not wait until Week 8. | Weekly gates (§13); mandatory Friday integrated demonstrations with linked evidence; shared integration ownership (AGENTS.md §C). |
+| 3 | **Unclear commercial rules** | Adrika documents proposed rules; BNCS approves material readiness, eligibility, scoring and opportunity policy before implementation. | [OPEN] decision tags (D-03 to D-07 in §12); `UNAPPROVED` configuration placeholders in code; no invented business logic (AGENTS.md §B rule 9). |
+| 4 | **Unsupported AI recommendations** | Use approved fields, explanations, warnings, evaluation and human disposition. Maintain a deterministic fallback. | M6 matching pipeline (§7); template explanations (M6-AC3); synthetic evaluation pack (M11-AC8); rules-only fallback mode (M6-AC5). |
+| 5 | **Misleading match scores** | Do not present similarity or weighted scores as certainty, legal approval or guaranteed commercial fit. | Clear UI disclosure (M6-AC3); limitations stated openly (§2); bounded semantic weight; scores labelled as decision support only. |
+| 6 | **Weak data quality** | Validate required fields, controlled values, record status and missing information before matching. | Server-side validation gates on supplier (M2-AC2), product (M3-AC2), readiness (M4-AC1), and requirement (M5-AC2). |
+| 7 | **Access-control failure** | Design and test least privilege, object-level checks, denied actions, revocation and role-sensitive workflows early. | M1 authentication and RBAC; deny-by-default policy (`accounts/policy.py`); object-level checks; negative permission tests (M11-AC9). |
+| 8 | **Audit gaps** | Design audit events with the core workflows; do not bolt them on after feature completion. | M10 append-only audit events emitted within the same atomic transaction as every material create, edit, status change, review and disposition. |
+| 9 | **Bilingual-scope drift** | Support approved structured Mandarin-ready fields only. Do not promise a full bilingual product within the internship. | English-first UI; structured Mandarin-ready fields with translation status (M3-AC4, D-14); full bilingual UI deferred (§2, DS-08). |
+| 10 | **Late QA** | Acceptance criteria and tests start in Week 1 and grow with every integrated feature. | Traceable test strategy from Week 1 (Harish); test coverage required per PR (AGENTS.md §B rule 6); M11-AC2 traceability matrix. |
+| 11 | **Weak documentation** | Update handover artefacts continuously; do not reconstruct them in Week 8. | Mandatory continuous documentation per workstream (§7, M11); five explicit document types updated weekly; six handover packs (§10). |
+| 12 | **Blocked work** | Escalate after 24 hours with the dependency owner and decision required clearly named. | 24-hour blocker escalation rule in team channel tagging Aryan and dependency owner (AGENTS.md §B rule 14); stand-up reporting. |
+| 13 | **Prototype treated as production** | Use synthetic data, non-production environments and explicit limitation statements. | Strictly synthetic seed data (≥15 suppliers, ≥30 products, ≥10 requirements); local Compose reference environment; honest limitations register (§2, M11-AC5). |
+
+**Governance rules explicitly enforced [SRC §6, §8, §11]:**
+- **Integrated product demonstration every Friday:** 90-minute Sprint Review and live demonstration against the stated weekly exit focus.
+- **Escalation of blockers after 24 hours:** Blockers exceeding 24 hours must be raised in the team channel tagging Aryan Ghai and the dependency owner.
+- **Correct escalation of material decisions:** Interns do not decide product policy, scope changes, stack changes, security risk or release alone; business matters escalate to BNCS, technical stack deviations to mentor.
+- **Synthetic data and non-production limitations:** No real personal, customer or confidential third-party data; non-production status stated on all screens and documentation.
+- **Continuous documentation and QA:** Handover packs and test traceability are maintained every sprint, not reconstructed at the end.
 
 ### If delivery gets tight [REC]
 
@@ -336,16 +363,49 @@ Module IDs (`M1` to `M11`) and acceptance-criterion IDs (`M2-AC3`) are stable. U
 
 | | |
 |---|---|
-| **What** | Threat model, data classification, access-control matrix, secrets handling, dependency and configuration checks, negative tests, remediation register (Ajendra). Test strategy, traceability, automated regression, UAT, QA report (Harish). Containerised local setup, synthetic seed data (≥15 suppliers, ≥30 products, ≥10 requirements), demo runbook, handover packs (all owners, coordinated by Aryan). |
-| **Why** | Component 4 [SRC]. Seed volumes come from the internship brief's success metrics [SRC]. |
+| **What** | Threat model, data classification, access-control matrix, secrets handling, dependency and configuration checks, negative tests, remediation register (Ajendra). Test strategy, traceability, automated regression, UAT, QA report (Harish). Containerised local setup, synthetic seed data (≥15 suppliers, ≥30 products, ≥10 requirements), demo runbook, six complete handover packs (all owners, coordinated by Aryan). |
+| **Why** | Component 4 [SRC]. Seed volumes come from the internship brief's success metrics [SRC]. Handover packs and demo script come from Build Manual §10 [SRC]. |
+| **Owner** | Ajendra (security pack), Harish (QA and UAT pack), Alok (AI evaluation pack), Adrika (product and UX pack), Abhishek (backend technical handover), Priyanka (frontend technical handover), Vishal (data pack), Aryan (governance pack, demo runbook and handover index). |
+| **Depends on** | M1 to M10 complete; all workstream documentation current. |
 
 | ID | Acceptance criterion |
 |---|---|
-| M11-AC1 | No critical unresolved access-control defect at final acceptance. |
-| M11-AC2 | Each M1 to M10 acceptance criterion maps to at least one test or a documented manual check, with recorded results. |
-| M11-AC3 | A new contributor can start the full stack locally and load seed data from the README instructions alone. |
-| M11-AC4 | The demo runs end-to-end on seed data, including the denied-access and fallback cases. |
-| M11-AC5 | The known-limitations register and the Phase 2 backlog exist and are reviewed by BNCS. |
+| M11-AC1 | No Critical unresolved defect of any type exists at final acceptance (Build Manual §9). In addition, per Gate 4 criteria, no Critical unresolved access-control defect remains. |
+| M11-AC2 | Each M1 to M10 acceptance criterion maps to at least one test or a documented manual check, with recorded results in the QA traceability matrix. |
+| M11-AC3 | A new contributor can start the full stack locally and load synthetic seed data (≥15 suppliers, ≥30 products, ≥10 requirements) from the README instructions alone. |
+| M11-AC4 | The live pilot demonstration runs end-to-end on synthetic seed data following the 8-step script (§3 / Build Manual §10), including one denied-permission case and one controlled service-failure or fallback case. |
+| M11-AC5 | The known-limitations register and the Phase 2 backlog exist, are documented truthfully and are reviewed by BNCS. |
+| M11-AC6 | The **Technical Handover pack** is delivered and verified: git repository with all feature branches merged to `main`, tagged final build (`v0.1-pilot`), README setup guide, architecture diagram, service boundaries, environment variable reference (`.env.example`), local and staging run guides, OpenAPI specification (`docs/api/openapi.yaml`), integration contracts, authentication/RBAC notes, database schema, migrations, seed data, data dictionary, verified backup/recovery guide, known limitations, unresolved defects, carry-forward backlog and dependency inventory. |
+| M11-AC7 | The **Product and UX Pack** is delivered and verified: approved user journeys, workflow states, field dictionary with validation rules, usability and accessibility audit findings, user guidance, known UX limitations, Phase 2 UX backlog, and weekly review logs of perceived speed and obvious bottlenecks. |
+| M11-AC8 | The **AI Evaluation Pack** is delivered and verified: rules, weights, prompt/model configuration with versions, evaluation dataset, expected outcomes, and test evidence covering expected matches, false matches, missed matches, missing data, manipulated input, service failure and deterministic rules-only fallback, plus documented failure modes and limitations. |
+| M11-AC9 | The **Security Pack** is delivered and verified: threat model covering the required attack vectors, data-flow view, data classification, access-control matrix, dependency scan (`pip-audit`, `npm audit`), configuration review, application test evidence, remediation register, secure staging checklist (status marked pending per D-16), and formal residual-risk statement. |
+| M11-AC10 | The **QA and UAT Pack** is delivered and verified: requirements-to-test traceability matrix, functional, integration, regression and end-to-end test results, defect status register with severity classifications and retest evidence, formal UAT records, final QA recommendation, and repeatable demonstration script. |
+| M11-AC11 | The **Programme Governance Pack** is delivered and verified: sprint backlog and milestone status, risk register, issue register, dependency register, decision register, API contract and integration issue register, weekly reports, evidence index, and Phase 2 backlog. |
+
+**Live pilot demonstration script [SRC, build manual §10].** The 8-step demo is the final acceptance demonstration. It runs stages 1 to 8 in order, plus one denied-permission case and one controlled service-failure or fallback case (already detailed in §3).
+
+**Handover packs [SRC, build manual §10].** Each pack is a mandatory deliverable. Aryan maintains the master handover index (`docs/governance/handover-index.md`) linking to every artefact:
+
+| Pack [SRC §10] | Required contents | Lead owner | Reviewer |
+|---|---|---|---|
+| **1. Technical Handover** | Repository with merged branches and tagged final build; setup instructions; architecture diagram, service boundaries, environment variables and local/staging run guide; API documentation, integration contracts and auth/RBAC notes; database schema, migrations, seed data, data dictionary and backup/recovery guide; known limitations, unresolved defects, carry-forward backlog and dependency inventory. | Abhishek (backend), Priyanka (frontend), Vishal (data) | Ajendra, Aryan |
+| **2. Product and UX Pack** | Approved user journeys and workflow states; field dictionary and validation rules; usability and accessibility findings; user guidance, known experience limitations and Phase 2 recommendations; weekly perceived speed and obvious bottleneck review records. | Adrika | Aryan, Priyanka |
+| **3. AI Evaluation Pack** | Rules, weights, prompt and model configuration with version information; evaluation dataset and expected outcomes; false-match, missed-match, missing-data, manipulated-input, service-failure and fallback evidence; failure modes, limitations and improvement recommendations. | Alok | Adrika, Harish, Ajendra |
+| **4. Security Pack** | Threat model and data-flow view; data classification and access-control matrix; dependency, configuration and approved application-test evidence; remediation register, secure staging checklist (status pending per D-16) and residual-risk statement. | Ajendra | Abhishek, Vishal, Aryan |
+| **5. QA and UAT Pack** | Requirements-to-test traceability; functional, integration, regression and end-to-end results; defect status, retest evidence and known limitations; UAT record, final QA recommendation and repeatable demonstration script. | Harish | Aryan, Adrika |
+| **6. Programme Governance Pack** | Backlog and milestone status; risk, issue, dependency and decision registers; API contract and integration issue register; weekly reports, evidence index and Phase 2 backlog. | Aryan | All members |
+
+**Documentation required per workstream [SRC, build manual §7].** Handover cannot be reconstructed in Week 8. Every workstream must continuously update and maintain:
+1. **README, setup or operating note:** Precise setup and operational commands for the workstream's components.
+2. **Architecture, workflow, data or design note:** Structural explanation of the models, APIs, flows or rules implemented.
+3. **Known limitations, unresolved issues and carry-forward items:** Transparent logging of defects, edge cases and deferred capabilities.
+4. **Test, evaluation, review or security evidence:** Verifiable test runs, scan outputs, review logs or evaluation metrics.
+5. **Handover notes:** Notes sufficient for an incoming engineer to understand, run, maintain and extend the work.
+
+**Performance, backup and staging verification [SRC §7, §9, §10]:**
+- **Perceived speed and bottleneck checks:** Verified during weekly sprint review demonstrations to ensure interactive responsiveness (Build Manual §7).
+- **Backup and recovery:** PostgreSQL backup and restore procedure (`pg_dump -Fc` / `pg_restore`) documented and demonstrated on seed data by Vishal in Week 6 (Build Manual §5, §10).
+- **Staging and secure staging checklist:** Hosted staging is optional and pending BNCS host provision (D-16). If provided, Ajendra executes the secure staging checklist before staging is used. The containerised Docker Compose stack remains the authoritative reference demo and UAT environment.
 
 ---
 
@@ -481,7 +541,8 @@ Ready requirement (version N) + active CriteriaVersion
 | **Audit** | Designed with each workflow (M10). Append-only. No secrets in logs. |
 | **Security** | Least privilege. Object-level authorisation on every record endpoint. Negative tests from Week 2. Secrets only in environment variables or approved secret storage, with `.env` files git-ignored. Dependency and configuration checks with tracked remediation. The threat model covers broken access control, insecure direct object access, session abuse, unsafe input, prompt or input manipulation, data leakage and insecure configuration [SRC]. |
 | **Data** | Synthetic or explicitly approved data only. No real personal data, identity documents or production credentials [SRC]. |
-| **Accessibility** | Keyboard use, labels, contrast, focus, readable responsive layouts [SRC]. |
+| **Accessibility & Performance** | Keyboard use, labels, contrast, focus, readable responsive layouts [SRC]. Check perceived speed and obvious bottlenecks during weekly demonstrations [SRC, build manual §7]. |
+| **Backup & Recovery** | Database backup and restore procedures (`pg_dump -Fc` / `pg_restore`) documented and verified with synthetic data [SRC, build manual §5, §10]. |
 | **Testing** | Unit tests next to the code, owned by the component owner. Integration and API tests for every endpoint, including denied paths. A small end-to-end suite for the demo journey. Regression runs before each Friday review. |
 | **Development AI** | Contributors stay accountable for AI-generated output. Do not paste confidential material into public AI services [SRC]. |
 
@@ -575,7 +636,7 @@ Not commitments. Each needs BNCS approval, an owner and an effort trade-off [SRC
 | ID | Affected documents | What each says | Practical impact | Recommendation |
 |---|---|---|---|---|
 | **DS-01** | Build manual §4 to §6 vs revised ownership | The manual makes **Ajendra** the Technical Project Coordinator and **Aryan** the Cybersecurity and DevSecOps Engineer, and names them that way in every weekly duty, the meeting rules and the review process. The revised ownership (effective 26 Oct 2026) **swaps them**. All other roles are unchanged. | Anyone reading the manual's weekly tables gets the wrong owner for coordination and security. | **Resolved by the revised document.** Read the manual's "Ajendra" coordination duties as Aryan's and its "Aryan" security duties as Ajendra's. AGENTS.md uses the revised roles only. Keep the manual unedited as a historical source. |
-| **DS-02** | Build manual §5, blueprint §20 vs revised timeline | Manual and blueprint: 19 Oct to 11 Dec 2026, feature freeze after 27 Nov. Revised: 26 Oct to 18 Dec 2026, Week 6 (feature freeze) ends 4 Dec. | Gate dates move by one week. The blueprint roadmap is out of date. | Use the revised dates (§13). BNCS should confirm that final acceptance is 18 Dec. Adrika should update the blueprint roadmap. |
+| **DS-02** | Build manual §5, blueprint §20 vs revised timeline | Manual and blueprint: 19 Oct to 11 Dec 2026 (feature freeze after 27 Nov). Revised timeline document: 26 Oct to 18 Dec 2026 (feature freeze ends 4 Dec). | Gate dates shift by one week. As of 3 Nov 2026, the project is in Week 3 under the original manual calendar, or Week 2 under the revised proposal. | The revised timeline is proposed following the programme restart, but remains **unapproved** until confirmed by BNCS and the university coordinator under D-19. Plan against the proposed dates while maintaining strict readiness for the manual gates. |
 | **DS-03** | Build manual §5 vs revised timeline | Manual: Week 3 is registry and profile quality, Week 4 is readiness plus buyer demand. Revised: Week 3 is registry plus China-readiness, Week 4 is buyer demand plus the rule-approval gate. | Readiness work starts a week earlier relative to the restart. | Follow the revised sequence. |
 | **DS-04** | Internship brief vs build manual and revised ownership | The brief has a "Full Stack Integration Engineer" and a "Backend and Data Engineer". The manual and the revised ownership have "Application Backend and Access-Control" and "Data and Platform Services", and state there is no separate full-stack integrator. | Integration ownership is shared, not held by one person. | Follow the revised ownership. Integration responsibilities are set out in AGENTS.md. |
 | **DS-05** | Blueprint §4 vs build manual §2 | The blueprint proposes a fourth role, "Read-only Auditor". | Extra RBAC scope. | Exclude unless BNCS requests it (§5). |
@@ -614,7 +675,7 @@ These are business-owned. Until one is decided, implement only reversible placeh
 | D-13 | Meaning of buyer "verification status" | BNCS | Week 4 | Leave it out until defined. The **data shape** is decided: buyer details are fields on the requirement, with no buyer accounts. |
 | D-14 | Which Mandarin-ready fields | BNCS | Week 3 | Supplier and product name and short description only. |
 | D-15 | Does a Reviewer approve a requirement before matching? | BNCS | Week 4 | No. The completeness gate is enough for the pilot. |
-| D-19 | Confirm revised programme dates and final acceptance date | BNCS + university coordinator | Week 1 | 18 Dec 2026, per the revised timeline. |
+| D-19 | Confirm revised programme dates and final acceptance date | BNCS Programme Sponsor + University Coordinator | Week 1 / Urgent | **Open — awaiting formal approval.** Proposed: 26 Oct to 18 Dec 2026 (final acceptance 18 Dec per revised timeline). Until approved, track both the original (19 Oct–11 Dec) and proposed timelines. |
 
 ### Technical decisions — recorded 28 Oct 2026
 
@@ -633,19 +694,81 @@ Full reasoning and the authoritative status of each decision are in [ARCHITECTUR
 
 ---
 
-## 13. Timeline and acceptance gates (revised)
+## 13. Timeline and acceptance gates
 
-Week dates are from the revised timeline [SRC]. Gate dates come from applying the manual's gate structure to the revised weeks [REC; confirm under D-19].
+The Build Manual (§5) established the official programme timeline as **19 October to 11 December 2026** (feature freeze 27 Nov). Following the programme restart, a revised timeline of **26 October to 18 December 2026** was proposed in `docs/InChi_Pilot_Build Sequence Timeline (revised).pdf`.
 
-| Week | Dates (2026) | Product target | Gate (Friday) |
+> [!IMPORTANT]
+> **Approval status:** The revised timeline is **proposed and pending formal approval** by the BNCS Programme Sponsor and the University Coordinator (tracked under [OPEN D-19](#12-open-decisions)). As of 3 November 2026, the build is in **Week 3** under the original Build Manual schedule, and **Week 2** under the proposed revised timeline.
+
+### Timeline comparison
+
+| Week | Original Build Manual dates [SRC §5] | Proposed revised dates [SRC revised] | Product target (revised sequence) | Acceptance gate (Friday) |
+|---|---|---|---|---|
+| 1 | 19–23 Oct 2026 | 26–30 Oct 2026 | Definition, architecture and delivery skeleton | — |
+| 2 | 26–30 Oct 2026 | 2–6 Nov 2026 | Authenticated supplier-product vertical slice | **Gate 1** (30 Oct manual / 6 Nov proposed): Authenticated vertical slice |
+| 3 | 2–6 Nov 2026 | 9–13 Nov 2026 | Supplier registry and China-readiness workflow | — |
+| 4 | 9–13 Nov 2026 | 16–20 Nov 2026 | Buyer demand and rule-approval gate | **Gate 2** (13 Nov manual / 20 Nov proposed): Workflow and rule approval |
+| 5 | 16–20 Nov 2026 | 23–27 Nov 2026 | Explainable AI-assisted matching | — |
+| 6 | 23–27 Nov 2026 | 30 Nov–4 Dec 2026 | Opportunity, dashboard and **feature freeze** | **Gate 3** (27 Nov manual / 4 Dec proposed): Integrated MVP & feature freeze |
+| 7 | 30 Nov–4 Dec 2026 | 7–11 Dec 2026 | Hardening, security validation and UAT | **Gate 4** (4 Dec manual / 11 Dec proposed): UAT, QA and security readiness |
+| 8 | 7–11 Dec 2026 | 14–18 Dec 2026 | Demonstration, handover and Phase 2 backlog | **Gate 5** (11 Dec manual / 18 Dec proposed): Demonstration and handover |
+
+**Feature freeze rule [SRC, build manual §5, §11 rule 10]:** Feature freeze applies after the Week 6 review. Weeks 7 and 8 are reserved for validation, fixes, demonstration and handover; new features require written BNCS approval and removal of equal or greater effort.
+
+**Weekly acceptance rule [SRC, build manual §5]:**
+> "Work is accepted only when the agreed output is demonstrated, linked to evidence and reviewed against the stated exit focus."
+Work is reviewed at the Friday Sprint Review against the Definition of Done (§14). The designated reviewer accepts, rejects, or explicitly carries forward outputs with an updated date.
+
+### Acceptance gates and decision focus [SRC, build manual §9]
+
+| Gate | Timing | Decision focus | Required acceptance evidence [SRC §9] |
 |---|---|---|---|
-| 1 | 26–30 Oct | Definition, architecture and delivery skeleton | — |
-| 2 | 2–6 Nov | Authenticated supplier-product vertical slice | **Gate 1**, 6 Nov: login, supplier and product create, persist, retrieve, baseline audit event |
-| 3 | 9–13 Nov | Supplier registry and China-readiness workflow | — |
-| 4 | 16–20 Nov | Buyer demand and rule-approval gate | **Gate 2**, 20 Nov: fields, rules, criteria and interfaces approved before AI integration |
-| 5 | 23–27 Nov | Explainable AI-assisted matching | — |
-| 6 | 30 Nov–4 Dec | Opportunity, dashboard and **feature freeze** | **Gate 3**, 4 Dec: full journey works through audit; scope frozen |
-| 7 | 7–11 Dec | Hardening, security validation and UAT | **Gate 4**, 11 Dec: critical issues closed; UAT, regression and residual-risk evidence |
-| 8 | 14–18 Dec | Demonstration, handover and Phase 2 backlog | **Gate 5**, 18 Dec: BNCS can run the demo, review evidence and continue the build |
+| **Gate 1** | End Week 2 | **Authenticated vertical slice** | An authorised user signs in, creates and retrieves a valid supplier and product record end-to-end; persistence, field validation, and a baseline audit event demonstrated. |
+| **Gate 2** | End Week 4 | **Workflow and rule approval** | Readiness assessment and buyer-demand workflows functional; data fields, interfaces, eligibility rules, and scoring criteria formally reviewed and approved before AI integration. |
+| **Gate 3** | End Week 6 | **Integrated MVP and feature freeze** | Full priority user journey (stages 1 to 8) operates end-to-end through opportunity tracking, dashboard, and audit history; open defects and limitations visible; feature baseline formally frozen. |
+| **Gate 4** | End Week 7 | **UAT, QA and security readiness** | Priority defects closed or have approved workarounds; **no critical unresolved access-control defect**; full UAT results, regression evidence, and residual-risk statement documented. |
+| **Gate 5** | End Week 8 | **Demonstration and handover** | Stable repeatable live pilot demonstration, repeatable local containerised setup, all six complete handover packs (§10, M11), known limitations register, and Phase 2 backlog reviewed by BNCS. |
 
-After the Week 6 review, new features need written BNCS approval and removal of equal or greater effort [SRC].
+---
+
+## 14. Definition of Done for any deliverable [SRC, build manual §9]
+
+Every deliverable across all workstreams and modules must satisfy these seven universal criteria before it can be accepted as complete:
+
+1. **User story and decision linkage:** The output is explicitly linked to an approved user story, module requirement (`M#-AC#`) or tracked decision (`D-xx` / `DS-xx`).
+2. **Acceptance criteria satisfied:** Acceptance criteria are fully satisfied and verifiable evidence is deposited in the agreed repository location.
+3. **Peer review completed:** Relevant peer review is complete and all review comments are resolved or recorded. Critical artefacts are never self-approved.
+4. **Documentation and tests updated:** Affected automated tests, documentation, interface contracts, and database migration notes are updated with the change.
+5. **Cross-functional review:** Security, data, AI, and UX impacts are reviewed where applicable by the designated workstream owners.
+6. **Transparent limitations:** Known limitations, unresolved defects, edge cases, and residual risks are explicitly stated, not hidden.
+7. **Designated acceptance:** The designated reviewer has accepted the output or explicitly carried it forward with a recorded reason and revised target date.
+
+---
+
+## 15. Defect and risk severity [SRC, build manual §9]
+
+Every defect discovered during development, QA, security scanning or UAT must be classified according to the Build Manual's exact three-tier severity scheme:
+
+| Severity [SRC §9] | Definition and required action [SRC §9] |
+|---|---|
+| **Critical** | Exposes unauthorised data or action, risks data loss, breaks the priority journey or makes the pilot unsafe to demonstrate. **Must be closed before final acceptance.** At Gate 4, no critical unresolved access-control defect may remain. |
+| **High** | Blocks a major MVP function or produces materially incorrect decisions. **Must be closed or have an approved, documented workaround before final review.** |
+| **Medium or Low** | Does not block the priority journey but must remain visible in the defect or limitation register with a recommended next action. |
+
+---
+
+## 16. Programme execution rules [SRC, build manual §11]
+
+These ten mandatory execution rules govern all workstream activities and team collaboration:
+
+1. **One team, one product:** Workstreams must converge into the same demonstrable InChi pilot (§1, §3).
+2. **Evidence over activity:** Working artefacts, decisions and test evidence matter more than status statements (§13, §14).
+3. **Integrate continuously:** Weekly integration is mandatory and shared across roles (§3, §13; AGENTS.md §C).
+4. **Protect the MVP:** New ideas do not enter the build without approved trade-off and ownership (§2, §10; AGENTS.md §B rule 2).
+5. **AI assists; humans decide:** No autonomous supplier, commercial, legal or regulatory approval (§1, §7, M6, M7).
+6. **Security and privacy are designed in:** Access control, secrets handling and negative testing begin early (§8, M1, M11).
+7. **QA starts with the requirement:** Acceptance criteria and traceability grow with the build from Week 1 (§4, §13, M11).
+8. **Document as you go:** Handover cannot be reconstructed in Week 8 (§4 M11, §14; Build Manual §7).
+9. **Escalate authority correctly:** Interns do not approve material policy, scope, architecture, security-risk or release decisions (§5, §12; AGENTS.md §B rule 12).
+10. **Feature freeze follows Week 6:** Weeks 7 and 8 are reserved for validation, fixes, demonstration and handover (§13).

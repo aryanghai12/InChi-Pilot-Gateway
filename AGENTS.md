@@ -14,7 +14,7 @@ This is the shared instruction manual for every team member and every AI coding 
 
 **What InChi is.** InChi Pilot Gateway v0.1 is a private internal web application for authorised users at BNCS Biz N Consumer Solutions Pte Ltd. It helps them organise supplier and product information, assess supplier readiness for China-related market development, capture buyer requirements, review explainable AI-assisted supplier matches, and track the resulting commercial opportunities.
 
-**What it is not.** It is not a public marketplace, a public website, a production system, or a legal, regulatory or compliance tool. It is a **supervised, non-production pilot**, built by eight interns over eight weeks (26 Oct to 18 Dec 2026, per the revised timeline).
+**What it is not.** It is not a public marketplace, a public website, a production system, or a legal, regulatory or compliance tool. It is a **supervised, non-production pilot**, built by eight interns over eight weeks (26 Oct to 18 Dec 2026, per the proposed revised timeline, pending D-19 approval; original manual calendar: 19 Oct to 11 Dec 2026).
 
 **End-to-end workflow (the priority journey):**
 
