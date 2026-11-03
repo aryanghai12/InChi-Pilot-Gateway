@@ -31,10 +31,3 @@ media/
 *.swp
 .DS_Store
 Thumbs.db
-
-# Backend-only handover, endpoint reference, and test files
-/apps/accounts/tests/
-/BACKEND_HANDOVER_AND_PRESENTATION.md
-/ENDPOINT_DATA_AND_BEHAVIOR.md
-/ENDPOINT_DATA_AND_BEHAVIOR.pdf
-/openapi-schema.yaml
