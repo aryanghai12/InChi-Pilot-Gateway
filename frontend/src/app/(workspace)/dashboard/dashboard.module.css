@@ -16,18 +16,16 @@
   background-color: #FFFFFF;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: 2.5rem 2.5rem 2.75rem;
-  overflow: hidden;
+  padding: 2.25rem 2.5rem;
   box-shadow: var(--shadow-sm);
   display: flex;
   align-items: center;
-  min-height: 290px;
 }
 
 .heroContent {
   position: relative;
   z-index: 2;
-  max-width: 480px;
+  max-width: 680px;
 }
 
 .heroTag {
@@ -63,7 +61,7 @@
   color: var(--color-text-muted);
   line-height: 1.55;
   margin: 0.85rem 0 1.5rem;
-  max-width: 400px;
+  max-width: 540px;
 }
 
 .heroCta {
@@ -86,16 +84,6 @@
   transform: translateY(-1px);
   box-shadow: 0 6px 16px rgba(30, 58, 47, 0.25);
   color: #FFFFFF;
-}
-
-.heroArtwork {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  top: 0;
-  width: 62%;
-  pointer-events: none;
-  z-index: 1;
 }
 
 /* ==========================================================================
@@ -173,7 +161,7 @@
 
 /* ==========================================================================
    3. MIDDLE TWO-COLUMN GRID
-   ========================================================================== */
+   ========================================================================= */
 .middleGrid {
   display: grid;
   grid-template-columns: 1fr 1.15fr;
@@ -556,4 +544,3 @@
     align-items: flex-start;
   }
 }
-

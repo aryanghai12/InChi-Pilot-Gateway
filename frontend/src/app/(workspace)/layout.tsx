@@ -12,10 +12,14 @@ import { AlertBanner } from "@/components/feedback/AlertBanner";
 
 const FALLBACK_DEMO_USER: CurrentUser = {
   id: "demo-user-1",
-  username: "priyanka.singh",
   email: "priyanka@bncs.local",
+  first_name: "Priyanka",
+  last_name: "Singh",
   role: "commercial_analyst",
+  role_display: "Commercial Analyst",
   is_active: true,
+  is_verified: true,
+  is_staff: false,
 };
 
 export default function WorkspaceLayout({
@@ -54,8 +58,8 @@ export default function WorkspaceLayout({
           <div style={{ padding: "0.75rem 2.25rem 0", maxWidth: 1440, width: "100%", margin: "0 auto" }}>
             <AlertBanner
               type="info"
-              title="Frontend Demo Mode"
-              message="Backend API (Django :8000) is not connected yet. Rendering authenticated workspace with synthetic session for Priyanka Singh (commercial_analyst)."
+              title="Frontend Standalone Mode"
+              message="Django backend (:8000) not connected. Workspace previewing with session for Priyanka Singh (commercial_analyst)."
             />
           </div>
         )}

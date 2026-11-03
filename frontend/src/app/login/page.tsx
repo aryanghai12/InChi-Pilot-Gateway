@@ -18,13 +18,13 @@ function LoginForm() {
   const searchParams = useSearchParams();
   const nextUrl = searchParams.get("next") || "/dashboard";
 
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
 
-  // Bootstrap CSRF cookie on initial page load (ARCHITECTURE.md §5, §7)
+  // Bootstrap CSRF cookie on initial page load (ENDPOINT_DATA_AND_BEHAVIOR §2)
   useEffect(() => {
     ensureCsrfToken();
   }, []);
@@ -32,10 +32,14 @@ function LoginForm() {
   const handleDemoSignIn = () => {
     queryClient.setQueryData(["currentUser"], {
       id: "demo-user-1",
-      username: "priyanka.singh",
       email: "priyanka@bncs.local",
+      first_name: "Priyanka",
+      last_name: "Singh",
       role: "commercial_analyst",
+      role_display: "Commercial Analyst",
       is_active: true,
+      is_verified: true,
+      is_staff: false,
     });
     router.push(nextUrl);
   };
@@ -47,9 +51,13 @@ function LoginForm() {
     setFieldErrors({});
 
     try {
+      // Backend expects lowercase normalized email & password (ENDPOINT_DATA_AND_BEHAVIOR §2)
       await apiFetch("/api/v1/auth/login/", {
         method: "POST",
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({
+          email: email.trim().toLowerCase(),
+          password,
+        }),
       });
 
       // Redirect to return url or dashboard
@@ -59,7 +67,7 @@ function LoginForm() {
         setErrorMessage(
           err.status === 404
             ? "Backend API (:8000) not detected. Use 'Explore with Demo Session' to preview the frontend."
-            : err.message || "Invalid credentials provided."
+            : err.message || "Invalid email or password."
         );
         if (err.fieldErrors) {
           setFieldErrors(err.fieldErrors);
@@ -89,19 +97,20 @@ function LoginForm() {
 
       <form onSubmit={handleSubmit} noValidate>
         <FormField
-          label="Username"
-          htmlFor="username"
+          label="Email Address"
+          htmlFor="email"
           required
-          errors={fieldErrors.username}
+          errors={fieldErrors.email}
         >
           <Input
-            id="username"
-            type="text"
-            autoComplete="username"
+            id="email"
+            type="email"
+            autoComplete="email"
+            placeholder="analyst@bncs.local"
             required
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            hasError={Boolean(fieldErrors.username)}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            hasError={Boolean(fieldErrors.email)}
             disabled={isLoading}
           />
         </FormField>
