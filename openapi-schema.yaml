@@ -1,0 +1,718 @@
+openapi: 3.0.3
+info:
+  title: InChi Pilot Gateway API
+  version: v0.1.0
+  description: Private internal API for BNCS InChi Pilot Gateway (Supplier & Demand
+    Matching)
+paths:
+  /api/v1/auth/csrf/:
+    get:
+      operationId: v1_auth_csrf_retrieve
+      description: Bootstraps the CSRF cookie so the frontend can send X-CSRFToken
+        headers on subsequent requests.
+      summary: Set CSRF Cookie
+      tags:
+      - v1
+      security:
+      - {}
+      responses:
+        '200':
+          description: CSRF cookie set successfully.
+  /api/v1/auth/login/:
+    post:
+      operationId: v1_auth_login_create
+      description: Authenticates the user using email and password, creates an active
+        session and rotates the CSRF token.
+      summary: Internal User Login
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+        '400':
+          description: Invalid credentials or inactive account.
+  /api/v1/auth/logout/:
+    post:
+      operationId: v1_auth_logout_create
+      description: Terminates the user's current session and flushes session data.
+      summary: User Logout
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: Logged out successfully.
+  /api/v1/auth/me/:
+    get:
+      operationId: v1_auth_me_retrieve
+      description: Returns the profile and role details of the currently signed-in
+        user.
+      summary: Current Authenticated User
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/auth/register/:
+    post:
+      operationId: v1_auth_register_create
+      description: Registers a new user record with role assignment and issues a verification
+        token.
+      summary: Internal User Registration
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/auth/users/:
+    get:
+      operationId: v1_auth_users_list
+      description: |-
+        Dedicated user management endpoints for Platform Administrators.
+        Allows listing all users, updating roles, and activating or deactivating accounts.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserList'
+          description: ''
+    post:
+      operationId: v1_auth_users_create
+      description: |-
+        Dedicated user management endpoints for Platform Administrators.
+        Allows listing all users, updating roles, and activating or deactivating accounts.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/auth/users/{id}/:
+    get:
+      operationId: v1_auth_users_retrieve
+      description: |-
+        Dedicated user management endpoints for Platform Administrators.
+        Allows listing all users, updating roles, and activating or deactivating accounts.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this User.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: v1_auth_users_update
+      description: |-
+        Dedicated user management endpoints for Platform Administrators.
+        Allows listing all users, updating roles, and activating or deactivating accounts.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this User.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserAdminUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserAdminUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserAdminUpdateRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserAdminUpdate'
+          description: ''
+    patch:
+      operationId: v1_auth_users_partial_update
+      description: |-
+        Dedicated user management endpoints for Platform Administrators.
+        Allows listing all users, updating roles, and activating or deactivating accounts.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this User.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserAdminUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserAdminUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserAdminUpdateRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserAdminUpdate'
+          description: ''
+    delete:
+      operationId: v1_auth_users_destroy
+      description: |-
+        Dedicated user management endpoints for Platform Administrators.
+        Allows listing all users, updating roles, and activating or deactivating accounts.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this User.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/auth/users/{id}/activate/:
+    post:
+      operationId: v1_auth_users_activate_create
+      description: Reactivates a previously deactivated user account.
+      summary: Activate User Account
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this User.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/auth/users/{id}/deactivate/:
+    post:
+      operationId: v1_auth_users_deactivate_create
+      description: Deactivates an internal user account immediately revoking access.
+        A user cannot deactivate themselves.
+      summary: Deactivate User Account
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this User.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/auth/verify/:
+    get:
+      operationId: v1_auth_verify_retrieve
+      description: Check whether a specific email account has already been verified.
+      summary: Check Verification Status
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: Returns verification status.
+    post:
+      operationId: v1_auth_verify_create
+      description: Validates the verification token for a registered account and marks
+        the account as verified.
+      summary: Verify Account Token
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyAccountRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifyAccountRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VerifyAccountRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: Account verified successfully.
+        '400':
+          description: Invalid or expired token.
+  /api/v1/auth/verify/status/:
+    get:
+      operationId: v1_auth_verify_status_retrieve
+      description: Check whether a specific email account has already been verified.
+      summary: Check Verification Status
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: Returns verification status.
+    post:
+      operationId: v1_auth_verify_status_create
+      description: Validates the verification token for a registered account and marks
+        the account as verified.
+      summary: Verify Account Token
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyAccountRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifyAccountRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VerifyAccountRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: Account verified successfully.
+        '400':
+          description: Invalid or expired token.
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      description: Serializer for authenticating existing internal users.
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - password
+    PaginatedUserList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+    PatchedUserAdminUpdateRequest:
+      type: object
+      description: Serializer for Platform Administrators to update user role or status.
+      properties:
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          description: |-
+            Primary internal application role.
+
+            * `platform_admin` - Platform Administrator
+            * `commercial_analyst` - Commercial Analyst
+            * `reviewer` - Reviewer / Approver
+        is_active:
+          type: boolean
+          description: Designates whether this user account is active.
+        is_verified:
+          type: boolean
+          description: Designates whether this internal user account has completed
+            verification.
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        version:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Optimistic concurrency tracking version.
+    RegisterRequest:
+      type: object
+      description: |-
+        Serializer for creating new internal users.
+        Generates a secure verification token for the verification workflow.
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          default: commercial_analyst
+      required:
+      - email
+      - password
+    RoleEnum:
+      enum:
+      - platform_admin
+      - commercial_analyst
+      - reviewer
+      type: string
+      description: |-
+        * `platform_admin` - Platform Administrator
+        * `commercial_analyst` - Commercial Analyst
+        * `reviewer` - Reviewer / Approver
+    User:
+      type: object
+      description: Public profile serializer for authenticated users and administration.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          description: |-
+            Primary internal application role.
+
+            * `platform_admin` - Platform Administrator
+            * `commercial_analyst` - Commercial Analyst
+            * `reviewer` - Reviewer / Approver
+        role_display:
+          type: string
+          readOnly: true
+        is_active:
+          type: boolean
+          description: Designates whether this user account is active.
+        is_verified:
+          type: boolean
+          description: Designates whether this internal user account has completed
+            verification.
+        is_staff:
+          type: boolean
+          readOnly: true
+          description: Designates whether the user can log into the Django admin site.
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+        last_login:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        version:
+          type: integer
+          readOnly: true
+          description: Optimistic concurrency tracking version.
+      required:
+      - date_joined
+      - email
+      - id
+      - is_staff
+      - last_login
+      - role_display
+      - version
+    UserAdminUpdate:
+      type: object
+      description: Serializer for Platform Administrators to update user role or status.
+      properties:
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          description: |-
+            Primary internal application role.
+
+            * `platform_admin` - Platform Administrator
+            * `commercial_analyst` - Commercial Analyst
+            * `reviewer` - Reviewer / Approver
+        is_active:
+          type: boolean
+          description: Designates whether this user account is active.
+        is_verified:
+          type: boolean
+          description: Designates whether this internal user account has completed
+            verification.
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        version:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Optimistic concurrency tracking version.
+    UserAdminUpdateRequest:
+      type: object
+      description: Serializer for Platform Administrators to update user role or status.
+      properties:
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          description: |-
+            Primary internal application role.
+
+            * `platform_admin` - Platform Administrator
+            * `commercial_analyst` - Commercial Analyst
+            * `reviewer` - Reviewer / Approver
+        is_active:
+          type: boolean
+          description: Designates whether this user account is active.
+        is_verified:
+          type: boolean
+          description: Designates whether this internal user account has completed
+            verification.
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        version:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Optimistic concurrency tracking version.
+    UserRequest:
+      type: object
+      description: Public profile serializer for authenticated users and administration.
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          description: |-
+            Primary internal application role.
+
+            * `platform_admin` - Platform Administrator
+            * `commercial_analyst` - Commercial Analyst
+            * `reviewer` - Reviewer / Approver
+        is_active:
+          type: boolean
+          description: Designates whether this user account is active.
+        is_verified:
+          type: boolean
+          description: Designates whether this internal user account has completed
+            verification.
+      required:
+      - email
+    VerifyAccountRequest:
+      type: object
+      description: Serializer to verify internal user accounts using a token.
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        token:
+          type: string
+          minLength: 1
+      required:
+      - email
+      - token
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
