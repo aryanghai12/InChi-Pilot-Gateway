@@ -1,0 +1,270 @@
+/* InChi Pilot Gateway — Silk & Jade Navigation Styles */
+
+.sidebar {
+  width: 250px;
+  background-color: var(--color-bg-app);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1rem 1rem;
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  position: relative;
+  overflow: hidden;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  padding: 0.25rem 0.5rem 1.75rem;
+}
+
+.mountainIcon {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
+.brandText {
+  display: flex;
+  flex-direction: column;
+}
+
+.brandTitle {
+  font-family: var(--font-family-serif);
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--color-text-main);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.brandSubtitle {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  letter-spacing: 0.04em;
+  margin-top: 0.125rem;
+}
+
+.navList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  position: relative;
+  z-index: 2;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: 12px;
+  color: var(--color-text-muted);
+  font-size: 0.84rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.18s ease;
+}
+
+.navIcon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  opacity: 0.75;
+  transition: opacity 0.15s ease;
+}
+
+.navLink:hover {
+  background-color: var(--color-bg-subtle);
+  color: var(--color-text-main);
+}
+
+.navLink:hover .navIcon {
+  opacity: 1;
+}
+
+.navLinkActive {
+  background-color: var(--color-bg-active-pill);
+  color: var(--color-primary);
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px rgba(30, 58, 47, 0.08);
+}
+
+.navLinkActive .navIcon {
+  color: var(--color-primary);
+  opacity: 1;
+}
+
+/* Bamboo decorative motif at the bottom of the sidebar */
+.bambooMotif {
+  position: absolute;
+  bottom: -10px;
+  left: -15px;
+  width: 140px;
+  height: 200px;
+  pointer-events: none;
+  opacity: 0.18;
+  z-index: 1;
+}
+
+/* Top Header */
+.header {
+  height: 72px;
+  background-color: var(--color-bg-app);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2.25rem;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.greetingSection {
+  display: flex;
+  flex-direction: column;
+}
+
+.greetingTitle {
+  font-family: var(--font-family-serif);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+  line-height: 1.2;
+}
+
+.greetingSubtitle {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.searchBox {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 290px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.875rem;
+  width: 15px;
+  height: 15px;
+  color: var(--color-text-subtle);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.45rem 1rem 0.45rem 2.25rem;
+  font-size: 0.8125rem;
+  background-color: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  color: var(--color-text-main);
+  outline: none;
+  transition: all 0.15s ease;
+  box-shadow: var(--shadow-subtle);
+}
+
+.searchInput::placeholder {
+  color: var(--color-text-subtle);
+}
+
+.searchInput:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(30, 58, 47, 0.08);
+}
+
+.bellButton {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: var(--shadow-subtle);
+}
+
+.bellButton:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-main);
+}
+
+.notificationDot {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #ef4444;
+  border: 1.5px solid var(--color-bg-surface);
+}
+
+.userProfileMenu {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-weight: 600;
+  font-size: 0.8125rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0.02em;
+  box-shadow: var(--shadow-sm);
+  cursor: pointer;
+}
+
+.logoutBtn {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.logoutBtn:hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-danger-text);
+  border-color: var(--color-danger-border);
+}
+
+@media (max-width: 900px) {
+  .searchBox {
+    display: none;
+  }
+}

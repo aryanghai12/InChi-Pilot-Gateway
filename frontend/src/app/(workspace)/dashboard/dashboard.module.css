@@ -1,0 +1,546 @@
+/* InChi Pilot Gateway — Dashboard Styles matching Design Inspiration */
+
+.dashboardContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 1360px;
+  margin: 0 auto;
+}
+
+/* ==========================================================================
+   1. HERO BANNER
+   ========================================================================== */
+.heroCard {
+  position: relative;
+  background-color: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 2.25rem 2.5rem;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+}
+
+.heroContent {
+  position: relative;
+  z-index: 2;
+  max-width: 680px;
+}
+
+.heroTag {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: 0.6rem;
+  display: block;
+}
+
+.heroTitle {
+  font-family: var(--font-family-serif);
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1.15;
+  color: var(--color-text-main);
+  letter-spacing: -0.015em;
+  margin-bottom: 0.25rem;
+}
+
+.heroTitleItalic {
+  display: block;
+  font-style: italic;
+  font-weight: 500;
+  color: #2D4C3E;
+  margin-top: 0.15rem;
+}
+
+.heroSubtitle {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  line-height: 1.55;
+  margin: 0.85rem 0 1.5rem;
+  max-width: 540px;
+}
+
+.heroCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background-color: var(--color-primary);
+  color: #FFFFFF;
+  padding: 0.65rem 1.35rem;
+  border-radius: var(--radius-full);
+  font-size: 0.84rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(30, 58, 47, 0.2);
+}
+
+.heroCta:hover {
+  background-color: var(--color-primary-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(30, 58, 47, 0.25);
+  color: #FFFFFF;
+}
+
+/* ==========================================================================
+   2. STATS ROW
+   ========================================================================== */
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+}
+
+.statCard {
+  background-color: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.4rem;
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  box-shadow: var(--shadow-subtle);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+
+.statIconWrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background-color: var(--color-bg-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.statBody {
+  display: flex;
+  flex-direction: column;
+}
+
+.statLabel {
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  margin-bottom: 0.2rem;
+}
+
+.statValues {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.statNumber {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-text-main);
+  line-height: 1.1;
+  font-family: var(--font-family-serif);
+}
+
+.statTrend {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-success-text);
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+/* ==========================================================================
+   3. MIDDLE TWO-COLUMN GRID
+   ========================================================================= */
+.middleGrid {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 1.25rem;
+}
+
+.cardWidget {
+  background-color: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.4rem 1.6rem;
+  box-shadow: var(--shadow-subtle);
+  display: flex;
+  flex-direction: column;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.cardTitle {
+  font-family: var(--font-family-serif);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.cardHeaderLink {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  transition: opacity 0.15s ease;
+}
+
+.cardHeaderLink:hover {
+  opacity: 0.8;
+}
+
+/* China Readiness Widget Content */
+.readinessContent {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  flex: 1;
+}
+
+.gaugeContainer {
+  position: relative;
+  width: 140px;
+  height: 140px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.gaugeSvg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.gaugeBgCircle {
+  fill: none;
+  stroke: var(--color-bg-subtle);
+  stroke-width: 10;
+}
+
+.gaugeProgressCircle {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 10;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s ease-in-out;
+}
+
+.gaugeTextContainer {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.gaugeScore {
+  font-family: var(--font-family-serif);
+  font-size: 1.9rem;
+  font-weight: 700;
+  color: var(--color-text-main);
+  line-height: 1;
+}
+
+.gaugeLabel {
+  font-size: 0.6875rem;
+  color: var(--color-text-muted);
+  font-weight: 500;
+  margin-top: 0.2rem;
+}
+
+.readinessChecklist {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  flex: 1;
+}
+
+.checkItem {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-main);
+}
+
+.checkIconCompleted {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background-color: var(--color-success-bg);
+  color: var(--color-success-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.checkIconPending {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+/* AI Matches Widget Content */
+.matchList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.matchItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-subtle);
+  background-color: #FAFAF8;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.matchItem:hover {
+  background-color: #FFFFFF;
+  border-color: var(--color-border);
+  box-shadow: var(--shadow-sm);
+  transform: translateX(2px);
+}
+
+.matchLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.matchThumb {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background-color: var(--color-bg-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.matchInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.matchName {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+}
+
+.matchMeta {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+}
+
+.matchRight {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.matchScoreContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  min-width: 90px;
+}
+
+.matchScoreText {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-text-main);
+}
+
+.matchBarBg {
+  width: 80px;
+  height: 5px;
+  background-color: var(--color-bg-subtle);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.matchBarFill {
+  height: 100%;
+  background-color: var(--color-success-bar);
+  border-radius: var(--radius-full);
+}
+
+.matchArrow {
+  width: 14px;
+  height: 14px;
+  color: var(--color-text-subtle);
+}
+
+/* ==========================================================================
+   4. TRADE JOURNEY STEPPER
+   ========================================================================== */
+.stepperCard {
+  background-color: #FFFFFF;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem 2rem;
+  box-shadow: var(--shadow-subtle);
+  display: flex;
+  align-items: center;
+  gap: 2.5rem;
+}
+
+.stepperHeader {
+  max-width: 200px;
+  flex-shrink: 0;
+}
+
+.stepperTitle {
+  font-family: var(--font-family-serif);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--color-text-main);
+  margin-bottom: 0.2rem;
+}
+
+.stepperDesc {
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}
+
+.stepperTrack {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex: 1;
+  position: relative;
+}
+
+.stepperLine {
+  position: absolute;
+  top: 17px;
+  left: 20px;
+  right: 20px;
+  height: 2px;
+  background-color: var(--color-border);
+  z-index: 1;
+}
+
+.stepNode {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  text-align: center;
+  cursor: pointer;
+}
+
+.stepCircleCompleted {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-subtle);
+}
+
+.stepCircleActive {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #142820;
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 4px rgba(30, 58, 47, 0.2);
+}
+
+.stepCirclePending {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background-color: #FFFFFF;
+  border: 1.5px solid var(--color-border);
+  color: var(--color-text-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stepLabel {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+  white-space: nowrap;
+}
+
+.stepLabelPending {
+  color: var(--color-text-subtle);
+}
+
+/* Responsive adjustments */
+@media (max-width: 1100px) {
+  .statsRow {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .middleGrid {
+    grid-template-columns: 1fr;
+  }
+  .stepperCard {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1.5rem;
+  }
+  .stepperHeader {
+    max-width: 100%;
+  }
+  .stepperTrack {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .statsRow {
+    grid-template-columns: 1fr;
+  }
+  .readinessContent {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
