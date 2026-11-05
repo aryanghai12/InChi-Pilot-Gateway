@@ -30,11 +30,7 @@ class RolePermission(BasePermission):
             return False
 
         action = getattr(view, "action", None)
-        if action == "partial_update":
-            action = "update"
-        elif action == "destroy":
-            action = "deactivate"
-        elif not action:
+        if not action:
             # Fall back to HTTP method mapping
             if hasattr(view, "kwargs") and "pk" in view.kwargs and request.method == "GET":
                 action = "retrieve"
@@ -46,11 +42,6 @@ class RolePermission(BasePermission):
     def has_object_permission(self, request, view, obj):
         resource = getattr(view, "policy_resource", None)
         action = getattr(view, "action", None)
-        if action == "partial_update":
-            action = "update"
-        elif action == "destroy":
-            action = "deactivate"
-
         rule_key = f"{resource}.{action}"
 
         rules = OBJECT_RULES.get(rule_key, {})

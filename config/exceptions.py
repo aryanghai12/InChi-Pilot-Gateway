@@ -1,7 +1,6 @@
 import uuid
 from rest_framework.views import exception_handler
 from rest_framework.exceptions import (
-    APIException,
     AuthenticationFailed,
     NotAuthenticated,
     PermissionDenied,
@@ -11,12 +10,6 @@ from rest_framework.exceptions import (
 )
 from rest_framework.response import Response
 from rest_framework import status
-
-
-class ConflictError(APIException):
-    status_code = status.HTTP_409_CONFLICT
-    default_detail = "This record has been modified by another process. Please refresh and try again."
-    default_code = "conflict"
 
 
 def custom_exception_handler(exc, context):
@@ -68,11 +61,6 @@ def custom_exception_handler(exc, context):
         error_code = "permission_denied"
         message = getattr(exc, "detail", "You do not have permission to perform this action.")
         response.status_code = status.HTTP_403_FORBIDDEN
-
-    elif isinstance(exc, ConflictError) or getattr(response, "status_code", None) == 409:
-        error_code = "conflict"
-        message = getattr(exc, "detail", "This record has been modified by another process. Please refresh and try again.")
-        response.status_code = status.HTTP_409_CONFLICT
 
     elif isinstance(exc, ValidationError):
         error_code = "validation_error"
