@@ -97,7 +97,7 @@ The Build Manual identifies 13 build risks and mandates specific guardrails for 
 | 1 | **Scope creep** | Do not expand into a public platform, supplier self-service, payments, mobile applications or unapproved integrations. Substitute scope rather than stacking it. | Explicitly out-of-scope list (§2); [DEFERRABLE] tags; Phase 2 backlog (§10); PR review rule (AGENTS.md §B rule 2). |
 | 2 | **Late integration** | Connect workstreams progressively and demonstrate the integrated product every Friday. Do not wait until Week 8. | Weekly gates (§13); mandatory Friday integrated demonstrations with linked evidence; shared integration ownership (AGENTS.md §C). |
 | 3 | **Unclear commercial rules** | Adrika documents proposed rules; BNCS approves material readiness, eligibility, scoring and opportunity policy before implementation. | [OPEN] decision tags (D-03 to D-07 in §12); `UNAPPROVED` configuration placeholders in code; no invented business logic (AGENTS.md §B rule 9). |
-| 4 | **Unsupported AI recommendations** | Use approved fields, explanations, warnings, evaluation and human disposition. Maintain a deterministic fallback. | M6 matching pipeline (§7); template explanations (M6-AC3); synthetic evaluation pack (M11-AC8); rules-only fallback mode (M6-AC5). |
+| 4 | **Unsupported AI recommendations** | Use approved fields, explanations, warnings, evaluation and human disposition. Fail explicitly on error. | M6 matching pipeline (§7); Python-based explanations (M6-AC3); synthetic evaluation pack (M11-AC8); explicit failure handling (M6-AC5). |
 | 5 | **Misleading match scores** | Do not present similarity or weighted scores as certainty, legal approval or guaranteed commercial fit. | Clear UI disclosure (M6-AC3); limitations stated openly (§2); bounded semantic weight; scores labelled as decision support only. |
 | 6 | **Weak data quality** | Validate required fields, controlled values, record status and missing information before matching. | Server-side validation gates on supplier (M2-AC2), product (M3-AC2), readiness (M4-AC1), and requirement (M5-AC2). |
 | 7 | **Access-control failure** | Design and test least privilege, object-level checks, denied actions, revocation and role-sensitive workflows early. | M1 authentication and RBAC; deny-by-default policy (`accounts/policy.py`); object-level checks; negative permission tests (M11-AC9). |
@@ -159,7 +159,7 @@ From the user journey document and build manual [SRC]. Owners come from the revi
 | 2 | Register supplier and product | Create supplier and product records with supporting evidence metadata | Validates fields, stores structured data, writes an audit event | Priyanka, Abhishek, Vishal | Adrika (fields, workflow), Ajendra (data protection), Harish (CRUD, permissions) | An authorised user creates, retrieves, edits and searches a valid record. |
 | 3 | Assess China readiness | Complete the assessment and resolve missing information | Applies approved rules, shows gaps, routes for review | Adrika, Priyanka, Abhishek | Vishal (evidence storage), Alok (rule design), Harish and Ajendra (quality, control cases) | The assessment produces a traceable status and blocks incomplete progression. |
 | 4 | Capture buyer requirement | Record demand, eligibility conditions and priorities | Validates and versions the requirement for matching | Adrika, Priyanka, Abhishek | Vishal (data contracts), Alok (match inputs), Harish (workflow boundaries) | The approved requirement is complete, versioned and ready for matching. |
-| 5 | Generate match | Run matching for an approved requirement | Mandatory filters, weighted scoring, bounded semantic comparison, ranked results, rule and model version, fallback, evaluation logging | Alok | Vishal (retrieval, storage), Abhishek (orchestration), Adrika, Ajendra, Harish (meaning, risk, quality) | Expected candidates rank correctly on test cases. Rules-only fallback stays available. |
+| 5 | Generate match | Run matching for an approved requirement | Mandatory filters, weighted scoring, bounded semantic comparison, ranked results, rule and model version, explicit failure on error, evaluation logging | Alok | Vishal (retrieval, storage), Abhishek (orchestration), Adrika, Ajendra, Harish (meaning, risk, quality) | Expected candidates rank correctly on test cases. Semantic matching is mandatory; failures fail explicitly. |
 | 6 | Review and decide | Compare candidates, inspect reasons, record a disposition | Shows explanations, warnings and missing data. Captures the human decision and reason. | Adrika, Priyanka, Abhishek | Alok (explanations), Vishal (stores inputs and decisions), Harish and Ajendra (misuse, denied access) | The user understands why candidates ranked and records a traceable decision. |
 | 7 | Manage opportunity | Convert an accepted match into an opportunity | Tracks stage, owner, next action, due date and history | Priyanka, Abhishek, Vishal | Adrika (states), Harish (transitions), Aryan (integration governance) | An accepted match becomes an opportunity and moves through approved states. |
 | 8 | Monitor and audit | Review dashboard status, unresolved items and audit trail | Aggregates metrics from stored records, preserves traceability | Vishal, Priyanka | Abhishek (secures queries), Harish (reconciles), Aryan (governance), Ajendra (security evidence) | Dashboard figures match source records. Audit shows who changed what and when. |
@@ -276,9 +276,9 @@ Module IDs (`M1` to `M11`) and acceptance-criterion IDs (`M2-AC3`) are stable. U
 |---|---|
 | **What** | Run matching for a ready requirement. The pipeline is in [§7](#7-matching-process). Results are ranked eligible candidates, plus a separate list of candidates excluded or lacking data, with reasons. |
 | **Why** | Stage 5 and Component 2 [SRC]. |
-| **Owner** | Alok (matching engine, rules, scoring, semantic signal, explanations, evaluation, fallback), Abhishek (orchestration API, failure handling), Vishal (candidate queries, storage of runs, results and versions). |
-| **Depends on** | M3, M5, approved criteria and weights (D-04, D-05). The semantic signal needs the embedding model, which is TBD (D-11, ARCHITECTURE.md §6). Rules-only matching does not depend on it. |
-| **Simplifications [REC]** | Synchronous run with no job queue. Run status: `Completed`, `Completed – rules-only fallback` or `Failed`. The candidate is a product together with its supplier. Semantic comparison is English-only. |
+| **Owner** | Alok (matching workflow services and selector integration in `apps/matching/`, FastAPI AI matching engine `ai_matching/`, eligibility, semantic matching, scoring, ranking, explainability, evaluation), Abhishek (orchestration API, failure handling), Vishal (database-level candidate queries and optimization, database models, migrations, schemas, and storage of runs, results and versions). |
+| **Depends on** | M3, M5, approved criteria and weights (D-04, D-05), embedding model confirmation (D-11, ARCHITECTURE.md §6). |
+| **Simplifications [REC]** | Synchronous run with no job queue. Run status: `Completed` or `Failed`. The candidate is a product together with its supplier. Semantic comparison is English-only (multilingual is Phase 2, DS-11). |
 
 | ID | Acceptance criterion |
 |---|---|
@@ -286,7 +286,7 @@ Module IDs (`M1` to `M11`) and acceptance-criterion IDs (`M2-AC3`) are stable. U
 | M6-AC2 | An unknown value on a mandatory criterion is **not** a pass. The candidate is shown as "insufficient data" with a warning. |
 | M6-AC3 | Each ranked candidate shows the per-criterion result, weighted contributions, the semantic signal (labelled as such), missing-information warnings and the supplier's readiness status. |
 | M6-AC4 | Zero eligible candidates is shown honestly. Ineligible candidates are never promoted to fill the list. |
-| M6-AC5 | If the semantic component is unavailable, the run completes rules-only and is clearly labelled. If the matching engine raises an error, the run is recorded as `Failed`, the user sees a clear failure, and no results are stored. |
+| M6-AC5 | Semantic matching is mandatory. If semantic processing fails or the matching engine raises an error, the run is recorded as `Failed`, the user sees an explicit failure message, and no partial or unverified results are stored. No silent fallback to rules-only matching is permitted. |
 | M6-AC6 | Each run stores: run ID, actor, timestamp, requirement version, criteria/weights version, model ID and version (or "none"), mode, status and per-candidate results. |
 | M6-AC7 | On the agreed evaluation set, expected candidates appear in the expected positions or bands, and the results are recorded in the AI evaluation pack. No accuracy claim goes beyond that evidence. |
 
@@ -490,41 +490,41 @@ Requirements-level only. Vishal owns the physical schema, migrations and data di
 
 ## 7. Matching process
 
-From build manual §7 *AI Governance* and the internship brief's *AI Matching Framework* [SRC]. Implementation details are [REC].
+From build manual §7 *AI Governance* and the internship brief's *AI Matching Framework* [SRC]. Implementation details follow the two-component C7 architecture [REC].
 
 ```
 Ready requirement (version N) + active CriteriaVersion
         │
         ▼
-1. Gate ............ requirement is Ready for matching; criteria version is approved
-2. Candidates ...... non-archived products with their supplier (Vishal's candidate query)
-3. Mandatory filters  each criterion → pass / fail / unknown
-                      any fail    → Excluded (with reason)
-                      any unknown → Insufficient data (with warning), not ranked as eligible
-4. Weighted score .. approved preference criteria × approved weights → per-criterion contribution
-5. Semantic signal . similarity between requirement text and product description embeddings,
-                      added with an approved, bounded weight; can never override step 3
-6. Rank + explain .. per-criterion results, contributions, semantic signal (labelled),
-                      missing-information warnings, supplier readiness status
-7. Persist run ..... versions, mode, status, results (Vishal's storage)
-8. Human decision .. authorised user records disposition (M7)
+1. Data Prep .......... Validated & normalised by Django selectors & request builder
+2. Hard Filters ....... Mandatory eligibility check (e.g., category, MOQ, capacity, certs — illustrative criteria examples pending formal BNCS approval under D-03)
+                        any fail    → Excluded (cannot be overridden by similarity)
+                        any unknown → Insufficient data (not ranked as eligible)
+3. Semantic Matching .. Mandatory vector embeddings for requirement & capabilities
+4. Cosine Similarity .. Bounded semantic similarity signal
+                        failure in step 3/4 → Run FAILS explicitly (no silent fallback)
+5. Hybrid Scoring ..... Approved rule-based score + bounded semantic score
+6. Supplier Ranking ... Ranked by hybrid_score DESC (tie-break: rule_score DESC)
+7. Explainability ..... Transparent Python-based breakdown (no external LLM)
+8. Persist Run ........ Structured response to Django; persisted atomically (MatchRun/Result)
+9. Human Decision ..... Authorised user records human disposition in M8
 ```
 
-**Rules-only fallback [SRC].** Steps 1 to 4 and 6 to 7 run without step 5. This happens when the embedding model is unavailable, disabled by configuration, or unsuitable for a given input. The run and every result are labelled `Rules-only fallback`. Fallback is a supported mode, not an error.
+**Mandatory Semantic Matching and Explicit Failure Policy.** Semantic matching is mandatory for understanding the underlying capabilities and requirements. Rules-only matching is **not** an alternative successful path. If the embedding model fails, semantic similarity cannot be computed, or the matching engine encounters an error, the matching run **fails explicitly** with status `Failed`, logs the error detail, and displays a clear failure message to the user. No unverified, partial, or silently degraded results are saved or presented.
 
-**Failure.** If the matching engine raises an error, the run is stored as `Failed` with no results, and the backend returns a clear error.
+**Implementation (Two-Component C7 Architecture; see [ARCHITECTURE.md §6](ARCHITECTURE.md#6-matching-implementation)).**
 
-**Implementation (team-selected; see [ARCHITECTURE.md §6](ARCHITECTURE.md#6-matching-implementation)).**
+- **Component A: Django Matching Integration Layer (`backend/apps/matching/`).** Django maintains domain authority, authentication, authorisation, and data persistence. `selectors/supplier_selector.py` owns matching selector workflow and integration (database query design and optimization remain Vishal's); `services/request_builder.py` formats requests; `services/matching_client.py` communicates with FastAPI; `services/result_handler.py` handles response processing and persistence coordination in atomic transactions without independently modifying models or schemas.
+- **Component B: FastAPI AI Matching Engine (`backend/ai_matching/`).** A dedicated FastAPI service handling input validation (Pydantic schemas), data preprocessing, embedding generation, cosine similarity, mandatory eligibility evaluation, hybrid scoring, supplier ranking, and deterministic Python explainability.
+- **Eligibility Safeguards.** Failing a mandatory criterion permanently excludes a candidate from ranking, regardless of semantic score. Criteria examples (such as category, certifications, capacity, MOQ) are illustrative pending formal BNCS approval under D-03. Unknown or missing mandatory data is flagged as insufficient data and never treated as a pass.
+- **Embedding Model (D-11).** **TBD (Proposed / Pending Confirmation).** Embedding generation executes locally; pilot data never leaves the environment. Selection of `sentence-transformers` vs `FastEmbed` and model choice are pending confirmation. No external embedding API is used.
+- **Vector Storage (D-12).** **Proposed / Pending Confirmation** (co-owned with Vishal; Vishal owns database models and migrations).
+- **Runtime and Deployment (D-15).** **Proposed / Pending Confirmation** (FastAPI service in backend directory).
+- **Scoring Weights and Criteria (D-05, D-06).** **Pending BNCS Approval** (configuration uses `v0-UNAPPROVED.json`).
+- **No LLM (D-20).** Explanations are generated using deterministic Python-based scoring breakdown logic. No external LLM or LLM framework is introduced.
+- **Human-in-the-Loop.** AI advises, ranks, explains, and flags uncertainty; **AI must never autonomously approve or reject suppliers**. Final approval decisions (`Accepted`, `Rejected`, `On hold`) are strictly reserved for authorised human reviewers in M8.
 
-- **The engine.** Matching is an in-process, pure-Python package inside the Django backend (`backend/apps/matching/engine/`). It has no Django imports, no database access and one `engine.run()` function. It is replaceable as a package. This deviates from the build manual's isolated matching service, and BNCS and mentor approval is pending (ARCHITECTURE.md §10).
-- **Baseline.** Deterministic rules-based matching (steps 1 to 4 and 6 to 7) is the baseline and works on its own. Semantic similarity is an optional capability.
-- **Orchestration.** The backend's service layer loads the requirement and candidates, calls the engine and persists the run.
-- **Embeddings.** Stored in PostgreSQL with the pgvector extension, created through Django migrations. Cosine distance is computed in the database.
-- **Model (D-11).** The library is `sentence-transformers`, run locally, so pilot data never leaves the environment. **The embedding model is TBD.** No external embedding API.
-- **LLM (D-20).** **Provider and model TBD.** No LLM is used in the MVP, and none is needed for it.
-- **Default mode.** The semantic provider is off by default (`SEMANTIC_PROVIDER=none`, rules-only) until a model is chosen and the Week 5 evaluation supports enabling it.
-
-**Evaluation [SRC].** Alok and Harish build a synthetic evaluation set with expected outcomes. It covers expected matches, false matches, missed matches, missing data, manipulated input, service failure and rules-only fallback. Report results as observed on that set. Do not claim accuracy beyond it.
+**Evaluation [SRC].** Alok and Harish build a synthetic evaluation set with expected outcomes. It covers expected matches, false matches, missed matches, missing data, manipulated input, and explicit service failure. Report results as observed on that set. Do not claim accuracy beyond it.
 
 **Not allowed [SRC].** The AI must not approve suppliers, interpret law or regulation, set commercial policy, create opportunities, or present scores as certainty. Rules, weights and model settings are versioned and frozen after Week 7 validation.
 
@@ -649,7 +649,7 @@ Not commitments. Each needs BNCS approval, an owner and an effort trade-off [SRC
 | **DS-12** | Internship brief ("verification status" on buyer requirements) | What is being verified, and by whom, is not defined anywhere. | Unclear field. | Decide under D-13 or D-15. Do not implement until defined. |
 | **DS-13** | Internship brief ("one pilot sector") | The sector is never named. | Blocks the category list, seed data and filter design. | Decide under D-02 urgently (Week 1). |
 | **DS-14** | User journey PDF filename vs footer | The filename says "Proposed". The footer says "Current 26 October 2026", and it shares a page sequence with the revised ownership and timeline. | Status unclear. | Treat as the current working journey. Aryan confirms with BNCS. |
-| **DS-15** | Build manual §7 | The stack is a "recommended baseline … subject to BNCS and appointed technical-mentor approval". | Engineers cannot be sure which stack to scaffold. | **Stack selected (D-01, revised 28 Oct 2026); approval pending.** Next.js (App Router) + React + TypeScript; Django 5.2 + DRF; PostgreSQL 17 + pgvector; in-process Python matching. Next.js, PostgreSQL and pgvector follow the manual. **Django instead of Spring Boot**, **in-process matching instead of a FastAPI service**, and optional hosted staging are deviations. They need BNCS and mentor approval, which is not yet recorded (ARCHITECTURE.md §10). |
+| **DS-15** | Build manual §7 | The stack is a "recommended baseline … subject to BNCS and appointed technical-mentor approval". | Engineers cannot be sure which stack to scaffold. | **Stack selected (D-01, revised 28 Oct 2026); approval pending.** Next.js (App Router) + React + TypeScript; Django 5.2 + DRF; PostgreSQL 17 + pgvector; two-component matching architecture (Django integration layer `apps/matching/` + FastAPI AI matching engine `ai_matching/`). Next.js, PostgreSQL, pgvector, and the FastAPI matching service follow the manual baseline. **Django instead of Spring Boot** and optional hosted staging are deviations; deployment arrangement between Django and FastAPI is pending confirmation (D-15). |
 | **DS-16** | `InChi_Internship_Role_Assignment_Brief.pdf` | Not in the repository. | The original assignment cannot be checked directly. | Add it to `docs/` if available. It does not change current roles, because the revised ownership governs. |
 
 ---
@@ -683,7 +683,7 @@ Full reasoning and the authoritative status of each decision are in [ARCHITECTUR
 
 | ID | Decision | Resolution | Status |
 |---|---|---|---|
-| D-01 | Technology stack | Next.js (App Router) + React + TypeScript; Python 3.12, Django 5.2 LTS + DRF; PostgreSQL 17 + pgvector with Django migrations authoritative; in-process Python matching (rules baseline, optional semantic signal); Docker Compose; GitHub Actions. | Selected; BNCS + mentor approval pending |
+| D-01 | Technology stack | Next.js (App Router) + React + TypeScript; Python 3.12, Django 5.2 LTS + DRF; PostgreSQL 17 + pgvector with Django migrations authoritative; two-component matching (Django integration layer + FastAPI AI matching engine with mandatory semantic matching); Docker Compose; GitHub Actions. | Selected; BNCS + mentor approval pending |
 | D-10 | Evidence uploads | Metadata only. Uploads are Phase 2. | Resolved |
 | D-11 | Embedding library and model | Library: `sentence-transformers`, local, optional. **Model: TBD.** No external embedding API. Rules-only by default until a model is chosen and the Week 5 evaluation supports it. | Model **Open**; needed before Week 5 hybrid work |
 | D-12 | Authentication and provisioning | Django session auth + CSRF. Admin-provisioned accounts via a restricted Django admin. | Resolved |
