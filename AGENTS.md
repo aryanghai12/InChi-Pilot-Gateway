@@ -43,13 +43,8 @@ This is the shared instruction manual for every team member and every AI coding 
 | Frontend | **Next.js (App Router), React, TypeScript.** TanStack Query, plain CSS Modules. Next.js renders pages and proxies `/api/` to Django; it holds no business logic, authorisation or secrets. |
 | Backend | **Python 3.12, Django 5.2 LTS, Django REST Framework.** Session auth and CSRF from Django. OpenAPI via drf-spectacular. |
 | Database | **PostgreSQL 17 with pgvector.** The Django ORM and Django migrations are authoritative for the schema, including the extension and vector columns. |
-<<<<<<< HEAD
-| Matching | **In-process Python package** in the backend (`backend/apps/matching/engine/`) with no Django imports. Deterministic rules-based matching is the baseline. Semantic similarity is optional and bounded. |
-| Embeddings | **`sentence-transformers`**, run locally, optional install. **Embedding model: TBD (D-11).** |
-=======
 | Matching | **Two-component architecture:** Django matching integration layer (`backend/apps/matching/`) coordinating data collection and persistence, communicating with the FastAPI AI Matching Engine (`backend/ai_matching/`) for input validation, embeddings, mandatory eligibility evaluation, semantic similarity, hybrid scoring, ranking, and explainability. Semantic matching is mandatory; semantic processing failure explicitly fails the run (no silent fallback). |
 | Embeddings | Local embedding generation (`sentence-transformers` or `FastEmbed`, pending confirmation). **Embedding model: TBD (D-11).** |
->>>>>>> origin/main
 | LLM | **None in v0.1. Provider and model TBD (D-20).** Not a prerequisite for the MVP. |
 | Tests | pytest + pytest-django; Vitest + React Testing Library; Playwright for E2E |
 | Tooling | Ruff; ESLint, Prettier, `tsc`; pip-audit, npm audit, gitleaks, Dependabot; GitHub Actions |
@@ -58,11 +53,7 @@ This is the shared instruction manual for every team member and every AI coding 
 **Approval status.** The build manual makes the final stack and any material deviation subject to BNCS and technical-mentor approval. **That approval is still pending** (ARCHITECTURE.md §10). The deviations are:
 
 - Django instead of Spring Boot;
-<<<<<<< HEAD
-- in-process matching instead of a separate FastAPI service;
-=======
 - runtime and deployment configuration of the FastAPI matching engine relative to Django (D-15 pending confirmation);
->>>>>>> origin/main
 - hosted staging made optional.
 
 Build reversible skeletons on this stack meanwhile, and never describe it as approved.
@@ -454,11 +445,7 @@ Report: files changed, tests run with results, contract questions, limitations, 
 
 - **Priyanka:** API contract.
 - **Vishal:** schema, repositories, migrations, audit storage.
-<<<<<<< HEAD
-- **Alok:** the `engine.run()` interface, provider selection, fallback and failure handling.
-=======
 - **Alok:** matching integration interface contract, provider selection, failure handling.
->>>>>>> origin/main
 - **Ajendra:** auth design review, remediation.
 - **Harish:** integration and contract tests.
 - **Adrika:** transitions and permissions.
@@ -604,42 +591,6 @@ questions for Adrika, next step.
 
 ### C7. Alok Tiwari — AI Matching and Data Intelligence Engineer
 
-<<<<<<< HEAD
-**Primary responsibility.** Owns the matching engine: eligibility filters, approved weighted scoring, semantic comparison, explanations, evaluation cases, the rules-only fallback and documented model limitations. The outcome is an explainable, evaluated, replaceable matching pipeline. **AI recommends. Authorised users make every material decision.**
-
-**Owns:** the in-process matching package (ARCHITECTURE.md §4, §6):
-
-- `backend/apps/matching/engine/`, pure Python with no Django imports
-- `matching/providers/` (`NullProvider`, `SentenceTransformerProvider`)
-- `matching/criteria/`, the versioned criteria JSON
-- `requirements-semantic.txt` (`sentence-transformers` with CPU-only PyTorch, optional)
-- `docs/ai/`: engine interface, criteria configuration notes, the embedding-model proposal (D-11), evaluation dataset and pack, limitations
-
-**Interfaces.**
-
-- **Abhishek:** the `engine.run()` interface, orchestration, fallback and failure signalling.
-- **Vishal:** candidate data, embedding storage, run and result persistence.
-- **Adrika:** criteria drafts, explanation wording.
-- **Harish:** evaluation and failure tests.
-- **Ajendra:** AI-service threats, data handling.
-
-**MVP tasks, in order:**
-
-1. **Week 1.** Define the `engine.run()` input and output dataclasses, the decision boundary, the evaluation approach and the fallback design (MVP_FEATURES §7, ARCHITECTURE.md §6). Document them in `docs/ai/`.
-2. **Week 2.** Commit the engine package with the dataclasses, `NullProvider` and a stub `run()` that returns fixed example output, plus synthetic test examples. This lets Abhishek and Priyanka integrate early.
-3. **Week 3.** Normalisation of approved fields, quality flags and embedding-ready records. Readiness-rule inputs, supporting Adrika. Start the embedding-model shortlist for D-11, against the criteria in ARCHITECTURE.md §6.
-4. **Week 4.** **Deterministic baseline**: mandatory filters with pass, fail and unknown, plus weighted scoring from versioned criteria JSON. Use `v0-UNAPPROVED.json` placeholder weights until BNCS approves them at Gate 2. Per-criterion explanation output. pytest unit tests that need no database. Write the D-11 model proposal in `docs/ai/` for Ajendra's review, ideally by Gate 2. Aryan records the decision in ARCHITECTURE.md §9.
-5. **Week 5.** **Hybrid matching**, once D-11 is recorded. Add `SentenceTransformerProvider`, which loads the model named by `EMBEDDING_MODEL` locally, with no external API and `trust_remote_code` never enabled. Pass the database-computed pgvector similarity into the engine as a bounded signal. Keep `SEMANTIC_PROVIDER=none` as the default until the evaluation supports turning it on. If D-11 is still open, deliver the provider against a test double and keep the run rules-only. Implement and label the rules-only fallback. Run the evaluation set: expected, false, missed, missing-data, manipulated-input, service-failure and fallback cases. Record the results.
-6. **Week 6.** Final integration, fallback telemetry, match metrics. Lock the configuration. Stop feature expansion.
-7. **Week 7.** Rerun the evaluation, analyse errors, document limitations, freeze rules, weights and model settings.
-8. **Week 8.** AI evaluation pack: rules, weights and model configuration with versions, the dataset with expected outcomes, failure evidence, limitations and recommendations.
-
-**Must not decide alone.** Criteria, weights, the semantic weight, readiness rules or regulatory interpretation (BNCS approves). The embedding model: propose it, but it is recorded only through a §9 entry with Ajendra's review (D-11). Until then, **never write a model name into code, defaults or examples.** Do not switch to an external AI or embedding API, another embedding library, or a vector store other than pgvector without an ARCHITECTURE.md §9 entry. Do not add an LLM, LLM SDK or prompt (D-20 is TBD and needs BNCS approval). Pilot data must never leave the environment. Never let semantic similarity override a mandatory failure, auto-approve suppliers, create opportunities, or present scores as certainty or accuracy beyond the evaluation evidence. Explanations are deterministic templates built from criterion results.
-
-**Evidence before done.** Unit tests cover each filter outcome (pass, fail, unknown), scoring, ordering ties, empty candidates, fallback and malformed input. The evaluation results file records model and configuration versions. The contract matches what Abhishek calls.
-
-**Definition of Done.** Shared DoD, plus: every change to rules, weights, model or prompts is recorded in `docs/ai/` with its version, and reviewed by Adrika, Harish and Ajendra (manual §6).
-=======
 **Primary responsibility.** Owns the AI matching workstream across both defined layers: the Django matching integration layer (`backend/apps/matching/`) and the FastAPI AI matching engine (`backend/ai_matching/`). C7 owns matching workflow services, request preparation, FastAPI communication, AI matching algorithms, schemas, and AI engine tests, subject to agreed integration contracts. That covers data preprocessing and normalisation, mandatory eligibility evaluation, embedding generation, semantic matching, cosine similarity, approved hybrid scoring, supplier ranking, Python-based explainability, structured API responses, and matching result integration with the existing human-review workflow. Semantic matching is mandatory; failures fail explicitly with no silent fallback. **AI recommends. Authorised users make all material decisions (AI must never autonomously approve or reject suppliers).**
 
 **Owns:**
@@ -685,7 +636,6 @@ questions for Adrika, next step.
 **Evidence before done.** Unit tests in `ai_matching/tests/` cover eligibility filters (pass, fail, unknown as insufficient data), scoring, ordering ties, empty candidates, and semantic failure. Integration tests in `apps/matching/tests/` verify Django-to-FastAPI request building, client communication, response validation, and persistence coordination. The evaluation results file records model and configuration versions.
 
 **Definition of Done.** Shared DoD, plus: all M7-AC1 to M7-AC12 criteria satisfied; architecture and contracts documented in `docs/ai/`; reviews completed with Abhishek, Adrika, Harish and Ajendra (manual §6).
->>>>>>> origin/main
 
 **Build prompt:**
 
@@ -694,36 +644,6 @@ Role: Alok Tiwari | AI Matching and Data Intelligence Engineer
 
 Read AGENTS.md, docs/MVP_FEATURES.md (§7 matching process, M6, M7) and
 docs/ARCHITECTURE.md (§6) first.
-<<<<<<< HEAD
-I own backend/apps/matching/engine/, providers/, criteria/ and docs/ai/. AI recommends; authorised humans decide.
-Rules, weights and criteria require BNCS approval.
-
-Task: <describe, e.g. "implement the deterministic eligibility filter and weighted score baseline">
-
-Do the following:
-1. Inspect matching/engine/, docs/ai/ and Vishal's models first. The engine is pure
-   Python (dataclasses in, dataclasses out); it must not import Django or touch the DB.
-2. Pipeline order is fixed: gate → mandatory filters (pass/fail/unknown; unknown is not
-   a pass) → approved weighted score → optional bounded semantic signal → explanation +
-   warnings. Rules-based matching is the baseline and must work on its own.
-   Semantic similarity can never override a mandatory failure.
-3. Load criteria/weights from versioned configuration; mark placeholders UNAPPROVED and
-   include the config version in every output.
-4. Always support rules-only mode; label it in the output. Return explicit errors for
-   invalid input or internal failure — never partial results presented as complete.
-5. Explanations are deterministic templates from criterion results (no LLM; D-20 is
-   TBD). Semantic similarity uses the provider interface only: NullProvider or
-   SentenceTransformerProvider (sentence-transformers, local). The embedding model is
-   TBD (D-11): read it from EMBEDDING_MODEL and never hard-code or default a model name.
-   Any provider error or unset model → rules-only, labelled.
-6. Add unit tests and evaluation cases (expected, false, missed, missing-data,
-   manipulated input, failure, fallback); run them and report actual results without
-   overstating accuracy.
-7. Keep the model replaceable behind the provider interface; no LLM or LLM framework
-   (e.g. LangChain), no vector store other than pgvector, no external API, never
-   trust_remote_code. Run `pytest` for the engine and report actual results.
-Report: files changed, contract changes (notify Abhishek/Vishal), tests and evaluation
-=======
 I own backend/apps/matching/ matching workflow services and selectors (supplier_selector.py
 integration; query optimization by Vishal), backend/ai_matching/ (FastAPI AI matching engine),
 and docs/ai/. AI recommends; authorised humans decide. AI must never autonomously approve or reject suppliers.
@@ -755,7 +675,6 @@ Do the following:
    (e.g. LangChain), no vector store other than pgvector, no external API, never
    trust_remote_code.
 Report: files changed, schema/contract changes (notify Abhishek/Vishal), tests and evaluation
->>>>>>> origin/main
 results, limitations, next step.
 ```
 

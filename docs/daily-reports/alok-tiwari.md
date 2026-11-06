@@ -1,12 +1,5 @@
 # Daily reports — Alok Tiwari
 
-<<<<<<< HEAD
-AI Matching and Data Intelligence Engineer · Process, template and rules: [README.md](README.md)
-
-Only Alok Tiwari writes in this file. Newest entry first.
-
-<!-- Add new entries directly below this line. -->
-=======
 
 
 AI Matching and Data Intelligence Engineer · Process, template and rules: [README.md](README.md)
@@ -60,4 +53,3 @@ Only Alok Tiwari writes in this file. Newest entry first.
 **Next**
 
 - Begin implementation scaffolding of `backend/apps/matching/` and `backend/ai_matching/` once authorized — M6, M7
->>>>>>> origin/main

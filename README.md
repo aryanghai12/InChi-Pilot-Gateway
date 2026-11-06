@@ -15,11 +15,7 @@ BNCS needs one structured, traceable place to answer a commercial question: whic
 2. The user creates or updates supplier and product records.
 3. The user completes a China-readiness assessment, and a Reviewer records the outcome.
 4. The user records a buyer requirement, with mandatory criteria kept separate from preferences.
-<<<<<<< HEAD
-5. The platform applies mandatory eligibility filters, then approved weighted scoring, then a bounded semantic-similarity signal. A rules-only fallback is available.
-=======
 5. The platform applies mandatory eligibility filters, then approved weighted scoring, then mandatory semantic similarity. If semantic processing fails, the run fails explicitly.
->>>>>>> origin/main
 6. The platform shows ranked candidates with explanations and missing-information warnings.
 7. An authorised person records a disposition with a reason.
 8. An authorised user can convert an accepted match into a tracked opportunity.
@@ -33,11 +29,7 @@ BNCS needs one structured, traceable place to answer a commercial question: whic
 | M2–M3 Registry | Supplier and product records: create, edit, search, filter, evidence metadata |
 | M4 Readiness | Versioned question set, missing-information list, human review and outcome |
 | M5 Requirements | Buyer requirement capture with mandatory and preference criteria, versioning |
-<<<<<<< HEAD
-| M6 Matching | Eligibility filters, weighted score, semantic signal, explanations, fallback |
-=======
 | M6 Matching | Mandatory eligibility filters, semantic embeddings, hybrid scoring, ranking, explainability |
->>>>>>> origin/main
 | M7 Disposition | Human decision (proposed: accepted, rejected or on hold) with a reason |
 | M8 Opportunities | A small, approved set of pipeline stages, created only from accepted matches |
 | M9 Dashboard | Current-state counts computed from stored records |
@@ -65,13 +57,8 @@ Full scope, acceptance criteria and the permission matrix are in [docs/MVP_FEATU
 | Frontend | Next.js (App Router), React, TypeScript, TanStack Query. Next.js renders pages and forwards `/api/` to Django; it holds no business logic. |
 | Backend | Python 3.12, Django 5.2 LTS, Django REST Framework. Session auth with CSRF. OpenAPI via drf-spectacular. |
 | Database | PostgreSQL 17 with pgvector. Django ORM and Django migrations are authoritative for the schema. |
-<<<<<<< HEAD
-| Matching | In-process Python package inside the backend. Deterministic rules-based matching is the baseline. Semantic similarity is an optional, bounded signal, with a rules-only fallback. |
-| Embeddings | `sentence-transformers`, run locally (optional install). **Embedding model: TBD (D-11).** |
-=======
 | Matching | Two-component architecture: Django matching integration layer (`backend/apps/matching/`) + FastAPI AI Matching Engine (`backend/ai_matching/`). Mandatory semantic matching; failures fail explicitly (no silent fallback). |
 | Embeddings | Local embedding generation (`sentence-transformers` or `FastEmbed`, pending confirmation). **Embedding model: TBD (D-11).** |
->>>>>>> origin/main
 | LLM | **None in v0.1. Provider and model TBD (D-20).** Not needed for the MVP. |
 | Tests | pytest, Vitest + React Testing Library, Playwright |
 | Environment | Docker Compose: PostgreSQL + pgvector, Django backend, Next.js frontend, all on one browser origin |
@@ -80,11 +67,7 @@ Full scope, acceptance criteria and the permission matrix are in [docs/MVP_FEATU
 **Approval status.** The build manual makes the final stack subject to BNCS and technical-mentor approval. **That approval has not been recorded yet.** The material deviations from the manual's baseline are:
 
 - Django instead of Spring Boot;
-<<<<<<< HEAD
-- matching inside the backend instead of a separate FastAPI service;
-=======
 - runtime and deployment configuration of the FastAPI matching engine relative to Django (D-15 pending confirmation);
->>>>>>> origin/main
 - hosted staging made optional.
 
 They are listed with their status in [ARCHITECTURE.md §10](docs/ARCHITECTURE.md#10-build-manual-deviations-and-pending-approvals).
@@ -115,11 +98,7 @@ Planned top-level layout. Each directory is created when work on it starts:
 | Path | What goes there | Primary owner |
 |---|---|---|
 | `frontend/` | Next.js App Router app: pages, shared components, API client and frontend unit tests | Priyanka |
-<<<<<<< HEAD
-| `backend/` | Django project: API, auth and permissions, workflow services (Abhishek); models, migrations, queries and seed data (Vishal); matching engine and providers (Alok); unit and API tests beside each app | Abhishek, Vishal, Alok |
-=======
 | `backend/` | Django project: API, auth, workflow services (Abhishek); models, migrations, seed data (Vishal); Django matching integration layer `apps/matching/` and FastAPI AI matching engine `ai_matching/` (Alok) | Abhishek, Vishal, Alok |
->>>>>>> origin/main
 | `e2e/` | Playwright end-to-end and regression suite | Harish |
 | `docker-compose.yml`, `.env.example` | Local and demo environment: `db`, `backend`, `frontend` | Abhishek (with Vishal and Priyanka) |
 | `.github/` | CI workflows and Dependabot | Harish (tests), Ajendra (security) |
@@ -155,11 +134,7 @@ The pilot is built by eight interns under BNCS and mentor supervision. Current r
 | Priyanka Singh | Frontend Web and Client-Side Integration Engineer | `frontend/` (Next.js) |
 | Abhishek Kumar | Application Backend and Access-Control Engineer | Django config and API layer, `docs/api/`, Compose and backend image |
 | Vishal Chauhan | Data and Platform Services Engineer | Models, migrations (including pgvector), queries, seed data, `docs/data/` |
-<<<<<<< HEAD
-| Alok Tiwari | AI Matching and Data Intelligence Engineer | `backend/apps/matching/engine/`, providers, criteria, `docs/ai/` |
-=======
 | Alok Tiwari | AI Matching and Data Intelligence Engineer | `backend/apps/matching/`, `backend/ai_matching/`, `docs/ai/` |
->>>>>>> origin/main
 | Harish Pal | QA and Test Automation Engineer | `e2e/`, test CI jobs, `docs/qa/` |
 
 **How we work:**
