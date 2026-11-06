@@ -27,8 +27,13 @@ Nothing below is implemented yet. This document fixes **what** the team builds o
 | Auth | Django's built-in auth: session cookie, CSRF protection, PBKDF2 password hashing | (built-in) | Abhishek | Resolved (D-12) |
 | Database | **PostgreSQL with the pgvector extension**, accessed through the Django ORM with psycopg 3 | PostgreSQL 17. pgvector version pinned at skeleton through the database image tag. | Vishal | Selected (D-01) |
 | Schema management | **Django ORM and Django migrations are authoritative.** The pgvector extension and every vector column are created by Django migrations, using the `pgvector` Python package's Django integration. No hand-written schema outside migrations. | (built-in) | Vishal | Selected (D-01) |
+<<<<<<< HEAD
 | Matching engine | In-process Python package inside the backend. Deterministic rules-based matching is the baseline. Semantic similarity is an optional, bounded signal. | — | Alok | Selected (D-01, TD-02) |
 | Semantic embeddings | **`sentence-transformers`**, run locally, installed as an optional extra with CPU-only PyTorch. **Embedding model: TBD (D-11).** | library pinned at skeleton; model not chosen | Alok | Library selected; **model TBD** |
+=======
+| Matching engine | **Two-component architecture:** Django matching integration layer (`backend/apps/matching/`) coordinating data collection and persistence, communicating with the FastAPI AI Matching Engine (`backend/ai_matching/`) for input validation, embeddings, mandatory eligibility evaluation, semantic similarity, hybrid scoring, ranking, and explainability. Semantic matching is mandatory; semantic processing failure explicitly fails the run (no silent fallback). | — | Alok | Defined; deployment config pending (D-01, D-15) |
+| Semantic embeddings | Local embedding generation (`sentence-transformers` or `FastEmbed`, pending confirmation). **Embedding model: TBD (D-11).** | library evaluated; model not chosen | Alok | Library pending; **model TBD** |
+>>>>>>> origin/main
 | LLM | **None in v0.1. Provider and model TBD (D-20).** An LLM is not a prerequisite for the MVP. No LLM SDK, configuration or prompt is added to the codebase. | — | — | **TBD** |
 | Backend tests | pytest + pytest-django | — | code owners; Harish | Selected |
 | Frontend tests | Vitest + React Testing Library | — | Priyanka; Harish | Selected |
@@ -58,7 +63,11 @@ After that, versions change only through Dependabot or an owner PR that runs the
 **Explicitly not used in v0.1:**
 
 - Spring Boot or a JVM.
+<<<<<<< HEAD
 - A separate matching microservice (for example FastAPI).
+=======
+- External hosted AI or embedding APIs (all embeddings and matching execute locally).
+>>>>>>> origin/main
 - Any vector database other than pgvector inside PostgreSQL.
 - An external AI, embedding or LLM API. Pilot data never leaves the environment.
 - An LLM of any kind, until D-20 is decided and approved.
@@ -81,7 +90,11 @@ The build manual (§7) recommends a baseline of Next.js, Spring Boot, PostgreSQL
 | **One backend in Python (Django), not Spring Boot plus FastAPI** | Matching must be Python because of the embedding ecosystem. Putting the application backend in Python too gives one backend language, one dependency tool, one test runner, one backend deployable and one set of backend security checks. |
 | **Django rather than FastAPI** | Django ships the parts this pilot most needs to get right, already reviewed and secure by default: users, password hashing, sessions, CSRF, ORM, migrations, transactions and an admin. Auth is where the pilot can least afford mistakes. |
 | **DRF** | Mature serializers (validation with field-specific errors), permission classes (deny-by-default plus object checks), pagination, and OpenAPI generation through drf-spectacular. |
+<<<<<<< HEAD
 | **Matching in-process, not a microservice** | Removes a network hop, inter-service auth, an extra deployable, contract drift and a class of failures. Replaceability (manual §2) comes from a **code** boundary: the engine is a pure-Python package with no Django imports, behind one function. If BNCS later wants a service, the package can be wrapped without rewriting it. |
+=======
+| **Two-component matching architecture (Django layer + FastAPI AI engine)** | Aligns with the Build Manual §7 baseline recommendation ("Python and FastAPI for the isolated matching service"). Keeps a clean architectural boundary between Django business orchestration and pure AI/vector computation. The FastAPI engine (`backend/ai_matching/`) handles validation, embeddings, similarity, scoring, ranking, and explainability, while Django (`backend/apps/matching/`) retains business data authority, persistence, and workflow integration. Exact runtime deployment configuration (in-process vs separate container/process) is tracked under D-15. |
+>>>>>>> origin/main
 | **PostgreSQL 17 + pgvector, managed by Django migrations** | Keeps vectors in the same transactional database as the records they describe, inside the existing backup and access controls. The pgvector extension and vector columns are created by Django migrations, so the ORM stays the single authority for schema. Cosine distance is computed in SQL. At pilot volume (≥30 products, at most hundreds), an exact scan is enough and no approximate index is needed. |
 | **`sentence-transformers` for embeddings, model TBD** | A widely used library that runs models locally on CPU, so **pilot data never leaves the machine**. It also leaves the model choice open across many openly licensed models. The cost is PyTorch, which is large. It is therefore an **optional** install: without it, matching runs rules-only, which is the required fallback. The model is chosen later under D-11 (§6). |
 | **No LLM in the MVP** | The MVP needs deterministic, explainable output. Explanations are templates built from criterion results. Any LLM use is a later decision (D-20) with security, data-handling and BNCS review. |
@@ -106,7 +119,11 @@ Django + DRF (gunicorn)
    ├─ registry      suppliers, products, evidence metadata
    ├─ readiness     question sets, assessments, reviews
    ├─ demand        buyer requirements (versioned), criteria
+<<<<<<< HEAD
    ├─ matching      runs, results, dispositions ── calls ──► matching.engine (pure Python, no Django)
+=======
+   ├─ apps/matching (Django layer: selectors, services, persistence) ── HTTP / API ──► ai_matching (FastAPI AI engine: eligibility, embeddings, similarity, scoring, ranking, explain)
+>>>>>>> origin/main
    │                  └─ providers: none | sentence_transformers (model TBD, D-11), local only
    ├─ opportunities opportunities, activities
    ├─ audit         append-only audit events
@@ -148,8 +165,25 @@ Create a directory when your work starts. Do not create empty placeholder folder
 │   │   ├── registry/                   suppliers, products, evidence metadata               (M2, M3)
 │   │   ├── readiness/                  question sets, assessments, reviews                  (M4)
 │   │   ├── demand/                     buyer requirements, criteria                         (M5)
+<<<<<<< HEAD
 │   │   ├── matching/                   runs, results, dispositions; orchestration           (M6, M7)
 │   │   │   ├── engine/                 pure-Python matching core (no Django imports), with its own tests/
+=======
+│   │   ├── matching/                   Django matching integration layer (M6, M7)
+│   │   │   ├── models.py               MatchRun, MatchResult schema & migrations (owned by Vishal)
+│   │   │   ├── views.py, serializers.py, urls.py, permissions.py (owned by Abhishek)
+│   │   │   ├── services/               matching workflow services (owned by Alok: matching_client.py, request_builder.py, result_handler.py for response processing & persistence coordination)
+│   │   │   ├── selectors/              matching selector workflow & integration (owned by Alok: supplier_selector.py; query design & optimization by Vishal)
+│   │   │   └── tests/                  Django matching integration tests (owned by Alok: test_views.py, test_services.py, etc.)
+│   │
+│   └── ai_matching/                    FastAPI AI matching engine (standalone process/service; owned by Alok)
+│       ├── main.py, core/ (config, constants, exceptions)
+│       ├── api/ (dependencies.py, routes/ health.py, matching.py)
+│       ├── schemas/ (supplier.py, requirement.py, matching_request.py, matching_response.py)
+│       ├── engine/ (eligibility/, semantic/, scoring/, ranking/, explainability/)
+│       ├── embeddings/, providers/
+│       └── tests/ (test_eligibility.py, test_semantic.py, test_embeddings.py, test_scoring.py, test_ranking.py, test_explainability.py)
+>>>>>>> origin/main
 │   │   │   ├── providers/              embedding provider interface: none | sentence_transformers
 │   │   │   └── criteria/               versioned criteria JSON (v0-UNAPPROVED.json until D-04/D-05)
 │   │   ├── opportunities/              opportunities and activities                         (M8)
@@ -193,7 +227,12 @@ Create a directory when your work starts. Do not create empty placeholder folder
 | Test type | Location | Owner |
 |---|---|---|
 | Backend unit and API tests | `backend/apps/<app>/tests/` | Owner of the code under test |
+<<<<<<< HEAD
 | Matching engine unit and evaluation tests (no database) | `backend/apps/matching/engine/tests/` | Alok |
+=======
+| Django matching integration and workflow tests | `backend/apps/matching/tests/` | Alok |
+| AI matching algorithm and engine unit tests | `backend/ai_matching/tests/` | Alok |
+>>>>>>> origin/main
 | Frontend component and hook tests | beside the code in `frontend/src/` | Priyanka |
 | Cross-stack end-to-end and regression | `e2e/` | Harish |
 | Test strategy, traceability and results | `docs/qa/` | Harish |
@@ -232,7 +271,11 @@ The **owner** does the work and keeps the area consistent. **Reviewers** must re
 | `frontend/` (including `next.config.ts` and `frontend/Dockerfile`) | Priyanka | Abhishek for API usage; Ajendra for rewrites, headers and anything touching cookies or CSRF |
 | `backend/config/`; in every app `serializers.py`, `views.py`, `permissions.py`, `services.py`, `urls.py`; `accounts/policy.py`; `audit/services.py`; `requirements.txt`, `requirements-dev.txt`, `pyproject.toml`, `backend/Dockerfile` | Abhishek | Ajendra for auth, settings and security-sensitive code |
 | `backend/apps/<app>/models.py`, `migrations/` (including the pgvector extension migration), `dashboard/queries.py`, candidate queries, `backend/seed/` | Vishal | Abhishek, Alok, Harish, Ajendra |
+<<<<<<< HEAD
 | `backend/apps/matching/engine/`, `matching/providers/`, `matching/criteria/`, `requirements-semantic.txt` | Alok | Abhishek (engine interface), Ajendra |
+=======
+| `backend/apps/matching/services/`, `selectors/`, `backend/apps/matching/tests/` (matching integration), `backend/ai_matching/` (FastAPI AI engine), `docs/ai/` | Alok | Abhishek (matching API/integration contract), Vishal (database models & vector storage), Ajendra |
+>>>>>>> origin/main
 | `backend/apps/<app>/tests/` | Owner of the code under test | Harish |
 | `e2e/` | Harish | Priyanka |
 | `docker-compose.yml` | Abhishek; Vishal for the `db` service; Priyanka for the `frontend` service | Ajendra |
@@ -240,7 +283,11 @@ The **owner** does the work and keeps the area consistent. **Reviewers** must re
 | `.github/workflows/` | Harish (test jobs), Ajendra (security and dependency jobs) | Aryan |
 | `.github/dependabot.yml`, `.gitignore` (secrets baseline) | Ajendra | — |
 
+<<<<<<< HEAD
 **Ownership seams inside the backend.** In each Django app, Vishal owns models, migrations and queries, and Abhishek owns the API layer. Alok owns `matching/engine/` and `matching/providers/`, which must not import Django. A change that crosses a seam, for example a model change plus a serializer change, is reviewed by both owners.
+=======
+**Ownership seams inside the backend.** In each Django app, Vishal owns all models, migrations, database schemas, PostgreSQL tables, pgvector extensions/vector columns, and database-level candidate queries and query optimization, while Abhishek owns the API layer. Alok owns the matching workflow services (`matching_client.py`, `request_builder.py`, `result_handler.py`), selector workflow and integration (`supplier_selector.py`), and integration tests in `backend/apps/matching/`, as well as the entire `backend/ai_matching/` engine. Database query design, optimization, and schema implementation remain Vishal's responsibility, coordinated with Vishal. Alok's `result_handler.py` handles FastAPI response processing and persistence coordination; it does not independently own or modify database models, migrations, or schema. A change that crosses a seam, for example a model change plus a serializer change, is reviewed by both owners.
+>>>>>>> origin/main
 
 ### 4.3 When to coordinate
 
@@ -248,7 +295,11 @@ The **owner** does the work and keeps the area consistent. **Reviewers** must re
 |---|---|---|
 | adds or changes an API endpoint, field or error code | Abhishek + Priyanka; Vishal or Alok if data or matching is affected; Harish for tests | Regenerate `docs/api/openapi.yaml` in the same PR |
 | changes a model, migration, constraint or vector column | Vishal prepares the migration-impact note; Abhishek, Alok, Harish and Ajendra review | Never edit an applied migration |
+<<<<<<< HEAD
 | changes the `engine.run()` dataclasses, the provider interface or the candidate query | Alok + Abhishek (+ Vishal for the query) | Versioned or backward-compatible; recorded in `docs/ai/` |
+=======
+| changes the Django-to-FastAPI matching schema contract, provider interface, or candidate query | Alok + Abhishek (+ Vishal for the query) | Versioned or backward-compatible; recorded in `docs/ai/` |
+>>>>>>> origin/main
 | changes criteria, weights, the semantic weight, readiness rules, labels or stages | Adrika drafts → Aryan → BNCS approves | Until approved: `UNAPPROVED` placeholder config only |
 | touches auth, sessions, CSRF, cookies, `next.config.ts` rewrites or headers, settings or secrets | Abhishek or Priyanka + **Ajendra** | Security review is required |
 | chooses or changes the embedding model (D-11) or proposes any LLM (D-20) | Alok + Ajendra; Aryan records in §9; BNCS for D-20 | See §6 and §9 |
@@ -291,6 +342,7 @@ These are binding. Owners may refine them by updating this section in a PR.
 
 ## 6. Matching implementation
 
+<<<<<<< HEAD
 This implements MVP_FEATURES §7. Pipeline order is fixed: gate → mandatory filters → approved weighted score → optional bounded semantic signal → explanation and warnings → human decision. **Rules-based matching is the baseline and must always work alone.**
 
 - **Engine API (Alok; dataclasses confirmed with Abhishek in Week 1).**
@@ -324,6 +376,94 @@ This implements MVP_FEATURES §7. Pipeline order is fixed: gate → mandatory fi
   - The model cache path is set by `EMBEDDING_CACHE_DIR` and mounted as a Compose volume.
 - **Explanations.** Deterministic templates built from criterion results. **No LLM** (D-20).
 - **Demo failure case (build manual §10, item 8).** Run with `SEMANTIC_PROVIDER=sentence_transformers` and the model cache made unavailable. This shows the labelled rules-only fallback. Then show a requirement that fails the gate. Before D-11 is decided, the fallback case is shown with the provider selected and `EMBEDDING_MODEL` unset.
+=======
+This implements MVP_FEATURES §7 and module M6. The matching engine combines mandatory business eligibility checks, semantic embeddings, hybrid scoring, ranking, and explainability. **Semantic matching is mandatory; failures fail explicitly with no silent fallback.**
+
+### 6.1 Two-Component Architecture
+
+The matching system is partitioned into two distinct components within `backend/`:
+
+1. **Component A: Django Matching Integration Layer (`backend/apps/matching/`)**
+   - **Role:** Coordinates the matching workflow within Django, collects business data, prepares matching requests, calls the FastAPI engine, and persists results.
+   - **`selectors/supplier_selector.py`:** Owns matching selector workflow and integration. Database query design, candidate queries, and query optimization remain Vishal's responsibility (coordinated with Vishal).
+   - **`services/request_builder.py`:** Validates and formats the payload into the required schema.
+   - **`services/matching_client.py`:** Communicates with the FastAPI AI Matching Engine over HTTP.
+   - **`services/result_handler.py`:** Handles FastAPI response processing and persistence coordination in atomic transactions. It does not independently own or modify database models, migrations, or schema (models and migrations owned by Vishal).
+   - **`views.py` & `serializers.py`:** DRF endpoints for triggering matching and retrieving results for authorized users and review workflows (M8).
+   - **`permissions.py`:** Enforces role-based access for matching operations.
+   - **`tests/`:** Django integration, workflow, request builder, and client communication tests.
+
+2. **Component B: FastAPI AI Matching Engine (`backend/ai_matching/`)**
+   - **Role:** The core AI matching engine, running as an independent service or process.
+   - **`main.py`:** FastAPI application entry point, lifecycle events, and middleware.
+   - **`api/routes/`:** Endpoints including `/health` and `/matching` (`POST /match`).
+   - **`schemas/`:** Pydantic models defining strict request and response schemas (`supplier.py`, `requirement.py`, `matching_request.py`, `matching_response.py`).
+   - **`core/`:** Engine configuration (`config.py`), constants, and custom domain exceptions.
+   - **`engine/eligibility/`:** Evaluates mandatory criteria as hard gates.
+   - **`engine/semantic/`:** Computes semantic similarity between buyer requirements and supplier capabilities via vector embeddings and cosine similarity.
+   - **`engine/scoring/`:** Combines rule scores and semantic scores into approved hybrid scores.
+   - **`engine/ranking/`:** Sorts eligible suppliers by hybrid score descending (tie-breaking: rule score DESC → supplier ID ASC).
+   - **`engine/explainability/`:** Generates deterministic Python-based explanations and missing data warnings.
+   - **`embeddings/` & `providers/`:** Local embedding model management, vector mathematics, and provider abstraction.
+   - **`tests/`:** Algorithm-level unit tests for eligibility, embeddings, semantic similarity, scoring, ranking, and explainability.
+
+---
+
+### 6.2 The Complete 9-Stage Matching Pipeline
+
+```mermaid
+flowchart TD
+    A["1. Data Preparation & Normalisation<br/>(Django selectors -> request_builder)"] --> B["2. Mandatory Eligibility Checks<br/>(Hard gates; unknown != pass)"]
+    B --> C{"Eligible?"}
+    C -->|"Fail / Unknown"| D["Excluded / Flagged as Insufficient Data<br/>(Cannot be overridden by similarity)"]
+    C -->|"Pass"| E["3. Semantic Matching<br/>(Local vector embeddings)"]
+    E --> F["4. Cosine Similarity Calculation<br/>(Bounded similarity signal)"]
+    F --> G{"Semantic Success?"}
+    G -->|"Failure / Unset"| H["Match Run FAILS Explicitly<br/>(No silent rules-only fallback)"]
+    G -->|"Success"| I["5. Hybrid Scoring<br/>(Approved weights: w_rule + w_sem)"]
+    I --> J["6. Supplier Ranking<br/>(hybrid_score DESC -> rule_score DESC)"]
+    J --> K["7. Explainability Generation<br/>(Python-based logic; NO external LLM)"]
+    K --> L["8. Structured API Response<br/>(Returned to Django result_handler)"]
+    L --> M["9. Human Review & Disposition<br/>(M8 human review: Accept / Hold / Reject)"]
+```
+
+1. **Stage 1 — Data Preparation and Normalisation:** Buyer requirements and supplier capabilities are assembled, validated, cleaned, and normalised into structured schemas.
+2. **Stage 2 — Mandatory Eligibility Checks (Hard Gates):**
+   - Each candidate is evaluated against mandatory criteria (e.g., category, MOQ, certifications, capacity, export capability, delivery terms — illustrative criteria examples pending formal BNCS approval under D-03).
+   - **Safeguard 1:** Failing a mandatory criterion **cannot be overridden by a high semantic similarity score**. Failing suppliers are marked `Excluded`.
+   - **Safeguard 2:** Missing or unknown mandatory data is **never treated as a pass**; it is marked `Insufficient Data` with an explicit warning.
+3. **Stage 3 — Semantic Matching (Mandatory):**
+   - Vector embeddings are generated for buyer requirement text and supplier capability text using local embedding execution.
+   - Semantic matching is mandatory. Rules-only matching is **not** an alternative successful path.
+4. **Stage 4 — Cosine Similarity Calculation:**
+   - Computes cosine similarity between requirement and supplier vectors.
+   - **Explicit Failure Policy:** If semantic processing fails or the provider raises an error, the matching run **fails explicitly** with status `Failed`. No silent fallback to rules-only matching is permitted.
+5. **Stage 5 — Hybrid Scoring:**
+   - Combines the weighted rule score and the bounded semantic similarity score using approved business weights:
+     $$	ext{hybrid\_score} = w_{	ext{rule}} 	imes 	ext{rule\_score} + w_{	ext{sem}} 	imes 	ext{semantic\_score}$$
+   - Weights and criteria are business-approved; placeholders are marked `UNAPPROVED` until formally ratified.
+6. **Stage 6 — Supplier Ranking:**
+   - Eligible candidates are sorted by `hybrid_score` descending.
+   - Tie-breaking: `rule_score` descending, then `supplier_id` ascending.
+7. **Stage 7 — Explainability Generation:**
+   - Python-based deterministic logic generates structured explanations: passed/failed criteria, score contributions, similarity value, and missing-information warnings.
+   - **No external LLM** is used for explainability (D-20).
+8. **Stage 8 — Structured Response to Django:**
+   - The FastAPI engine returns a structured JSON response (`MatchingResponse`) to Django's `result_handler.py`.
+   - Results are persisted atomically in `MatchRun` and `MatchResult` records along with an immutable `AuditEvent`.
+9. **Stage 9 — Human Review and Decision (M8):**
+   - Authorised users review the recommendations, inspect explanations, and record a disposition (`Accepted`, `Rejected`, `On hold`) with a mandatory reason.
+   - **Human-in-the-loop boundary:** AI recommends, ranks, explains, and flags uncertainty; **AI must never autonomously approve or reject suppliers**.
+
+---
+
+### 6.3 Technical Decisions and Open Items
+
+- **Embedding Model (D-11):** The embedding model is **TBD (Proposed / Pending Confirmation)**. Sentence Transformers and FastEmbed are under evaluation. No model name is hardcoded in defaults or code. Pilot data never leaves the environment.
+- **Vector Storage (D-12):** pgvector column design on `Product` is **Proposed / Pending Confirmation** (co-owned with Vishal; Vishal owns database models and migrations).
+- **Runtime and Deployment (D-15):** **Proposed / Pending Confirmation.** The FastAPI application is located at `backend/ai_matching/` and may run as a separate process or container in Compose. Inter-service authentication and communication contracts are defined in `docs/ai/`.
+- **Hybrid Weights and Criteria (D-03, D-05, D-06):** Business-owned by BNCS; configuration files use `v0-UNAPPROVED.json` until Gate 2 approval.
+>>>>>>> origin/main
 
 ---
 
@@ -352,7 +492,11 @@ This implements MVP_FEATURES §7. Pipeline order is fixed: gate → mandatory fi
 | Item | Decision |
 |---|---|
 | Local dev | `docker compose up db`, then run Django (`manage.py runserver`) and Next.js (`npm run dev`) natively, and open `http://localhost:3000`. Or run `docker compose up` for the full stack. |
+<<<<<<< HEAD
 | Compose services | `db`: the `pgvector/pgvector` image for PostgreSQL 17, exact tag pinned at skeleton, with a named data volume. `backend`: Django under gunicorn, reachable from `frontend`. `frontend`: the Next.js standalone server, the only service published to the host besides `db` for native development. When semantic matching is enabled, a named volume holds the embedding model cache. |
+=======
+| Compose services | `db`: the `pgvector/pgvector` image for PostgreSQL 17, exact tag pinned at skeleton, with a named data volume. `backend`: Django application layer and FastAPI AI matching engine (`ai_matching`), reachable from `frontend` and each other. `frontend`: the Next.js standalone server, the only service published to the host besides `db` for native development. When semantic matching is enabled, a named volume holds the embedding model cache. |
+>>>>>>> origin/main
 | Reference demo environment | `docker compose up` on any machine with Docker, then `create_platform_admin` and `seed_demo`. This is the environment used for Gate demos, UAT and handover. |
 | Hosted staging (D-16) | **Not required for v0.1.** If BNCS provides a non-production host, the same images deploy there behind an HTTPS reverse proxy supplied by the host. Ajendra runs the staging checklist first. |
 | CI (GitHub Actions) | On every PR. **Backend:** `ruff check`, `ruff format --check`, `manage.py makemigrations --check`, `pytest` against a PostgreSQL 17 + pgvector service container (same image as Compose), the OpenAPI drift check, `pip-audit`. This job runs rules-only and does not install `requirements-semantic.txt`. **Semantic:** a separate job installs `requirements-semantic.txt` and runs the provider tests with a test double. It downloads no model until D-11 is decided, and runs when `matching/` changes and nightly. **Frontend:** `eslint`, `tsc --noEmit`, `vitest run`, `next build`, `npm audit --audit-level=high`. **Repo:** gitleaks. **E2E:** Playwright against the Compose stack, from Week 2 on `main` and nightly, and on PRs once it is stable. |
@@ -377,7 +521,11 @@ Technical decisions recorded by the team; revised 28 Oct 2026. Business-owned de
 | **D-18** | Tracking tool | GitHub Issues (labels: module `M#`, severity, role) and one GitHub Project board. Evidence is linked from `docs/governance/`; daily progress from `docs/daily-reports/`. | Resolved |
 | **D-20** | LLM provider and model | **TBD.** Not a prerequisite for the MVP, and not used in v0.1. No LLM SDK, configuration, prompts or API keys are added. A proposal to use an LLM needs: (1) a §9 update; (2) Ajendra's data-handling and security review; (3) BNCS approval, because it is an AI-governance matter and could send data outside the environment; (4) evaluation evidence. Until then, explanations stay deterministic templates. | **Open** (no date; later stage) |
 | **TD-01** | Vectors | pgvector `vector` column in PostgreSQL. Exact cosine distance in SQL, with no approximate index at pilot volume. Revisit (for example with an HNSW index) only if the candidate count goes above about 10,000. Dimension set by the D-11 model. | Selected (with D-01) |
+<<<<<<< HEAD
 | **TD-02** | Matching boundary | In-process package with a pure engine. No microservice. | Selected; deviates from the manual's isolated service, so approval is pending (§10) |
+=======
+| **TD-02** | Matching boundary | Two-component architecture: Django integration layer (`apps/matching/`) + FastAPI AI matching engine (`ai_matching/`). Aligned with Build Manual §7 baseline; deployment configuration pending confirmation (D-15). | Defined; deployment config pending |
+>>>>>>> origin/main
 | **TD-03** | Audit immutability | App-level (no update or delete path) plus a database trigger. | Resolved |
 | **TD-04** | Login throttling | Not in the first skeleton. Ajendra assesses it in the Week 2 auth review. If needed, add it with one maintained package or a small custom throttle on the login view. | Open (Week 2) |
 | **TD-05** | Login CSRF | Explicit `csrf_protect` on the login view, plus a `GET /auth/csrf/` bootstrap (§5). | Resolved |
@@ -399,7 +547,11 @@ Until then, the team builds reversible Week 1 skeletons on this stack (AGENTS.md
 |---|---|---|---|---|---|
 | Frontend | Next.js, React and TypeScript | Next.js App Router, React, TypeScript | Aligned | Part of overall stack approval | Pending |
 | Application backend | Spring Boot | Python 3.12, Django 5.2 LTS, DRF | **Material deviation** | BNCS + mentor | Pending |
+<<<<<<< HEAD
 | Matching service | Python and FastAPI, as an isolated service | Python package inside the Django backend, isolated by a code boundary (TD-02) | **Material deviation** | BNCS + mentor | Pending |
+=======
+| Matching service | Python and FastAPI, as an isolated service | FastAPI AI matching engine (`ai_matching/`) with Django integration layer (`apps/matching/`); runtime configuration pending confirmation (D-15) | **Aligned with manual baseline** | Team + mentor | Pending confirmation |
+>>>>>>> origin/main
 | Database | PostgreSQL | PostgreSQL 17, Django ORM and migrations | Aligned | Part of overall stack approval | Pending |
 | Vector capability | pgvector or equivalent, "where approved" | pgvector in the same database (TD-01) | Aligned; the manual makes its use subject to approval | BNCS + mentor | Pending |
 | Embeddings | Not specified | `sentence-transformers`, local; **model TBD** | Consistent with the manual's AI governance | Model: team decision with Ajendra's review (D-11) | Open |
