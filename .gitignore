@@ -1,0 +1,146 @@
+# InChi Pilot Gateway — Root .gitignore
+# Owned by: Ajendra Nath Tripathi (Cybersecurity and DevSecOps Engineer)
+# AGENTS.md §C2, ARCHITECTURE.md §4.1, MVP_FEATURES §8
+
+# ==============================================================================
+# SECRETS BASELINE & ENVIRONMENT VARIABLES (MANDATORY)
+# AGENTS.md §B rule 7: Never commit real credentials, tokens, or environment files.
+# Commit ONLY placeholder values in .env.example.
+# ==============================================================================
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+
+# Secret keys, credentials & certificates
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+id_rsa
+id_ecdsa
+id_ed25519
+*.id_rsa
+*.id_ed25519
+secrets/
+credentials/
+auth_tokens/
+
+# ==============================================================================
+# PYTHON & DJANGO ARTIFACTS
+# ==============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+venv/
+.venv/
+env/
+.env/
+ENV/
+env.bak/
+venv.bak/
+
+# Django local runtime
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+collected_static/
+
+# ==============================================================================
+# NODE.JS & NEXT.JS ARTIFACTS
+# ==============================================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.next/
+out/
+.vercel/
+*.tsbuildinfo
+next-env.d.ts
+
+# ==============================================================================
+# AI / ML / VECTOR EMBEDDINGS LOCAL CACHE
+# Pilot data & embedding models stay local; cache folders must not be committed.
+# ==============================================================================
+.cache/
+models/
+embeddings_cache/
+torch_cache/
+huggingface/
+transformers/
+
+# ==============================================================================
+# TESTING, LINTING & COVERAGE
+# ==============================================================================
+.pytest_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage/
+coverage.xml
+*.lcov
+.nyc_output/
+playwright-report/
+test-results/
+blob-report/
+
+# ==============================================================================
+# OS, EDITORS & IDE
+# ==============================================================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# IDEs
+.idea/
+.vscode/
+*.sublime-workspace
+*.sublime-project
+*.swp
+*.swo
+*~
+
+# ==============================================================================
+# DOCKER LOCAL VOLUMES & OVERRIDES
+# ==============================================================================
+docker-compose.override.yml
+docker-compose.local.yml
+pgdata/
+postgres_data/

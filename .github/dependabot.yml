@@ -1,0 +1,56 @@
+# Dependabot configuration for InChi Pilot Gateway
+# Maintained by: Ajendra Nath Tripathi (Cybersecurity and DevSecOps Engineer)
+# AGENTS.md §C2, ARCHITECTURE.md §1, §4.1
+
+version: 2
+updates:
+  # Python Dependencies (Django backend, DRF, pgvector, pytest)
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Asia/Singapore"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "security"
+      - "backend"
+    reviewers:
+      - "Abhishek"
+      - "Ajendranath"
+
+  # Node.js Dependencies (Next.js frontend, React, TanStack Query, Vitest)
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Asia/Singapore"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "security"
+      - "frontend"
+    reviewers:
+      - "priyanka-singh"
+      - "Ajendranath"
+
+  # GitHub Actions CI Workflows
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Asia/Singapore"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "security"
+      - "ci"
+    reviewers:
+      - "Ajendranath"
+      - "aryanghai12"

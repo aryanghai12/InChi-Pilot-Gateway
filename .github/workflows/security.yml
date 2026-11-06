@@ -1,0 +1,119 @@
+name: Security & DevSecOps CI
+
+# Owned by: Ajendra Nath Tripathi (Cybersecurity and DevSecOps Engineer)
+# AGENTS.md §C2, ARCHITECTURE.md §8
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Run daily at 02:00 UTC for automated security posture check
+    - cron: '0 2 * * *'
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  # ----------------------------------------------------------------------------
+  # JOB 1: Secret Scanning via Gitleaks
+  # ----------------------------------------------------------------------------
+  secret-scan:
+    name: Secret Leak Detection (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+  # ----------------------------------------------------------------------------
+  # JOB 2: Frontend Dependency Vulnerability Audit
+  # ----------------------------------------------------------------------------
+  frontend-security:
+    name: Frontend Audit (npm audit)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Check for high & critical vulnerabilities
+        run: |
+          npm audit --audit-level=high
+
+  # ----------------------------------------------------------------------------
+  # JOB 3: Python Backend Dependency Vulnerability Audit & SAST
+  # ----------------------------------------------------------------------------
+  backend-security:
+    name: Backend Security (pip-audit & bandit)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install security auditing tools
+        run: |
+          python -m pip install --upgrade pip
+          pip install pip-audit bandit
+
+      - name: Audit Python dependencies (if requirements exist)
+        run: |
+          if [ -f backend/requirements.txt ]; then
+            echo "Auditing backend/requirements.txt..."
+            pip-audit -r backend/requirements.txt
+          else
+            echo "backend/requirements.txt not created yet. Skipping pip-audit."
+          fi
+
+      - name: Static Application Security Testing (Bandit)
+        run: |
+          if [ -d backend/apps ] || [ -d backend/config ]; then
+            echo "Running Bandit SAST on backend/..."
+            bandit -r backend/ -ll -ii -x backend/tests,backend/*/tests
+          else
+            echo "Backend code not present yet. Skipping Bandit scan."
+          fi
+
+  # ----------------------------------------------------------------------------
+  # JOB 4: Repository Hygiene & Plaintext Credentials Verification
+  # ----------------------------------------------------------------------------
+  repo-hygiene:
+    name: Repository Hygiene & Synthetic Data Checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify no committed real .env files
+        run: |
+          echo "Checking that no real .env files are tracked..."
+          COMMITTED_ENVS=$(git ls-files | grep -E '^\.env(\..+)?$' | grep -v '\.env\.example$' || true)
+          if [ -n "$COMMITTED_ENVS" ]; then
+            echo "CRITICAL: The following environment files are tracked in git:"
+            echo "$COMMITTED_ENVS"
+            exit 1
+          fi
+          echo "Verified: No real .env files committed."
