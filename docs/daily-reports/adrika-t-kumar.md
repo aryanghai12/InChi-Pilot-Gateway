@@ -1,4 +1,4 @@
-# Daily reports — Adrika T Kumar
+# Weekly reports — Adrika T Kumar
 
 Product UX and Commercial Workflow Analyst · Process, template and rules: [README.md](README.md)
 
