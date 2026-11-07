@@ -121,7 +121,7 @@ PostgreSQL 17 + pgvector   (schema owned by Django migrations)
 
 This section is the **single source of truth** for where code and documents live and who owns them. AGENTS.md (role definitions) and README.md (overview) link here and do not repeat it.
 
-Create a directory when your work starts. Do not create empty placeholder folders. Today the repository has `README.md`, `AGENTS.md`, `CLAUDE.md` and `docs/`, which contains this file, `MVP_FEATURES.md`, the source PDFs and `daily-reports/`. Everything else below is the **agreed target layout**.
+Create a directory when your work starts. Do not create empty placeholder folders. Today the repository has `README.md`, `AGENTS.md`, `CLAUDE.md` and `docs/`, which contains this file, `MVP_FEATURES.md`, the source PDFs and `daily-reports/` (the retained path for weekly reports). Everything else below is the **agreed target layout**.
 
 ### 4.1 Layout
 
@@ -190,7 +190,7 @@ Create a directory when your work starts. Do not create empty placeholder folder
     ├── MVP_FEATURES.md                 what to build: modules, acceptance criteria, business decisions
     ├── ARCHITECTURE.md                 how to build it: this file
     ├── *.pdf                           original source documents (read-only)
-    ├── daily-reports/                  daily progress log: process README + one file per member
+    ├── daily-reports/                  weekly progress log: process README + one file per member (legacy path retained)
     ├── governance/                     registers, decisions, integration plan, weekly reports, handover index
     ├── product/                        journeys, field dictionary, workflow states, wireframes, user guide
     ├── security/                       threat model, data classification, access matrix, remediation register
@@ -233,8 +233,8 @@ The **owner** does the work and keeps the area consistent. **Reviewers** must re
 | `docs/MVP_FEATURES.md` | Adrika (requirement content), Aryan (change record) | BNCS approves material changes |
 | `docs/ARCHITECTURE.md` | Abhishek (backend and conventions); Priyanka, Vishal and Alok for their sections; Aryan records §9 and §10 | Ajendra for security-relevant changes |
 | `docs/*.pdf` | Original source documents. Do not edit, move or delete them. | — |
-| `docs/daily-reports/README.md` (process) | Aryan | Team |
-| `docs/daily-reports/<member>.md` | **That member only** | Any other member (format check only) |
+| `docs/daily-reports/README.md` (weekly-report process) | Aryan | Team |
+| `docs/daily-reports/<member>.md` (weekly report) | **That member only** | Any other member (format check only) |
 | `docs/governance/` | Aryan | — |
 | `docs/product/` | Adrika | Aryan, affected engineers |
 | `docs/security/` | Ajendra | Abhishek, Vishal, Aryan |
@@ -440,7 +440,7 @@ Technical decisions recorded by the team; revised 28 Oct 2026. Business-owned de
 | **D-12** | Authentication and provisioning | Django session auth. Admin-provisioned local accounts through a restricted Django admin. No SSO, self-registration or email password reset. | Resolved |
 | **D-16** | Staging | The Docker Compose reference environment is the v0.1 demo and UAT environment. Hosted staging is optional (§8). | Selected; deviates from the manual, so BNCS confirmation is pending (§10) |
 | **D-17** | Results after data changes | Runs and results are immutable and store the requirement version, criteria version and embedding model (or "none"). The UI shows "data changed since this run" when the current requirement version or product `updated_at` is newer. Users re-run to refresh. | Resolved |
-| **D-18** | Tracking tool | GitHub Issues (labels: module `M#`, severity, role) and one GitHub Project board. Evidence is linked from `docs/governance/`; daily progress from `docs/daily-reports/`. | Resolved |
+| **D-18** | Tracking tool | GitHub Issues (labels: module `M#`, severity, role) and one GitHub Project board. Evidence is linked from `docs/governance/`; weekly progress from `docs/daily-reports/`. | Resolved |
 | **D-20** | LLM provider and model | **TBD.** Not a prerequisite for the MVP, and not used in v0.1. No LLM SDK, configuration, prompts or API keys are added. A proposal to use an LLM needs: (1) a §9 update; (2) Ajendra's data-handling and security review; (3) BNCS approval, because it is an AI-governance matter and could send data outside the environment; (4) evaluation evidence. Until then, explanations stay deterministic templates. | **Open** (no date; later stage) |
 | **TD-01** | Vectors | pgvector `vector` column in PostgreSQL. Exact cosine distance in SQL, with no approximate index at pilot volume. Revisit (for example with an HNSW index) only if the candidate count goes above about 10,000. Dimension set by the D-11 model. | Selected (with D-01) |
 | **TD-02** | Matching boundary | Two-component architecture: Django integration layer (`apps/matching/`) + FastAPI AI matching engine (`ai_matching/`). Aligned with Build Manual §7 baseline; deployment configuration pending confirmation (D-15). | Defined; deployment config pending |
