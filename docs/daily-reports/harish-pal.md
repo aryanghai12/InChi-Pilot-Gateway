@@ -1,4 +1,4 @@
-# Daily reports — Harish Pal
+# Weekly reports — Harish Pal
 
 QA and Test Automation Engineer · Process, template and rules: [README.md](README.md)
 

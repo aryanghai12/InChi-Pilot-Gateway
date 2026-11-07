@@ -1,17 +1,17 @@
-# Daily reports
+# Weekly reports
 
-Every team member records their own progress here on every working day. The log gives the whole team one place to see what each person has completed, what is in progress and what is blocked. It also supplies the evidence for the Friday Sprint Review and Aryan's weekly report to BNCS.
+Every team member records one concise progress report for each programme week. The reports give the team one place to see completed work, work in progress, blockers, validation, meeting and review activity, and the next step. They supply evidence for the sprint review and Aryan's weekly BNCS report.
 
-The format follows the build manual's daily stand-up format (§6). Under the manual's rules, every update points to a working artefact, decision, test result, review record or documented blocker.
+The folder name remains `daily-reports` to preserve existing links, open branches and Git history. It now contains weekly reports only. The proposed revised timeline in `docs/MVP_FEATURES.md` section 13 defines Week 1 as 26-30 October 2026 and Week 2 as 2-6 November 2026; it remains pending D-19 approval.
 
 | | |
 |---|---|
-| **Who writes** | Each member writes **only their own file**. Nobody writes or completes an entry for someone else. Harish writes only his own. |
-| **When** | Every working day (Monday to Friday), before you finish for the day. |
-| **Where** | One file per member in this folder (links below). The newest entry goes at the top. |
-| **How it is submitted** | One pull request per member per week, updated with one commit per day (see *Workflow*). |
-| **Process owner** | Aryan maintains this README and follows up missing entries. |
-| **Starts** | The first working day after this folder is merged to `main`. There are no earlier entries, and none should be back-filled. |
+| **Who writes** | Each member writes **only their own file**. Nobody writes or completes a report for someone else. |
+| **When** | Once for each programme week, after that week's Friday sprint review or by the next working day. |
+| **Where** | One file per member in this folder (links below). The newest report goes at the top. |
+| **How it is submitted** | One focused pull request per member per week (see *Workflow*). |
+| **Process owner** | Aryan maintains this README and follows up missing reports. |
+| **Migration** | Existing daily entries remain historical evidence. From this change onward, members use the weekly template below. |
 
 ## Member files
 
@@ -28,90 +28,68 @@ The format follows the build manual's daily stand-up format (§6). Under the man
 
 ## Workflow
 
-`main` is protected, so entries reach it through a pull request. To keep this light there is **one PR per member per week**, and you push to it each day.
+`main` is protected, so reports reach it through a pull request. Keep reports separate from work PRs: a report links to work and evidence, but does not contain that work.
 
-1. **Monday: start the week.** Update `main` and create a branch named `reports/<first-name>-week-<n>`, for example `reports/vishal-week-2`. Week numbers come from MVP_FEATURES §13.
-2. **Each working day: add the entry.**
-   - Copy the template below into your own file, directly under the marker line, so the newest entry is first.
-   - Commit only that file, with the message `report: <first-name> <YYYY-MM-DD>`, and push.
-   - On Monday, open the PR after the first push:
-     - title: `Daily reports: <Full Name>, Week <n>`;
-     - label: `daily-report`;
-     - description: "Daily report entries only."
-3. **Friday: submit the week.**
-   - After Friday's entry, request a review from any other member.
-   - The reviewer checks only that:
-     - the PR changes nothing but your file;
-     - the format is followed and links work;
-     - no secrets, credentials, real personal data or confidential material appear.
-   - **The reviewer does not vouch for accuracy.** You remain responsible for that.
-   - Merge by the end of Friday, or first thing Monday at the latest.
-
-Keep report PRs separate from work PRs. A report links to your work. It never contains the work.
+1. **Start the week.** Update `main` and create a branch named `reports/<first-name>-week-<n>`, for example `reports/vishal-week-2`. Week numbers come from MVP_FEATURES section 13.
+2. **Prepare one report.** By the Friday sprint review (or next working day), copy the template below into your own file directly under the marker line. Commit only that file, using `report: <first-name> week-<n>`.
+3. **Open and review the PR.** Open one PR titled `Weekly report: <Full Name>, Week <n>`, label it `weekly-report`, and describe it as `Weekly report only.` Request a review from any other member. The reviewer checks only that the PR changes the member's file, follows the format, has usable evidence links, and contains no secrets, credentials, real personal data or confidential material. The reviewer does not vouch for factual accuracy.
+4. **Merge promptly.** Merge after review by the end of the next working day. The author remains responsible for accuracy.
 
 ## How to read the log
 
-- **This week, live:** on GitHub, go to *Pull requests* and filter `is:pr is:open label:daily-report`. Each open PR's *Files changed* tab shows that member's entries so far this week.
-- **History:** the member files on `main`. Use `git log -p -- docs/daily-reports/<file>.md` to see when each entry was committed.
-- **Blockers across the team:** each entry has a *Blocked, dependencies and decisions needed* section, so you can scan the open PRs for it. Raising a blocker in the report does **not** replace raising it in the team channel when it is older than 24 hours (AGENTS.md §B rule 14).
+- **This week, live:** filter GitHub pull requests by `is:pr is:open label:weekly-report`.
+- **History:** read the member file on `main`, or run `git log -p -- docs/daily-reports/<file>.md`.
+- **Blockers across the team:** scan the *Blocked, dependencies and decisions needed* section. A report does not replace raising a blocker in the team channel after 24 hours (AGENTS.md section B rule 14).
 
-## Entry template
+## Weekly report template
 
-Copy this block. Keep every heading, and write `None.` under a heading that has nothing to report, so entries stay consistent and easy to scan.
+Copy this block. Keep every heading, and write `None.` under a heading with nothing to report.
 
 ```markdown
-## YYYY-MM-DD · Ddd · Week N
+## Week N - DD Month-DD Month YYYY
 
 **Completed**
-- <what you finished> — <state: merged | in review | submitted | drafted> — <evidence: PR, issue, commit or file link>
+- <what you finished> - <state: merged | in review | submitted | drafted> - <evidence: PR, issue, commit or file link>
+
+**Meetings, reviews and coordination**
+- <meeting, PR review, merge, decision follow-up or coordination activity> - <evidence or precise record>
 
 **In progress**
-- <task> — <M#-AC#, D-xx or issue link> — <what remains>
+- <task> - <M#-AC#, D-xx or issue link> - <what remains>
 
 **Tests and validation**
-- `<exact command or manual check>` → <actual result, e.g. "41 passed, 2 failed">
+- `<exact command or manual check>` -> <actual result, including failures>
 
 **Blocked, dependencies and decisions needed**
-- <what> — waiting on <person or BNCS> — since <YYYY-MM-DD> — raised in <issue, PR or channel>
+- <what> - waiting on <person or BNCS> - since <YYYY-MM-DD> - raised in <issue, PR or channel>
 
-**Next**
-- <the next step you plan to take> — <M#-AC#, D-xx or issue link>
+**Next week**
+- <next step> - <M#-AC#, D-xx or issue link>
 ```
 
-**No update.** On a working day you did not work on the pilot (leave, illness, programme commitments), or worked without anything to report, write only the heading and one line. You do not have to give a reason or any personal detail.
+**No update.** If you had no pilot work to report for the entire week, use the week's heading and `No update.` You need not give a personal reason.
 
-```markdown
-## YYYY-MM-DD · Ddd · Week N
+## Accuracy and timing rules
 
-No update.
-```
+1. **Completed means finished.** State whether the item is merged, in review, submitted or drafted. Planned work belongs under *Next week*.
+2. **Link evidence where it exists.** Use a PR, issue, commit, file, review comment or test output. If no link exists, describe the artefact precisely enough to find it.
+3. **Report only checks actually run.** Include the command and actual result, including failures. Write `None.` if no check was run.
+4. **Do not invent or inflate.** Report only work, meetings, reviews and outcomes that happened.
+5. **Late reports.** Add the report as soon as possible under its correct week, prefaced with `_Recorded late on YYYY-MM-DD._` Include only supported facts.
+6. **Corrections.** Do not silently rewrite a merged report. Add `_Correction YYYY-MM-DD: ..._` below the relevant report.
+7. **Keep it concise.** A weekly report should normally be no more than 15-20 lines plus links.
+8. **Use synthetic and non-sensitive information only.** Never include secrets, passwords, tokens, real personal data or confidential BNCS material.
 
-## Accuracy rules
+## Missing reports
 
-1. **Completed means finished, and its state says how finished.** A merged PR, a PR in review and a drafted document are all different. Say which. Planned work goes under *Next*, never under *Completed*.
-2. **Link evidence wherever it exists:** PR, issue, commit, file, review comment or test output. If there is no link, describe the artefact precisely enough for someone to find it.
-3. **Tests: report only what you ran and what actually happened.** Give the command and the real result, including failures. Write `None.` if you ran nothing. Never write "tests pass" for tests you did not run.
-4. **Do not invent or inflate.** Describe work as it is. "Started the supplier serializer" is a useful entry; claiming the endpoint is "done" when it is not is a problem.
-5. **Late entries.**
-   - If you missed a day, add that day's entry as soon as you can, under its own date, with the line `_Recorded late on YYYY-MM-DD._`
-   - Include only what you can still support with evidence. Otherwise write `No update.`
-6. **Corrections.**
-   - Do not silently rewrite an entry that has already been merged.
-   - Add a line under it: `_Correction YYYY-MM-DD: …_`
-7. **Keep it short:** a few bullets per heading, usually ten to fifteen lines per day.
-8. **Synthetic data only.** No secrets, passwords, tokens, real personal data or confidential BNCS material, exactly as in the rest of the repository.
-
-## Missing entries
-
-- **Daily check.** Each working morning before stand-up, Aryan (or a delegate Aryan names while away) checks that every member's open report PR has an entry for the previous working day. On Monday, this covers Friday.
-- **Reminder.** If an entry is missing, Aryan reminds that member in the team channel. Only the member can add their entry.
-- **Escalation.** If an entry is still missing at the next working morning's check, Aryan lists it as missing in the weekly report (member, date). Nobody else fills it in.
-- **Programme-wide non-working days** (for example a public holiday announced by Aryan) need no entries.
+- **Weekly check.** After the Friday sprint review, Aryan (or a delegate Aryan names while away) checks that every member has submitted a report for the week.
+- **Reminder.** If a report is missing, Aryan reminds that member in the team channel. Only that member can add it.
+- **Escalation.** If it is still missing at the next weekly check, Aryan lists the member and week in the BNCS weekly report. Nobody else fills it in.
 
 ## Using an AI coding agent
 
-An agent may draft your entry, but you check and commit it. You stay accountable for it (MVP_FEATURES §8).
+An agent may draft your report, but you check and commit it. You remain accountable for it (MVP_FEATURES section 8).
 
-- An agent writes only in **the active member's own file**, as stated by the role you gave it (AGENTS.md §D). It never edits another member's file.
-- The draft may use only facts from the session, `git log`, linked PRs and issues, and what you tell it. Anything it cannot verify is left out or marked `None.`
+- An agent writes only in the active member's own file, as stated by the role supplied to it in AGENTS.md section D.
+- The draft may use only facts from the session, `git log`, linked PRs and issues, and facts supplied by the member. Anything it cannot verify is left out or marked `None.`
 - It must not report a test result it did not see run.
