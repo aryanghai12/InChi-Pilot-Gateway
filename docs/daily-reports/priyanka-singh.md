@@ -1,6 +1,6 @@
 
 
-# Progress Log — Priyanka Singh (Frontend)
+# Weekly reports — Priyanka Singh
 
 ---
 
