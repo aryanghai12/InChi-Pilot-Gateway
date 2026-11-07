@@ -1,13 +1,12 @@
-# Virtual Environments
+# Virtual Environment
 .venv/
 env/
 venv/
 ENV/
 
-# Environment Variables & Secrets
+# Environment Variables
 .env
 .env.*
-*.env
 !.env.example
 
 # Python cache & bytecode
@@ -18,9 +17,13 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 
-# Databases & local files
+# Database
 *.sqlite3
 *.db
+
+# Static & Media
+staticfiles/
+media/
 
 # IDE & OS
 .vscode/
@@ -28,4 +31,3 @@ __pycache__/
 *.swp
 .DS_Store
 Thumbs.db
-
