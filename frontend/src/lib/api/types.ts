@@ -48,3 +48,91 @@ export interface CurrentUser {
 export interface CsrfResponse {
   detail?: string;
 }
+
+/**
+ * ============================================================================
+ * M2: Supplier Registry Types (from Lean Field Dictionary)
+ * Lifecycle: Draft / Complete / Archived only
+ * ============================================================================
+ */
+export type SupplierStatus = "Draft" | "Complete" | "Archived";
+export type SupplierType = "Manufacturer" | "Trader" | "Distributor" | "Service Provider" | "Other";
+
+export interface SupplierContactDetails {
+  contact_name?: string;
+  email?: string;
+  phone?: string;
+}
+
+export interface Supplier {
+  supplier_id: string;
+  legal_name: string;
+  country_of_registration: string;
+  supplier_type: SupplierType;
+  address_registration_reference?: string;
+  contact_details?: SupplierContactDetails;
+  industry_description?: string;
+  capability_attributes?: string;
+  record_status: SupplierStatus;
+  evidence_refs?: string[];
+  version: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+/**
+ * ============================================================================
+ * M3: Product Catalogue Types (from Lean Field Dictionary)
+ * ============================================================================
+ */
+export type TranslationStatus = "Not provided" | "Provided – unreviewed" | "Reviewed";
+
+export interface Product {
+  product_id: string;
+  supplier_id: string;
+  product_name: string;
+  product_category: string;
+  description?: string;
+  specifications?: string;
+  origin?: string;
+  minimum_order_quantity?: number;
+  minimum_order_unit?: string;
+  indicative_price_min?: number;
+  indicative_price_max?: number;
+  currency?: string;
+  price_basis?: string;
+  capacity_quantity?: number;
+  capacity_unit?: string;
+  capacity_period?: string;
+  lead_time_value?: number;
+  lead_time_unit?: string;
+  evidence_refs?: string[];
+  product_name_zh?: string;
+  short_description_zh?: string;
+  translation_status: TranslationStatus;
+  version: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+/**
+ * ============================================================================
+ * Evidence Metadata Types (from Lean Field Dictionary)
+ * ============================================================================
+ */
+export type EvidencePresenceStatus = "Provided" | "Missing";
+export type EvidenceReviewStatus = "Pending Review" | "Verified" | "Rejected";
+
+export interface EvidenceMetadata {
+  evidence_id: string;
+  entity_type: "supplier" | "product";
+  entity_id: string;
+  document_type: string;
+  evidence_reference: string;
+  document_name?: string;
+  issue_date?: string;
+  expiry_date?: string | null;
+  presence_status: EvidencePresenceStatus;
+  review_status: EvidenceReviewStatus;
+  created_at?: string;
+}
