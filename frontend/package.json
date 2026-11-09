@@ -30,7 +30,7 @@
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^4.3.4",
     "eslint": "^9",
-    "eslint-config-next": "^16.4.3",
+    "eslint-config-next": "^16.4.5",
     "jsdom": "^26.0.0",
     "openapi-typescript": "^7.6.1",
     "typescript": "^5",
