@@ -62,3 +62,4 @@ Per **Build Manual §9** and **MVP_FEATURES §15**:
 * **Description**: DRF's `SessionAuthentication` does not enforce CSRF checks on unauthenticated users. An attacker could perform Login CSRF.
 * **Remediation Guidance**: Abhishek must decorate `LoginView.post` with `@method_decorator(csrf_protect)` and define `authentication_classes = []`. Bootstrap token via `GET /api/v1/auth/csrf/` decorated with `@ensure_csrf_cookie`.
 * **Status**: In progress (tracked for Week 2 Gate 1).
+

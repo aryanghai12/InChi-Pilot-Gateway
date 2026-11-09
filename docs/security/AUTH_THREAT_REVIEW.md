@@ -99,3 +99,4 @@ To verify the authentication posture, Harish and Ajendra have defined the follow
    * Expected: HTTP 403 with `{"code": "permission_denied"}`. Session remains active.
 4. **TEST-AUTH-04: Session key rotation on login**:
    * Sequence: Obtain pre-login session cookie; execute successful login; assert new session cookie value does not match initial cookie.
+

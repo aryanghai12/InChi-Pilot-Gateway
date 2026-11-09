@@ -86,3 +86,4 @@ Every DRF view class must enforce permissions via:
 permission_classes = [IsAuthenticated, HasRolePermission]
 ```
 Where `HasRolePermission` checks the requesting user's `role` against the policy in `backend/apps/accounts/policy.py`. Object-level scoping is implemented within `get_queryset()` to ensure users never retrieve records outside their authorization boundary.
+

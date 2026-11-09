@@ -156,3 +156,4 @@ InChi Pilot Gateway is a private, internal decision-support web application for 
 | **T-ID-02** | Info Disclosure | DRF Exceptions | Low | Negative test: 500 error returns standard JSON shape without traceback. | Abhishek / Harish |
 | **T-ID-03** | Info Disclosure | AI Engine | Critical | Dependency check & code audit: verify no external HTTP calls or LLM libraries. | Alok / Ajendra |
 | **T-EP-01** | Privilege Escalation | DRF Permissions | High | Role boundary negative tests for all 3 internal roles against all endpoints. | Abhishek / Ajendra |
+

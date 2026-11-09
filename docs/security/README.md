@@ -33,6 +33,7 @@ This directory comprises the mandatory **Security Handover Pack** defined in [`d
 | **[REMEDIATION_REGISTER.md](REMEDIATION_REGISTER.md)** | Central vulnerability ledger tracking issues, severity (Critical/High/Medium/Low), owners, fixes, and retest evidence. | Active Ledger |
 | **[STAGING_CHECKLIST.md](STAGING_CHECKLIST.md)** | Pre-deployment verification checklist for optional hosted staging environments (pending D-16). | Pending D-16 |
 | **[RESIDUAL_RISK_STATEMENT.md](RESIDUAL_RISK_STATEMENT.md)** | Explicit non-production risk boundary statement for final Gate 4/5 acceptance. | Formal Baseline |
+| **[SECURITY_TEST_SPECIFICATIONS.md](SECURITY_TEST_SPECIFICATIONS.md)** | Automated negative security test cases, CSRF, IDOR, RBAC boundary assertions, and pytest reference suite (with Harish). | Approved Baseline |
 
 ---
 
@@ -53,3 +54,4 @@ Per **AGENTS.md §C2**:
 * **No Direct Code Modifications**: Security does not rewrite application business logic or frontend code to fix findings. Security authors negative test cases, reproduction steps, and remediation guidance. Component owners (Abhishek, Priyanka, Vishal, Alok) implement the fixes.
 * **No Unilateral Risk Acceptance**: Material residual security risk is accepted only by BNCS or the Senior Technical Mentor through Aryan.
 * **Non-Intrusive Testing**: Security scans and negative tests execute only against local non-production containerized environments.
+

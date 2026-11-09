@@ -63,3 +63,4 @@ Mapping of all 15 core entities defined in [`docs/MVP_FEATURES.md §6`](../MVP_F
 * **Data in Transit**: Enforce TLS 1.3 (fallback TLS 1.2) for any hosted staging deployment. Single-origin proxy ensures browser traffic never traverses unsecured inter-service paths without encryption.
 * **Passwords**: Django standard PBKDF2 algorithm with a SHA-256 hash and a minimum 600,000 iterations.
 * **Database Immutability**: `AuditEvent` table is protected by application-level immutability and an explicit PostgreSQL database trigger preventing `UPDATE` and `DELETE` commands (TD-03).
+
