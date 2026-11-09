@@ -29,7 +29,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^4.3.4",
-    "eslint": "^9",
+    "eslint": "^10",
     "eslint-config-next": "^16.4.3",
     "jsdom": "^26.0.0",
     "openapi-typescript": "^7.6.1",
