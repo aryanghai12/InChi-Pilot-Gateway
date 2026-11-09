@@ -32,6 +32,18 @@ class AuditEvent(models.Model):
         verbose_name_plural = "Audit Events"
         ordering = ["-timestamp"]
 
+    def save(self, *args, **kwargs):
+        """Application-level immutability: Prevent updates to existing records (TD-03)."""
+        if not self._state.adding and self.pk:
+            from django.core.exceptions import PermissionDenied
+            raise PermissionDenied("AuditEvent records are append-only and cannot be updated.")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        """Application-level immutability: Prevent deletion of audit records (TD-03)."""
+        from django.core.exceptions import PermissionDenied
+        raise PermissionDenied("AuditEvent records are append-only and cannot be deleted.")
+
     def __str__(self):
         actor_email = self.actor.email if self.actor else "system"
         return f"[{self.timestamp}] {actor_email} -> {self.action} on {self.object_type}:{self.object_id} ({self.outcome})"
