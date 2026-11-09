@@ -1,4 +1,4 @@
-# Daily reports — Abhishek Kumar
+# Weekly reports — Abhishek Kumar
 
 Application Backend and Access-Control Engineer · Process, template and rules: [README.md](README.md)
 

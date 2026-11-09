@@ -1,0 +1,2025 @@
+openapi: 3.0.3
+info:
+  title: InChi Pilot Gateway API
+  version: v0.1.0
+  description: Private internal API for BNCS InChi Pilot Gateway (Supplier & Demand
+    Matching)
+paths:
+  /api/v1/auth/csrf/:
+    get:
+      operationId: v1_auth_csrf_retrieve
+      description: Bootstraps the CSRF cookie so the frontend can send X-CSRFToken
+        headers on subsequent requests.
+      summary: Set CSRF Cookie
+      tags:
+      - v1
+      security:
+      - {}
+      responses:
+        '200':
+          description: CSRF cookie set successfully.
+  /api/v1/auth/login/:
+    post:
+      operationId: v1_auth_login_create
+      description: Authenticates the user using email and password, creates an active
+        session and rotates the CSRF token.
+      summary: Internal User Login
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      security:
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+        '400':
+          description: Invalid credentials or inactive account.
+  /api/v1/auth/logout/:
+    post:
+      operationId: v1_auth_logout_create
+      description: Terminates the user's current session and flushes session data.
+      summary: User Logout
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          description: Logged out successfully.
+  /api/v1/auth/me/:
+    get:
+      operationId: v1_auth_me_retrieve
+      description: Returns the profile and role details of the currently signed-in
+        user.
+      summary: Current Authenticated User
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/auth/register/:
+    post:
+      operationId: v1_auth_register_create
+      description: Registers a new user record with role assignment and issues a verification
+        token.
+      summary: Internal User Registration
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/auth/users/:
+    get:
+      operationId: v1_auth_users_list
+      description: |-
+        Dedicated user management endpoints for Platform Administrators.
+        Allows listing all users, updating roles, and activating or deactivating accounts.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserList'
+          description: ''
+    post:
+      operationId: v1_auth_users_create
+      description: |-
+        Dedicated user management endpoints for Platform Administrators.
+        Allows listing all users, updating roles, and activating or deactivating accounts.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/auth/users/{id}/:
+    get:
+      operationId: v1_auth_users_retrieve
+      description: |-
+        Dedicated user management endpoints for Platform Administrators.
+        Allows listing all users, updating roles, and activating or deactivating accounts.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this User.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: v1_auth_users_update
+      description: |-
+        Dedicated user management endpoints for Platform Administrators.
+        Allows listing all users, updating roles, and activating or deactivating accounts.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this User.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserAdminUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserAdminUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserAdminUpdateRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserAdminUpdate'
+          description: ''
+    patch:
+      operationId: v1_auth_users_partial_update
+      description: |-
+        Dedicated user management endpoints for Platform Administrators.
+        Allows listing all users, updating roles, and activating or deactivating accounts.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this User.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserAdminUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserAdminUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserAdminUpdateRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserAdminUpdate'
+          description: ''
+    delete:
+      operationId: v1_auth_users_destroy
+      description: |-
+        Dedicated user management endpoints for Platform Administrators.
+        Allows listing all users, updating roles, and activating or deactivating accounts.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this User.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/auth/users/{id}/activate/:
+    post:
+      operationId: v1_auth_users_activate_create
+      description: Reactivates a previously deactivated user account.
+      summary: Activate User Account
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this User.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/auth/users/{id}/deactivate/:
+    post:
+      operationId: v1_auth_users_deactivate_create
+      description: Deactivates an internal user account immediately revoking access.
+        A user cannot deactivate themselves.
+      summary: Deactivate User Account
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this User.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+  /api/v1/auth/verify/:
+    get:
+      operationId: v1_auth_verify_retrieve
+      description: Check whether a specific email account has already been verified.
+      summary: Check Verification Status
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: Returns verification status.
+    post:
+      operationId: v1_auth_verify_create
+      description: Validates the verification token for a registered account and marks
+        the account as verified.
+      summary: Verify Account Token
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyAccountRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifyAccountRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VerifyAccountRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: Account verified successfully.
+        '400':
+          description: Invalid or expired token.
+  /api/v1/auth/verify/status/:
+    get:
+      operationId: v1_auth_verify_status_retrieve
+      description: Check whether a specific email account has already been verified.
+      summary: Check Verification Status
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: Returns verification status.
+    post:
+      operationId: v1_auth_verify_status_create
+      description: Validates the verification token for a registered account and marks
+        the account as verified.
+      summary: Verify Account Token
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyAccountRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/VerifyAccountRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/VerifyAccountRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - {}
+      responses:
+        '200':
+          description: Account verified successfully.
+        '400':
+          description: Invalid or expired token.
+  /api/v1/evidence/:
+    get:
+      operationId: v1_evidence_list
+      description: |-
+        Evidence metadata viewset (EVD-01 to EVD-10).
+        Allows linking supporting evidence references to suppliers or products.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedEvidenceItemList'
+          description: ''
+    post:
+      operationId: v1_evidence_create
+      description: |-
+        Evidence metadata viewset (EVD-01 to EVD-10).
+        Allows linking supporting evidence references to suppliers or products.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvidenceItemRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EvidenceItemRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EvidenceItemRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceItem'
+          description: ''
+  /api/v1/evidence/{id}/:
+    get:
+      operationId: v1_evidence_retrieve
+      description: |-
+        Evidence metadata viewset (EVD-01 to EVD-10).
+        Allows linking supporting evidence references to suppliers or products.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Evidence Item.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceItem'
+          description: ''
+    put:
+      operationId: v1_evidence_update
+      description: |-
+        Evidence metadata viewset (EVD-01 to EVD-10).
+        Allows linking supporting evidence references to suppliers or products.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Evidence Item.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EvidenceItemRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/EvidenceItemRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/EvidenceItemRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceItem'
+          description: ''
+    patch:
+      operationId: v1_evidence_partial_update
+      description: |-
+        Evidence metadata viewset (EVD-01 to EVD-10).
+        Allows linking supporting evidence references to suppliers or products.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Evidence Item.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedEvidenceItemRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedEvidenceItemRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedEvidenceItemRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EvidenceItem'
+          description: ''
+    delete:
+      operationId: v1_evidence_destroy
+      description: |-
+        Evidence metadata viewset (EVD-01 to EVD-10).
+        Allows linking supporting evidence references to suppliers or products.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Evidence Item.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/products/:
+    get:
+      operationId: v1_products_list
+      description: |-
+        M3: Product Catalogue ViewSet.
+        Handles product creation linked to suppliers, Mandarin attributes, and technical/commercial parameters.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedProductList'
+          description: ''
+    post:
+      operationId: v1_products_create
+      description: |-
+        M3: Product Catalogue ViewSet.
+        Handles product creation linked to suppliers, Mandarin attributes, and technical/commercial parameters.
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+  /api/v1/products/{id}/:
+    get:
+      operationId: v1_products_retrieve
+      description: |-
+        M3: Product Catalogue ViewSet.
+        Handles product creation linked to suppliers, Mandarin attributes, and technical/commercial parameters.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Product.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+    put:
+      operationId: v1_products_update
+      description: |-
+        M3: Product Catalogue ViewSet.
+        Handles product creation linked to suppliers, Mandarin attributes, and technical/commercial parameters.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Product.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ProductRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+    patch:
+      operationId: v1_products_partial_update
+      description: |-
+        M3: Product Catalogue ViewSet.
+        Handles product creation linked to suppliers, Mandarin attributes, and technical/commercial parameters.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Product.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedProductRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedProductRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedProductRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: ''
+    delete:
+      operationId: v1_products_destroy
+      description: |-
+        M3: Product Catalogue ViewSet.
+        Handles product creation linked to suppliers, Mandarin attributes, and technical/commercial parameters.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Product.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/suppliers/:
+    get:
+      operationId: v1_suppliers_list
+      description: |-
+        M2: Supplier Registry ViewSet.
+        Handles CRUD operations, Draft saving, Complete status transitions, and Archiving.
+        Strictly protected by central RBAC policy (RolePermission).
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSupplierList'
+          description: ''
+    post:
+      operationId: v1_suppliers_create
+      description: |-
+        M2: Supplier Registry ViewSet.
+        Handles CRUD operations, Draft saving, Complete status transitions, and Archiving.
+        Strictly protected by central RBAC policy (RolePermission).
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SupplierRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SupplierRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supplier'
+          description: ''
+  /api/v1/suppliers/{id}/:
+    get:
+      operationId: v1_suppliers_retrieve
+      description: |-
+        M2: Supplier Registry ViewSet.
+        Handles CRUD operations, Draft saving, Complete status transitions, and Archiving.
+        Strictly protected by central RBAC policy (RolePermission).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Supplier.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supplier'
+          description: ''
+    put:
+      operationId: v1_suppliers_update
+      description: |-
+        M2: Supplier Registry ViewSet.
+        Handles CRUD operations, Draft saving, Complete status transitions, and Archiving.
+        Strictly protected by central RBAC policy (RolePermission).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Supplier.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SupplierRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SupplierRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SupplierRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supplier'
+          description: ''
+    patch:
+      operationId: v1_suppliers_partial_update
+      description: |-
+        M2: Supplier Registry ViewSet.
+        Handles CRUD operations, Draft saving, Complete status transitions, and Archiving.
+        Strictly protected by central RBAC policy (RolePermission).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Supplier.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedSupplierRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedSupplierRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedSupplierRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supplier'
+          description: ''
+    delete:
+      operationId: v1_suppliers_destroy
+      description: |-
+        M2: Supplier Registry ViewSet.
+        Handles CRUD operations, Draft saving, Complete status transitions, and Archiving.
+        Strictly protected by central RBAC policy (RolePermission).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Supplier.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/suppliers/{id}/archive/:
+    post:
+      operationId: v1_suppliers_archive_create
+      description: Soft-archives a supplier record. Associated products are preserved
+        but blocked from new actions.
+      summary: Archive Supplier
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Supplier.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supplier'
+          description: ''
+  /api/v1/suppliers/{id}/complete/:
+    post:
+      operationId: v1_suppliers_complete_create
+      description: Transitions a supplier from Draft to Complete after verifying all
+        mandatory fields.
+      summary: Mark Supplier Complete
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this Supplier.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Supplier'
+          description: ''
+        '400':
+          description: Validation failed.
+components:
+  schemas:
+    BlankEnum:
+      enum:
+      - ''
+    CapacityPeriodEnum:
+      enum:
+      - MONTH
+      - YEAR
+      - QUARTER
+      type: string
+      description: |-
+        * `MONTH` - Per Month
+        * `YEAR` - Per Year
+        * `QUARTER` - Per Quarter
+    CapacityUnitEnum:
+      enum:
+      - MT
+      - KG
+      - PIECES
+      - BOXES
+      - CONTAINERS
+      type: string
+      description: |-
+        * `MT` - Metric Tonnes
+        * `KG` - Kilograms
+        * `PIECES` - Pieces
+        * `BOXES` - Boxes
+        * `CONTAINERS` - Containers
+    CurrencyEnum:
+      enum:
+      - USD
+      - INR
+      - CNY
+      - EUR
+      type: string
+      description: |-
+        * `USD` - US Dollar
+        * `INR` - Indian Rupee
+        * `CNY` - Chinese Yuan
+        * `EUR` - Euro
+    EvidenceItem:
+      type: object
+      description: Serializer for Evidence Metadata records (EVD-01 to EVD-10).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        supplier:
+          type: string
+          format: uuid
+          nullable: true
+        product:
+          type: string
+          format: uuid
+          nullable: true
+        document_type:
+          type: string
+          maxLength: 100
+        evidence_reference:
+          type: string
+          maxLength: 255
+        document_name:
+          type: string
+          maxLength: 255
+        issue_date:
+          type: string
+          format: date
+          nullable: true
+        expiry_date:
+          type: string
+          format: date
+          nullable: true
+        presence_status:
+          type: string
+          maxLength: 50
+        review_status:
+          type: string
+          maxLength: 50
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - document_type
+      - evidence_reference
+      - id
+      - updated_at
+    EvidenceItemRequest:
+      type: object
+      description: Serializer for Evidence Metadata records (EVD-01 to EVD-10).
+      properties:
+        supplier:
+          type: string
+          format: uuid
+          nullable: true
+        product:
+          type: string
+          format: uuid
+          nullable: true
+        document_type:
+          type: string
+          minLength: 1
+          maxLength: 100
+        evidence_reference:
+          type: string
+          minLength: 1
+          maxLength: 255
+        document_name:
+          type: string
+          maxLength: 255
+        issue_date:
+          type: string
+          format: date
+          nullable: true
+        expiry_date:
+          type: string
+          format: date
+          nullable: true
+        presence_status:
+          type: string
+          minLength: 1
+          maxLength: 50
+        review_status:
+          type: string
+          minLength: 1
+          maxLength: 50
+      required:
+      - document_type
+      - evidence_reference
+    LeadTimeUnitEnum:
+      enum:
+      - DAYS
+      - WEEKS
+      - MONTHS
+      type: string
+      description: |-
+        * `DAYS` - Days
+        * `WEEKS` - Weeks
+        * `MONTHS` - Months
+    LoginRequest:
+      type: object
+      description: Serializer for authenticating existing internal users.
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - password
+    MoqUnitEnum:
+      enum:
+      - MT
+      - KG
+      - PIECES
+      - BOXES
+      - CONTAINERS
+      type: string
+      description: |-
+        * `MT` - Metric Tonnes
+        * `KG` - Kilograms
+        * `PIECES` - Pieces
+        * `BOXES` - Boxes
+        * `CONTAINERS` - Containers
+    PaginatedEvidenceItemList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvidenceItem'
+    PaginatedProductList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+    PaginatedSupplierList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Supplier'
+    PaginatedUserList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+    PatchedEvidenceItemRequest:
+      type: object
+      description: Serializer for Evidence Metadata records (EVD-01 to EVD-10).
+      properties:
+        supplier:
+          type: string
+          format: uuid
+          nullable: true
+        product:
+          type: string
+          format: uuid
+          nullable: true
+        document_type:
+          type: string
+          minLength: 1
+          maxLength: 100
+        evidence_reference:
+          type: string
+          minLength: 1
+          maxLength: 255
+        document_name:
+          type: string
+          maxLength: 255
+        issue_date:
+          type: string
+          format: date
+          nullable: true
+        expiry_date:
+          type: string
+          format: date
+          nullable: true
+        presence_status:
+          type: string
+          minLength: 1
+          maxLength: 50
+        review_status:
+          type: string
+          minLength: 1
+          maxLength: 50
+    PatchedProductRequest:
+      type: object
+      description: |-
+        M3: Serializer for Product Catalogue.
+        Enforces mandatory units, numeric bounds, Mandarin consistency, and version concurrency.
+      properties:
+        supplier:
+          type: string
+          format: uuid
+        product_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        product_category:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+        product_name_zh:
+          type: string
+          maxLength: 255
+        short_description_zh:
+          type: string
+        translation_status:
+          $ref: '#/components/schemas/TranslationStatusEnum'
+        origin:
+          type: string
+          maxLength: 100
+        specifications:
+          type: string
+        moq_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        moq_unit:
+          oneOf:
+          - $ref: '#/components/schemas/MoqUnitEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        price_min:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        price_max:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        price_basis:
+          type: string
+          maxLength: 50
+        capacity_quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        capacity_unit:
+          oneOf:
+          - $ref: '#/components/schemas/CapacityUnitEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        capacity_period:
+          oneOf:
+          - $ref: '#/components/schemas/CapacityPeriodEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        lead_time_value:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        lead_time_unit:
+          oneOf:
+          - $ref: '#/components/schemas/LeadTimeUnitEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        version:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Optimistic concurrency tracking version.
+    PatchedSupplierRequest:
+      type: object
+      description: |-
+        M2: Serializer for Supplier Registry.
+        Supports partial draft save, complete transition validation, and version concurrency.
+      properties:
+        legal_name:
+          type: string
+          maxLength: 255
+        trade_name:
+          type: string
+          maxLength: 255
+        country_of_registration:
+          type: string
+          minLength: 1
+          maxLength: 2
+        supplier_type:
+          oneOf:
+          - $ref: '#/components/schemas/SupplierTypeEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        address:
+          type: string
+        contact_name:
+          type: string
+          maxLength: 150
+        contact_email:
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        contact_phone:
+          type: string
+          maxLength: 50
+        industry_description:
+          type: string
+        record_status:
+          $ref: '#/components/schemas/RecordStatusEnum'
+        version:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Optimistic concurrency tracking version.
+    PatchedUserAdminUpdateRequest:
+      type: object
+      description: Serializer for Platform Administrators to update user role or status.
+      properties:
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          description: |-
+            Primary internal application role.
+
+            * `platform_admin` - Platform Administrator
+            * `commercial_analyst` - Commercial Analyst
+            * `reviewer` - Reviewer / Approver
+        is_active:
+          type: boolean
+          description: Designates whether this user account is active.
+        is_verified:
+          type: boolean
+          description: Designates whether this internal user account has completed
+            verification.
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        version:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Optimistic concurrency tracking version.
+    Product:
+      type: object
+      description: |-
+        M3: Serializer for Product Catalogue.
+        Enforces mandatory units, numeric bounds, Mandarin consistency, and version concurrency.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        supplier:
+          type: string
+          format: uuid
+        supplier_name:
+          type: string
+          readOnly: true
+        product_name:
+          type: string
+          maxLength: 255
+        product_category:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+        product_name_zh:
+          type: string
+          maxLength: 255
+        short_description_zh:
+          type: string
+        translation_status:
+          $ref: '#/components/schemas/TranslationStatusEnum'
+        origin:
+          type: string
+          maxLength: 100
+        specifications:
+          type: string
+        moq_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        moq_unit:
+          oneOf:
+          - $ref: '#/components/schemas/MoqUnitEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        price_min:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        price_max:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        price_basis:
+          type: string
+          maxLength: 50
+        capacity_quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        capacity_unit:
+          oneOf:
+          - $ref: '#/components/schemas/CapacityUnitEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        capacity_period:
+          oneOf:
+          - $ref: '#/components/schemas/CapacityPeriodEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        lead_time_value:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        lead_time_unit:
+          oneOf:
+          - $ref: '#/components/schemas/LeadTimeUnitEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        version:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Optimistic concurrency tracking version.
+        created_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - created_by
+      - id
+      - product_category
+      - product_name
+      - supplier
+      - supplier_name
+      - updated_at
+    ProductRequest:
+      type: object
+      description: |-
+        M3: Serializer for Product Catalogue.
+        Enforces mandatory units, numeric bounds, Mandarin consistency, and version concurrency.
+      properties:
+        supplier:
+          type: string
+          format: uuid
+        product_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        product_category:
+          type: string
+          minLength: 1
+          maxLength: 100
+        description:
+          type: string
+        product_name_zh:
+          type: string
+          maxLength: 255
+        short_description_zh:
+          type: string
+        translation_status:
+          $ref: '#/components/schemas/TranslationStatusEnum'
+        origin:
+          type: string
+          maxLength: 100
+        specifications:
+          type: string
+        moq_value:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        moq_unit:
+          oneOf:
+          - $ref: '#/components/schemas/MoqUnitEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        price_min:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        price_max:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        currency:
+          $ref: '#/components/schemas/CurrencyEnum'
+        price_basis:
+          type: string
+          maxLength: 50
+        capacity_quantity:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          nullable: true
+        capacity_unit:
+          oneOf:
+          - $ref: '#/components/schemas/CapacityUnitEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        capacity_period:
+          oneOf:
+          - $ref: '#/components/schemas/CapacityPeriodEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        lead_time_value:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          nullable: true
+        lead_time_unit:
+          oneOf:
+          - $ref: '#/components/schemas/LeadTimeUnitEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        version:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Optimistic concurrency tracking version.
+      required:
+      - product_category
+      - product_name
+      - supplier
+    RecordStatusEnum:
+      enum:
+      - draft
+      - complete
+      - archived
+      type: string
+      description: |-
+        * `draft` - Draft
+        * `complete` - Complete
+        * `archived` - Archived
+    RegisterRequest:
+      type: object
+      description: |-
+        Serializer for creating new internal users.
+        Generates a secure verification token for the verification workflow.
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          default: commercial_analyst
+      required:
+      - email
+      - password
+    RoleEnum:
+      enum:
+      - platform_admin
+      - commercial_analyst
+      - reviewer
+      type: string
+      description: |-
+        * `platform_admin` - Platform Administrator
+        * `commercial_analyst` - Commercial Analyst
+        * `reviewer` - Reviewer / Approver
+    Supplier:
+      type: object
+      description: |-
+        M2: Serializer for Supplier Registry.
+        Supports partial draft save, complete transition validation, and version concurrency.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        legal_name:
+          type: string
+          maxLength: 255
+        trade_name:
+          type: string
+          maxLength: 255
+        country_of_registration:
+          type: string
+          maxLength: 2
+        supplier_type:
+          oneOf:
+          - $ref: '#/components/schemas/SupplierTypeEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        address:
+          type: string
+        contact_name:
+          type: string
+          maxLength: 150
+        contact_email:
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        contact_phone:
+          type: string
+          maxLength: 50
+        industry_description:
+          type: string
+        record_status:
+          $ref: '#/components/schemas/RecordStatusEnum'
+        version:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Optimistic concurrency tracking version.
+        created_by:
+          type: string
+          format: uuid
+          readOnly: true
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - created_by
+      - id
+      - updated_at
+    SupplierRequest:
+      type: object
+      description: |-
+        M2: Serializer for Supplier Registry.
+        Supports partial draft save, complete transition validation, and version concurrency.
+      properties:
+        legal_name:
+          type: string
+          maxLength: 255
+        trade_name:
+          type: string
+          maxLength: 255
+        country_of_registration:
+          type: string
+          minLength: 1
+          maxLength: 2
+        supplier_type:
+          oneOf:
+          - $ref: '#/components/schemas/SupplierTypeEnum'
+          - $ref: '#/components/schemas/BlankEnum'
+        address:
+          type: string
+        contact_name:
+          type: string
+          maxLength: 150
+        contact_email:
+          oneOf:
+          - type: string
+            format: email
+            maxLength: 254
+          - type: string
+            maxLength: 0
+        contact_phone:
+          type: string
+          maxLength: 50
+        industry_description:
+          type: string
+        record_status:
+          $ref: '#/components/schemas/RecordStatusEnum'
+        version:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Optimistic concurrency tracking version.
+    SupplierTypeEnum:
+      enum:
+      - manufacturer
+      - merchant_exporter
+      - trader
+      type: string
+      description: |-
+        * `manufacturer` - Manufacturer
+        * `merchant_exporter` - Merchant Exporter
+        * `trader` - Trader / Aggregator
+    TranslationStatusEnum:
+      enum:
+      - not_provided
+      - provided_unreviewed
+      - reviewed
+      type: string
+      description: |-
+        * `not_provided` - Not provided
+        * `provided_unreviewed` - Provided – unreviewed
+        * `reviewed` - Reviewed
+    User:
+      type: object
+      description: Public profile serializer for authenticated users and administration.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          description: |-
+            Primary internal application role.
+
+            * `platform_admin` - Platform Administrator
+            * `commercial_analyst` - Commercial Analyst
+            * `reviewer` - Reviewer / Approver
+        role_display:
+          type: string
+          readOnly: true
+        is_active:
+          type: boolean
+          description: Designates whether this user account is active.
+        is_verified:
+          type: boolean
+          description: Designates whether this internal user account has completed
+            verification.
+        is_staff:
+          type: boolean
+          readOnly: true
+          description: Designates whether the user can log into the Django admin site.
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+        last_login:
+          type: string
+          format: date-time
+          readOnly: true
+          nullable: true
+        version:
+          type: integer
+          readOnly: true
+          description: Optimistic concurrency tracking version.
+      required:
+      - date_joined
+      - email
+      - id
+      - is_staff
+      - last_login
+      - role_display
+      - version
+    UserAdminUpdate:
+      type: object
+      description: Serializer for Platform Administrators to update user role or status.
+      properties:
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          description: |-
+            Primary internal application role.
+
+            * `platform_admin` - Platform Administrator
+            * `commercial_analyst` - Commercial Analyst
+            * `reviewer` - Reviewer / Approver
+        is_active:
+          type: boolean
+          description: Designates whether this user account is active.
+        is_verified:
+          type: boolean
+          description: Designates whether this internal user account has completed
+            verification.
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        version:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Optimistic concurrency tracking version.
+    UserAdminUpdateRequest:
+      type: object
+      description: Serializer for Platform Administrators to update user role or status.
+      properties:
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          description: |-
+            Primary internal application role.
+
+            * `platform_admin` - Platform Administrator
+            * `commercial_analyst` - Commercial Analyst
+            * `reviewer` - Reviewer / Approver
+        is_active:
+          type: boolean
+          description: Designates whether this user account is active.
+        is_verified:
+          type: boolean
+          description: Designates whether this internal user account has completed
+            verification.
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        version:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: 0
+          format: int64
+          description: Optimistic concurrency tracking version.
+    UserRequest:
+      type: object
+      description: Public profile serializer for authenticated users and administration.
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        role:
+          allOf:
+          - $ref: '#/components/schemas/RoleEnum'
+          description: |-
+            Primary internal application role.
+
+            * `platform_admin` - Platform Administrator
+            * `commercial_analyst` - Commercial Analyst
+            * `reviewer` - Reviewer / Approver
+        is_active:
+          type: boolean
+          description: Designates whether this user account is active.
+        is_verified:
+          type: boolean
+          description: Designates whether this internal user account has completed
+            verification.
+      required:
+      - email
+    VerifyAccountRequest:
+      type: object
+      description: Serializer to verify internal user accounts using a token.
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        token:
+          type: string
+          minLength: 1
+      required:
+      - email
+      - token
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid

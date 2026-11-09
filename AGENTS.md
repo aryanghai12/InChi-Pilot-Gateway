@@ -5,7 +5,7 @@ This is the shared instruction manual for every team member and every AI coding 
 - **What to build:** [`docs/MVP_FEATURES.md`](docs/MVP_FEATURES.md). It defines modules `M1` to `M11`, acceptance criteria, permissions, the matching process and open decisions `D-xx`.
 - **How to build it:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). It sets out the stack, the repository layout and **who owns each area** (§4), the backend, frontend and matching conventions, CI, the technical decision record (§9) and the deviations from the build manual still awaiting approval (§10).
 - **Current roles:** §C below, taken from `docs/InChi_Pilot_User_Delivery Ownership (revised).pdf`, effective 26 October 2026.
-- **Daily progress:** [`docs/daily-reports/`](docs/daily-reports/README.md). Every member records their own work each working day (§B rule 15).
+- **Weekly progress:** [`docs/daily-reports/`](docs/daily-reports/README.md). Every member records their own work once per programme week (§B rule 15). The legacy directory name is retained for existing links and history.
 - `CLAUDE.md` only points here. Do not copy rules into other instruction files. Change them here.
 
 ---
@@ -91,7 +91,7 @@ These apply to every role.
     - **Material residual security risk** is accepted by BNCS or the mentor, not by the team.
 13. **Report truthfully.** Never claim a test passed unless you ran it and it passed. Say what was not tested.
 14. **Raise blockers quickly.** If blocked for more than 24 hours, raise it in the team channel and tag Aryan plus the dependency owner. Do not work around authority, architecture, data, AI-governance or security blockers in undocumented ways.
-15. **Record your own work every working day.** Add an entry to your own file in [`docs/daily-reports/`](docs/daily-reports/README.md). An entry covers what you completed (with its state and evidence), what is in progress, the tests and checks you actually ran, your blockers and dependencies, and your next steps. Write `No update.` when there is nothing to report. Separate completed work from planned work, and never invent accomplishments or results. Never write in another member's file. The workflow and template are in that folder's README.
+15. **Record your own work every programme week.** Add one weekly report to your own file in [`docs/daily-reports/`](docs/daily-reports/README.md), after the Friday sprint review or by the next working day. It covers completed work (with state and evidence), meetings and review activity, work in progress, tests and checks actually run, blockers, dependencies and next-week steps. Write `No update.` when there is nothing to report. Separate completed work from planned work, never invent accomplishments or results, and never write in another member's file. The workflow and template are in that folder's README.
 
 ### Repository layout and ownership
 
@@ -101,7 +101,7 @@ Create each directory when your work begins. Do not create empty placeholder fol
 
 ### Branches, commits and PRs
 
-- Branch names follow `<area>/<short-description>`, for example `frontend/supplier-list`, `backend/rbac-object-checks` or `docs/field-dictionary-v1`. Weekly daily-report branches are `reports/<first-name>-week-<n>` (see `docs/daily-reports/README.md`).
+- Branch names follow `<area>/<short-description>`, for example `frontend/supplier-list`, `backend/rbac-object-checks` or `docs/field-dictionary-v1`. Weekly-report branches are `reports/<first-name>-week-<n>` (see `docs/daily-reports/README.md`).
 - No direct pushes to `main`. Every change goes through a PR with at least one relevant peer review. Critical artefacts are never self-approved.
 - Every PR description contains:
 
@@ -159,7 +159,7 @@ Reviewers:
 
 **Primary responsibility.** Keep delivery visible and integrated. That covers sprint cadence, the backlog, risks, dependencies, decisions, interface coordination, integration evidence and review packs. The outcome is that each Friday shows one integrated product with evidence, and handover is never rebuilt at the last minute.
 
-**Owns:** `docs/governance/` and the daily-report process (`docs/daily-reports/README.md`), plus maintaining `README.md`, `AGENTS.md` and `CLAUDE.md`. Also the backlog and project board (D-18), the change record for `docs/MVP_FEATURES.md`, and the records in ARCHITECTURE.md §9 and §10. Writes only Aryan's own daily-report file.
+**Owns:** `docs/governance/` and the weekly-report process (`docs/daily-reports/README.md`), plus maintaining `README.md`, `AGENTS.md` and `CLAUDE.md`. Also the backlog and project board (D-18), the change record for `docs/MVP_FEATURES.md`, and the records in ARCHITECTURE.md §9 and §10. Writes only Aryan's own weekly-report file.
 
 **Interfaces.** Works with every member. Chairs Monday Sprint Start and Friday Sprint Review, and prepares the weekly report for BNCS. Escalates business decisions to BNCS and material security risk to BNCS or the mentor. Records technical decisions in ARCHITECTURE.md §9.
 
@@ -170,14 +170,14 @@ Reviewers:
    - Create the registers: risk, issue, dependency, decision (seeded with D-01 to D-20 and DS-01 to DS-16), API and interface contract, and integration issues.
    - The technical decisions are recorded in ARCHITECTURE.md §9 with their status. Present the build-manual deviations in ARCHITECTURE.md §10 to the mentor and BNCS at the Week 1 Sprint Review, and **ask for approval**. Record each outcome with approver and date. Do not mark anything approved without that record. Keep the embedding model (D-11) and LLM (D-20) visibly open.
    - Get the business decisions D-02 and D-19 answered by BNCS this week, and D-09 (permissions) before the Week 2 auth work is finalised.
-   - Set up GitHub Issues labels (module, severity, role, `daily-report`), the Project board, and branch protection on `main`. Once this baseline merges, start the daily-report routine (`docs/daily-reports/README.md`).
+   - Set up GitHub Issues labels (module, severity, role, `weekly-report`), the Project board, and branch protection on `main`. Once this baseline merges, start the weekly-report routine (`docs/daily-reports/README.md`).
 2. **Week 1.** Write the integration plan. It lists the contracts needed and their owners: frontend↔backend (generated OpenAPI), API layer↔models (Abhishek and Vishal), orchestration↔matching engine (the `engine.run()` dataclasses: Abhishek and Alok), audit-event schema. Include the dates each must be agreed.
 3. **Week 2.** Track blockers, lock interface versions, and coordinate the Gate 1 integrated demo (6 Nov).
 4. **Weeks 3 and 4.** Track dependencies and interface changes, and build the weekly evidence index. Run the **Gate 2 rule-approval gate** (20 Nov): fields, rules, criteria and interfaces must be approved before AI integration. Record the decisions.
 5. **Weeks 5 and 6.** Run the integration and evaluation review. Prepare the **feature-freeze decision pack** for Gate 3 (4 Dec).
 6. **Week 7.** Track UAT, defect triage and acceptance.
 7. **Week 8.** Own the demo runbook, the handover index, the final report and the Phase 2 backlog.
-8. **Every working day.** Check each member's open daily-report PR for the previous working day's entry, and send reminders for missing ones. List entries still missing at the next check in the weekly report. Never write another member's entry. Use the reports, with their linked evidence, as input to the Friday review and the weekly BNCS report.
+8. **Every week.** After the Friday Sprint Review, check that each member has submitted one weekly report for that programme week and send reminders for missing reports. List entries still missing at the next weekly check in the BNCS report. Never write another member's report. Use the reports, with their linked evidence, as input to the Sprint Review and the weekly BNCS report.
 
 **Must not decide alone.** Product policy, commercial rules, security-risk acceptance and release. Stack changes go through an ARCHITECTURE.md §9 entry reviewed by the affected owners. Does not write application features in other members' areas, and does not mark another member's work accepted without their reviewer.
 
@@ -759,7 +759,7 @@ Role: Priyanka Singh | Frontend Web and Client-Side Integration Engineer
 3. **Never infers a role** from a Git username, email, commit author, machine name or file being edited. If no role is given and the task changes files, it asks once which role applies. Read-only questions about the project need no role.
 4. If a task crosses workstreams, it names the other owners and interfaces involved, limits its changes to the active role's area, and writes down what each other owner needs to do. It does not quietly implement their part.
 5. Takes on one role per session. To switch, the user states a new role explicitly.
-6. Writes daily-report entries only in the active member's own file in `docs/daily-reports/`, and only from verifiable facts (`docs/daily-reports/README.md`, *Using an AI coding agent*).
+6. Writes weekly reports only in the active member's own file in `docs/daily-reports/`, and only from verifiable facts (`docs/daily-reports/README.md`, *Using an AI coding agent*).
 
 ---
 
@@ -775,7 +775,7 @@ Every agent follows these steps for every task:
 6. **Add or update** the tests and documentation affected.
 7. **Run** the available checks (lint, type-check, tests, migrations) and record the **actual** results.
 8. **Summarise** what changed, what was tested and its result, what is incomplete or assumed, and the next integration step and who owns it.
-9. **Record** the day's outcome in the member's own daily report (§B rule 15), when the member asks for it. Separate completed work from planned work, and do not claim anything that step 7 did not actually show.
+9. **Record** the week's outcome in the member's own weekly report (§B rule 15), when the member asks for it. Separate completed work from planned work, and do not claim anything that step 7 did not actually show.
 
 ---
 

@@ -1,4 +1,4 @@
-# Daily reports — Vishal Chauhan
+# Weekly reports — Vishal Chauhan
 
 Data and Platform Services Engineer · Process, template and rules: [README.md](README.md)
 

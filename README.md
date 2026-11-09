@@ -84,7 +84,7 @@ What exists today:
 └── docs/
     ├── MVP_FEATURES.md                                     v0.1 scope, acceptance criteria, business decisions
     ├── ARCHITECTURE.md                                     Stack, repository layout and ownership, conventions, technical decisions
-    ├── daily-reports/                                      Daily progress log: process README and one file per member
+    ├── daily-reports/                                      Weekly progress log: process README and one file per member (legacy path retained)
     ├── InChi_Pilot_Gateway_Build_Manual.pdf                Source: scope, governance (roles and dates superseded)
     ├── InChi_Pilot_User_Delivery Ownership (revised).pdf   Source: current roles (from 26 Oct 2026)
     ├── InChi_Pilot_Build Sequence Timeline (revised).pdf   Source: current weekly plan (26 Oct – 18 Dec 2026)
@@ -119,7 +119,7 @@ No test suites or CI workflows exist yet. The test strategy and traceability mat
 - [docs/MVP_FEATURES.md](docs/MVP_FEATURES.md): what is in v0.1, acceptance criteria, permissions, matching process, feature-blueprint audit, Phase 2 list, source discrepancies and open decisions.
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): technology stack, repository layout and ownership, backend, frontend and matching conventions, CI, technical decision record, build-manual deviations awaiting approval.
 - [AGENTS.md](AGENTS.md): engineering rules, role definitions and prompts, and the Definition of Done.
-- [docs/daily-reports/](docs/daily-reports/README.md): how each member records daily progress, and the shared log.
+- [docs/daily-reports/](docs/daily-reports/README.md): how each member records weekly progress, and the shared log (the legacy path is retained).
 - [docs/](docs/): original project source documents (PDF). Where they conflict with the revised ownership and timeline, the revised documents take precedence. See MVP_FEATURES §11.
 
 ## Team and contribution
@@ -128,7 +128,7 @@ The pilot is built by eight interns under BNCS and mentor supervision. Current r
 
 | Member | Role | Primary areas |
 |---|---|---|
-| Aryan Ghai | Technical Project Coordinator, Product Operations and Integration Governance | `docs/governance/`, backlog and decision records, README/AGENTS/CLAUDE, daily-report process |
+| Aryan Ghai | Technical Project Coordinator, Product Operations and Integration Governance | `docs/governance/`, backlog and decision records, README/AGENTS/CLAUDE, weekly-report process |
 | Ajendra Nath Tripathi | Cybersecurity and DevSecOps Engineer | `docs/security/`, security CI jobs, Dependabot, `.gitignore` |
 | Adrika T Kumar | Product UX and Commercial Workflow Analyst | `docs/product/`, requirement content of MVP_FEATURES |
 | Priyanka Singh | Frontend Web and Client-Side Integration Engineer | `frontend/` (Next.js) |
@@ -141,7 +141,7 @@ The pilot is built by eight interns under BNCS and mentor supervision. Current r
 
 - Every change goes through a focused pull request with at least one relevant peer review.
 - Each PR links to an `M#-AC#` requirement and reports the tests that were actually run.
-- Every member records their own progress each working day in [docs/daily-reports/](docs/daily-reports/README.md), including completed work with evidence, work in progress, tests run, blockers and next steps.
+- Every member records their own progress once per programme week in [docs/daily-reports/](docs/daily-reports/README.md), including completed work with evidence, meetings and reviews, work in progress, tests run, blockers and next steps.
 - Technical decisions are recorded in ARCHITECTURE.md §9. Deviations from the build manual need BNCS and mentor approval (ARCHITECTURE.md §10). Business decisions (commercial policy, readiness criteria, eligibility rules and weights, decision labels, permissions, scope) and acceptance of material security risk go to BNCS.
 - If you use an AI coding agent, state your role at the start of your prompt (for example `@role: backend`). See [AGENTS.md § D](AGENTS.md#d-role-activation).
 

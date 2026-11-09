@@ -1,4 +1,4 @@
-# Weekly reports - Ajendra Nath Tripathi
+# Weekly reports — Ajendra Nath Tripathi
 
 Cybersecurity and DevSecOps Engineer. Process, template and rules: [README.md](README.md)
 
