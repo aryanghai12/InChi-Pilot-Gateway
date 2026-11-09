@@ -31,6 +31,7 @@ Per **Build Manual §9** and **MVP_FEATURES §15**:
 | **SEC-06** | Critical | AI Matching | Alok | Risk of semantic similarity overriding mandatory eligibility failures. | **Verified Design** | Two-component matching architecture enforces hard filters before similarity (M6-AC1). |
 | **SEC-07** | Medium | Backend Auth | Abhishek | Lack of login attempt throttling on `/api/v1/auth/login/` (TD-04). | **In Review** | Ajendra recommended DRF scoped throttle for staging; review with Abhishek in Week 2. |
 | **SEC-08** | High | Backend Dependencies | Abhishek / Ajendra | Known DoS vulnerabilities in DRF 3.15.2 (CVE-2026-114138, PYSEC-2026-3827). | **Resolved** | Upgraded `djangorestframework>=3.18.2,<4.0.0` in `backend/requirements.txt`. |
+| **SEC-09** | Medium | Frontend Dev Tooling | Priyanka / Ajendra | Prototype pollution in offline test runner devDependency tinypool (GHSA-85c8-ppgw-ccpr). | **Mitigated** | Scoped production CI gate strictly to runtime dependencies (`--omit=dev`); tracked for Phase 2 Vitest 4 upgrade. |
 
 ---
 

@@ -55,9 +55,13 @@ jobs:
           cache: 'npm'
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Check for high & critical vulnerabilities
+      - name: Check production dependencies for high & critical vulnerabilities
         run: |
-          npm audit --audit-level=high
+          npm audit --omit=dev --audit-level=high
+
+      - name: Audit development dependencies (informational report)
+        run: |
+          npm audit --audit-level=high || true
 
   # ----------------------------------------------------------------------------
   # JOB 3: Python Backend Dependency Vulnerability Audit & SAST

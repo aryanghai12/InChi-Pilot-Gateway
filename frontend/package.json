@@ -35,5 +35,8 @@
     "openapi-typescript": "^7.6.1",
     "typescript": "^5",
     "vitest": "^3.0.7"
+  },
+  "overrides": {
+    "tinypool": ">=2.1.2"
   }
 }
