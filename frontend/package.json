@@ -33,7 +33,7 @@
     "eslint-config-next": "^16.4.3",
     "jsdom": "^26.0.0",
     "openapi-typescript": "^7.6.1",
-    "typescript": "^5",
+    "typescript": "^7",
     "vitest": "^3.0.7"
   },
   "overrides": {
