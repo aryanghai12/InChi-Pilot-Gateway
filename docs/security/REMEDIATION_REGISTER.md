@@ -30,6 +30,7 @@ Per **Build Manual §9** and **MVP_FEATURES §15**:
 | **SEC-05** | Critical | Database / Audit | Vishal | Audit logs could be modified or deleted without a database-level constraint. | **Pending** | Vishal to add PostgreSQL trigger rejecting `UPDATE` and `DELETE` on `AuditEvent` (TD-03). |
 | **SEC-06** | Critical | AI Matching | Alok | Risk of semantic similarity overriding mandatory eligibility failures. | **Verified Design** | Two-component matching architecture enforces hard filters before similarity (M6-AC1). |
 | **SEC-07** | Medium | Backend Auth | Abhishek | Lack of login attempt throttling on `/api/v1/auth/login/` (TD-04). | **In Review** | Ajendra recommended DRF scoped throttle for staging; review with Abhishek in Week 2. |
+| **SEC-08** | High | Backend Dependencies | Abhishek / Ajendra | Known DoS vulnerabilities in DRF 3.15.2 (CVE-2026-114138, PYSEC-2026-3827). | **Resolved** | Upgraded `djangorestframework>=3.18.2,<4.0.0` in `backend/requirements.txt`. |
 
 ---
 
@@ -62,4 +63,15 @@ Per **Build Manual §9** and **MVP_FEATURES §15**:
 * **Description**: DRF's `SessionAuthentication` does not enforce CSRF checks on unauthenticated users. An attacker could perform Login CSRF.
 * **Remediation Guidance**: Abhishek must decorate `LoginView.post` with `@method_decorator(csrf_protect)` and define `authentication_classes = []`. Bootstrap token via `GET /api/v1/auth/csrf/` decorated with `@ensure_csrf_cookie`.
 * **Status**: In progress (tracked for Week 2 Gate 1).
+
+---
+
+### Finding SEC-08: Inefficient Algorithmic Complexity / DoS in DRF (CVE-2026-114138)
+* **Severity**: High
+* **Affected Component**: `backend/requirements.txt` (`djangorestframework`)
+* **Discovered**: CI Pipeline execution via `pip-audit`
+* **Vulnerability ID**: CVE-2026-114138 / PYSEC-2026-3827
+* **Description**: DRF < 3.18.2 suffers from quadratic parsing complexity when processing crafted HTTP `Accept` headers with excessive semicolons, leading to worker CPU exhaustion and DoS.
+* **Remediation**: Upgraded `djangorestframework` constraint in `backend/requirements.txt` from `>=3.15.0,<3.16.0` to `>=3.18.2,<4.0.0`.
+* **Resolution**: Pushed in PR #21; verified against pip-audit database.
 
