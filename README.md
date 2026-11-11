@@ -15,7 +15,7 @@ BNCS needs one structured, traceable place to answer a commercial question: whic
 2. The user creates or updates supplier and product records.
 3. The user completes a China-readiness assessment, and a Reviewer records the outcome.
 4. The user records a buyer requirement, with mandatory criteria kept separate from preferences.
-5. The platform applies mandatory eligibility filters, then approved weighted scoring, then a bounded semantic-similarity signal. A rules-only fallback is available.
+5. The platform applies mandatory eligibility filters, then approved weighted scoring, then mandatory semantic similarity. If semantic processing fails, the run fails explicitly.
 6. The platform shows ranked candidates with explanations and missing-information warnings.
 7. An authorised person records a disposition with a reason.
 8. An authorised user can convert an accepted match into a tracked opportunity.
@@ -29,7 +29,7 @@ BNCS needs one structured, traceable place to answer a commercial question: whic
 | M2–M3 Registry | Supplier and product records: create, edit, search, filter, evidence metadata |
 | M4 Readiness | Versioned question set, missing-information list, human review and outcome |
 | M5 Requirements | Buyer requirement capture with mandatory and preference criteria, versioning |
-| M6 Matching | Eligibility filters, weighted score, semantic signal, explanations, fallback |
+| M6 Matching | Mandatory eligibility filters, semantic embeddings, hybrid scoring, ranking, explainability |
 | M7 Disposition | Human decision (proposed: accepted, rejected or on hold) with a reason |
 | M8 Opportunities | A small, approved set of pipeline stages, created only from accepted matches |
 | M9 Dashboard | Current-state counts computed from stored records |
@@ -57,8 +57,8 @@ Full scope, acceptance criteria and the permission matrix are in [docs/MVP_FEATU
 | Frontend | Next.js (App Router), React, TypeScript, TanStack Query. Next.js renders pages and forwards `/api/` to Django; it holds no business logic. |
 | Backend | Python 3.12, Django 5.2 LTS, Django REST Framework. Session auth with CSRF. OpenAPI via drf-spectacular. |
 | Database | PostgreSQL 17 with pgvector. Django ORM and Django migrations are authoritative for the schema. |
-| Matching | In-process Python package inside the backend. Deterministic rules-based matching is the baseline. Semantic similarity is an optional, bounded signal, with a rules-only fallback. |
-| Embeddings | `sentence-transformers`, run locally (optional install). **Embedding model: TBD (D-11).** |
+| Matching | Two-component architecture: Django matching integration layer (`backend/apps/matching/`) + FastAPI AI Matching Engine (`backend/ai_matching/`). Mandatory semantic matching; failures fail explicitly (no silent fallback). |
+| Embeddings | Local embedding generation (`sentence-transformers` or `FastEmbed`, pending confirmation). **Embedding model: TBD (D-11).** |
 | LLM | **None in v0.1. Provider and model TBD (D-20).** Not needed for the MVP. |
 | Tests | pytest, Vitest + React Testing Library, Playwright |
 | Environment | Docker Compose: PostgreSQL + pgvector, Django backend, Next.js frontend, all on one browser origin |
@@ -67,7 +67,7 @@ Full scope, acceptance criteria and the permission matrix are in [docs/MVP_FEATU
 **Approval status.** The build manual makes the final stack subject to BNCS and technical-mentor approval. **That approval has not been recorded yet.** The material deviations from the manual's baseline are:
 
 - Django instead of Spring Boot;
-- matching inside the backend instead of a separate FastAPI service;
+- runtime and deployment configuration of the FastAPI matching engine relative to Django (D-15 pending confirmation);
 - hosted staging made optional.
 
 They are listed with their status in [ARCHITECTURE.md §10](docs/ARCHITECTURE.md#10-build-manual-deviations-and-pending-approvals).
@@ -84,7 +84,7 @@ What exists today:
 └── docs/
     ├── MVP_FEATURES.md                                     v0.1 scope, acceptance criteria, business decisions
     ├── ARCHITECTURE.md                                     Stack, repository layout and ownership, conventions, technical decisions
-    ├── daily-reports/                                      Daily progress log: process README and one file per member
+    ├── daily-reports/                                      Weekly progress log: process README and one file per member (legacy path retained)
     ├── InChi_Pilot_Gateway_Build_Manual.pdf                Source: scope, governance (roles and dates superseded)
     ├── InChi_Pilot_User_Delivery Ownership (revised).pdf   Source: current roles (from 26 Oct 2026)
     ├── InChi_Pilot_Build Sequence Timeline (revised).pdf   Source: current weekly plan (26 Oct – 18 Dec 2026)
@@ -98,7 +98,7 @@ Planned top-level layout. Each directory is created when work on it starts:
 | Path | What goes there | Primary owner |
 |---|---|---|
 | `frontend/` | Next.js App Router app: pages, shared components, API client and frontend unit tests | Priyanka |
-| `backend/` | Django project: API, auth and permissions, workflow services (Abhishek); models, migrations, queries and seed data (Vishal); matching engine and providers (Alok); unit and API tests beside each app | Abhishek, Vishal, Alok |
+| `backend/` | Django project: API, auth, workflow services (Abhishek); models, migrations, seed data (Vishal); Django matching integration layer `apps/matching/` and FastAPI AI matching engine `ai_matching/` (Alok) | Abhishek, Vishal, Alok |
 | `e2e/` | Playwright end-to-end and regression suite | Harish |
 | `docker-compose.yml`, `.env.example` | Local and demo environment: `db`, `backend`, `frontend` | Abhishek (with Vishal and Priyanka) |
 | `.github/` | CI workflows and Dependabot | Harish (tests), Ajendra (security) |
@@ -119,7 +119,7 @@ No test suites or CI workflows exist yet. The test strategy and traceability mat
 - [docs/MVP_FEATURES.md](docs/MVP_FEATURES.md): what is in v0.1, acceptance criteria, permissions, matching process, feature-blueprint audit, Phase 2 list, source discrepancies and open decisions.
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): technology stack, repository layout and ownership, backend, frontend and matching conventions, CI, technical decision record, build-manual deviations awaiting approval.
 - [AGENTS.md](AGENTS.md): engineering rules, role definitions and prompts, and the Definition of Done.
-- [docs/daily-reports/](docs/daily-reports/README.md): how each member records daily progress, and the shared log.
+- [docs/daily-reports/](docs/daily-reports/README.md): how each member records weekly progress, and the shared log (the legacy path is retained).
 - [docs/](docs/): original project source documents (PDF). Where they conflict with the revised ownership and timeline, the revised documents take precedence. See MVP_FEATURES §11.
 
 ## Team and contribution
@@ -128,20 +128,20 @@ The pilot is built by eight interns under BNCS and mentor supervision. Current r
 
 | Member | Role | Primary areas |
 |---|---|---|
-| Aryan Ghai | Technical Project Coordinator, Product Operations and Integration Governance | `docs/governance/`, backlog and decision records, README/AGENTS/CLAUDE, daily-report process |
+| Aryan Ghai | Technical Project Coordinator, Product Operations and Integration Governance | `docs/governance/`, backlog and decision records, README/AGENTS/CLAUDE, weekly-report process |
 | Ajendra Nath Tripathi | Cybersecurity and DevSecOps Engineer | `docs/security/`, security CI jobs, Dependabot, `.gitignore` |
 | Adrika T Kumar | Product UX and Commercial Workflow Analyst | `docs/product/`, requirement content of MVP_FEATURES |
 | Priyanka Singh | Frontend Web and Client-Side Integration Engineer | `frontend/` (Next.js) |
 | Abhishek Kumar | Application Backend and Access-Control Engineer | Django config and API layer, `docs/api/`, Compose and backend image |
 | Vishal Chauhan | Data and Platform Services Engineer | Models, migrations (including pgvector), queries, seed data, `docs/data/` |
-| Alok Tiwari | AI Matching and Data Intelligence Engineer | `backend/apps/matching/engine/`, providers, criteria, `docs/ai/` |
+| Alok Tiwari | AI Matching and Data Intelligence Engineer | `backend/apps/matching/`, `backend/ai_matching/`, `docs/ai/` |
 | Harish Pal | QA and Test Automation Engineer | `e2e/`, test CI jobs, `docs/qa/` |
 
 **How we work:**
 
 - Every change goes through a focused pull request with at least one relevant peer review.
 - Each PR links to an `M#-AC#` requirement and reports the tests that were actually run.
-- Every member records their own progress each working day in [docs/daily-reports/](docs/daily-reports/README.md), including completed work with evidence, work in progress, tests run, blockers and next steps.
+- Every member records their own progress once per programme week in [docs/daily-reports/](docs/daily-reports/README.md), including completed work with evidence, meetings and reviews, work in progress, tests run, blockers and next steps.
 - Technical decisions are recorded in ARCHITECTURE.md §9. Deviations from the build manual need BNCS and mentor approval (ARCHITECTURE.md §10). Business decisions (commercial policy, readiness criteria, eligibility rules and weights, decision labels, permissions, scope) and acceptance of material security risk go to BNCS.
 - If you use an AI coding agent, state your role at the start of your prompt (for example `@role: backend`). See [AGENTS.md § D](AGENTS.md#d-role-activation).
 
