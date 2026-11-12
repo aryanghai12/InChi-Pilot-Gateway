@@ -44,7 +44,7 @@ function LoginForm() {
         }),
       });
       const user = res?.user || res;
-      if (user && typeof user === "object" && "id" in user) {
+      if (user && typeof user === "object" && (user.id || user.email)) {
         queryClient.setQueryData(["currentUser"], user);
       }
       router.push(nextUrl);
@@ -84,7 +84,7 @@ function LoginForm() {
       });
 
       const user = res?.user || res;
-      if (user && typeof user === "object" && "id" in user) {
+      if (user && typeof user === "object" && (user.id || user.email)) {
         queryClient.setQueryData(["currentUser"], user);
       }
 
@@ -92,11 +92,23 @@ function LoginForm() {
       router.push(nextUrl);
     } catch (err) {
       if (err instanceof ApiError) {
-        setErrorMessage(
+        // Extract structured non_field_errors (e.g. invalid credentials masked by exception handler)
+        const nonFieldError =
+          err.fieldErrors?.non_field_errors?.[0] ||
+          err.fieldErrors?.detail?.[0];
+
+        const isGenericValidationNotice =
+          err.message &&
+          (err.message.includes("Input validation failed") ||
+            err.message.includes("check field errors"));
+
+        const displayMessage =
           err.status === 404
             ? "Backend API (:8000) not detected. Use 'Explore with Demo Session' to preview the frontend."
-            : err.message || "Invalid email or password."
-        );
+            : nonFieldError ||
+              (isGenericValidationNotice ? "Invalid email or password." : err.message || "Invalid email or password.");
+
+        setErrorMessage(displayMessage);
         if (err.fieldErrors) {
           setFieldErrors(err.fieldErrors);
         }

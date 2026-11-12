@@ -25,6 +25,14 @@ const nextConfig: NextConfig = {
         destination: `${BACKEND_ORIGIN}/${ADMIN_URL_PATH}/`,
       },
       {
+        source: `/${ADMIN_URL_PATH}/`,
+        destination: `${BACKEND_ORIGIN}/${ADMIN_URL_PATH}/`,
+      },
+      {
+        source: `/${ADMIN_URL_PATH}/:path*/`,
+        destination: `${BACKEND_ORIGIN}/${ADMIN_URL_PATH}/:path*/`,
+      },
+      {
         source: `/${ADMIN_URL_PATH}/:path*`,
         destination: `${BACKEND_ORIGIN}/${ADMIN_URL_PATH}/:path*`,
       },
