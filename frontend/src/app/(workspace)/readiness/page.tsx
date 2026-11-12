@@ -13,6 +13,9 @@ import {
   AssessmentAnswer,
   AssessmentHistoryEntry,
   Supplier,
+  PaginatedSupplierList,
+  PaginatedResponse,
+  unwrapPaginated,
   ApiError,
 } from "@/lib/api/types";
 import { Button } from "@/components/forms/Button";
@@ -143,7 +146,11 @@ export default function ReadinessPage() {
     queryKey: ["suppliers"],
     queryFn: async () => {
       try {
-        return await apiFetch<Supplier[]>("/api/v1/suppliers/");
+        const res = await apiFetch<Supplier[] | PaginatedSupplierList>("/api/v1/suppliers/");
+        return unwrapPaginated(res).map((s) => ({
+          ...s,
+          supplier_id: s.id || s.supplier_id || "",
+        }));
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) return [];
         throw err;
@@ -157,7 +164,8 @@ export default function ReadinessPage() {
     queryKey: ["assessments"],
     queryFn: async () => {
       try {
-        return await apiFetch<SupplierAssessment[]>("/api/v1/assessments/");
+        const res = await apiFetch<SupplierAssessment[] | PaginatedResponse<SupplierAssessment>>("/api/v1/assessments/");
+        return unwrapPaginated(res);
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) return [];
         throw err;

@@ -51,12 +51,52 @@ export interface CsrfResponse {
 
 /**
  * ============================================================================
- * M2: Supplier Registry Types (from Lean Field Dictionary)
- * Lifecycle: Draft / Complete / Archived only
+ * Generic DRF Paginated Response structure returned by PageNumberPagination
  * ============================================================================
  */
-export type SupplierStatus = "Draft" | "Complete" | "Archived";
-export type SupplierType = "Manufacturer" | "Trader" | "Distributor" | "Service Provider" | "Other";
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
+/**
+ * Safely unwraps paginated DRF results or returns a raw array.
+ */
+export function unwrapPaginated<T>(data: T[] | PaginatedResponse<T> | null | undefined): T[] {
+  if (!data) return [];
+  if (Array.isArray(data)) return data;
+  if (data && typeof data === "object" && "results" in data && Array.isArray((data as PaginatedResponse<T>).results)) {
+    return (data as PaginatedResponse<T>).results;
+  }
+  return [];
+}
+
+/**
+ * ============================================================================
+ * M2: Supplier Registry Types (OpenAPI 3.0.3 Compatible)
+ * Lifecycle: draft / complete / archived
+ * ============================================================================
+ */
+export type SupplierStatus =
+  | "draft"
+  | "complete"
+  | "archived"
+  | "Draft"
+  | "Complete"
+  | "Archived";
+
+export type SupplierType =
+  | "manufacturer"
+  | "merchant_exporter"
+  | "trader"
+  | "Manufacturer"
+  | "Merchant Exporter"
+  | "Trader"
+  | "Distributor"
+  | "Service Provider"
+  | "Other";
 
 export interface SupplierContactDetails {
   contact_name?: string;
@@ -65,77 +105,166 @@ export interface SupplierContactDetails {
 }
 
 export interface Supplier {
-  supplier_id: string;
+  id: string;
+  supplier_id: string; // Backwards compatibility alias for id
   legal_name: string;
+  trade_name?: string;
   country_of_registration: string;
   supplier_type: SupplierType;
-  address_registration_reference?: string;
-  contact_details?: SupplierContactDetails;
+  address?: string;
+  address_registration_reference?: string; // Backwards compatibility alias for address
+  contact_name?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  contact_details?: SupplierContactDetails; // Backwards compatibility alias
   industry_description?: string;
   capability_attributes?: string;
   record_status: SupplierStatus;
   evidence_refs?: string[];
   version: number;
+  created_by?: string | null;
   created_at?: string;
   updated_at?: string;
 }
 
+export interface SupplierRequest {
+  legal_name: string;
+  trade_name?: string;
+  country_of_registration: string;
+  supplier_type?: SupplierType | "";
+  address?: string;
+  contact_name?: string;
+  contact_email?: string;
+  contact_phone?: string;
+  industry_description?: string;
+  record_status?: SupplierStatus;
+  version?: number;
+}
+
+export type PaginatedSupplierList = PaginatedResponse<Supplier>;
+
 /**
  * ============================================================================
- * M3: Product Catalogue Types (from Lean Field Dictionary)
+ * M3: Product Catalogue Types (OpenAPI 3.0.3 Compatible)
  * ============================================================================
  */
-export type TranslationStatus = "Not provided" | "Provided – unreviewed" | "Reviewed";
+export type TranslationStatus =
+  | "not_provided"
+  | "provided_unreviewed"
+  | "reviewed"
+  | "Not provided"
+  | "Provided – unreviewed"
+  | "Reviewed";
+
+export type MoqUnit = "MT" | "KG" | "PIECES" | "BOXES" | "CONTAINERS" | string;
+export type CurrencyCode = "USD" | "INR" | "CNY" | "EUR" | string;
+export type CapacityUnit = "MT" | "KG" | "PIECES" | "BOXES" | "CONTAINERS" | string;
+export type CapacityPeriod = "MONTH" | "YEAR" | "QUARTER" | string;
+export type LeadTimeUnit = "DAYS" | "WEEKS" | "MONTHS" | string;
 
 export interface Product {
-  product_id: string;
-  supplier_id: string;
+  id: string;
+  product_id: string; // Backwards compatibility alias for id
+  supplier: string; // Supplier UUID foreign key
+  supplier_id: string; // Backwards compatibility alias for supplier
+  supplier_name?: string;
   product_name: string;
   product_category: string;
   description?: string;
-  specifications?: string;
-  origin?: string;
-  minimum_order_quantity?: number;
-  minimum_order_unit?: string;
-  indicative_price_min?: number;
-  indicative_price_max?: number;
-  currency?: string;
-  price_basis?: string;
-  capacity_quantity?: number;
-  capacity_unit?: string;
-  capacity_period?: string;
-  lead_time_value?: number;
-  lead_time_unit?: string;
-  evidence_refs?: string[];
   product_name_zh?: string;
   short_description_zh?: string;
   translation_status: TranslationStatus;
+  origin?: string;
+  specifications?: string;
+  moq_value?: string | number | null;
+  moq_unit?: MoqUnit;
+  minimum_order_quantity?: number; // Backwards compatibility alias for moq_value
+  minimum_order_unit?: string; // Backwards compatibility alias for moq_unit
+  price_min?: string | number | null;
+  price_max?: string | number | null;
+  indicative_price_min?: number; // Backwards compatibility alias for price_min
+  indicative_price_max?: number; // Backwards compatibility alias for price_max
+  currency?: CurrencyCode;
+  price_basis?: string;
+  capacity_quantity?: string | number | null;
+  capacity_unit?: CapacityUnit;
+  capacity_period?: CapacityPeriod;
+  lead_time_value?: number | null;
+  lead_time_unit?: LeadTimeUnit;
+  evidence_refs?: string[];
   version: number;
+  created_by?: string | null;
   created_at?: string;
   updated_at?: string;
 }
 
+export interface ProductRequest {
+  supplier: string;
+  product_name: string;
+  product_category: string;
+  description?: string;
+  product_name_zh?: string;
+  short_description_zh?: string;
+  translation_status?: TranslationStatus;
+  origin?: string;
+  specifications?: string;
+  moq_value?: string | null;
+  moq_unit?: MoqUnit;
+  price_min?: string | null;
+  price_max?: string | null;
+  currency?: CurrencyCode;
+  price_basis?: string;
+  capacity_quantity?: string | null;
+  capacity_unit?: CapacityUnit;
+  capacity_period?: CapacityPeriod;
+  lead_time_value?: number | null;
+  lead_time_unit?: LeadTimeUnit;
+  version?: number;
+}
+
+export type PaginatedProductList = PaginatedResponse<Product>;
+
 /**
  * ============================================================================
- * Evidence Metadata Types (from Lean Field Dictionary)
+ * Evidence Metadata Types (OpenAPI 3.0.3 Compatible)
  * ============================================================================
  */
-export type EvidencePresenceStatus = "Provided" | "Missing";
-export type EvidenceReviewStatus = "Pending Review" | "Verified" | "Rejected";
+export type EvidencePresenceStatus = "Provided" | "Missing" | string;
+export type EvidenceReviewStatus = "Pending Review" | "Verified" | "Rejected" | string;
 
-export interface EvidenceMetadata {
-  evidence_id: string;
-  entity_type: "supplier" | "product";
-  entity_id: string;
+export interface EvidenceItem {
+  id: string;
+  evidence_id: string; // Backwards compatibility alias for id
+  supplier?: string | null;
+  product?: string | null;
+  entity_type?: "supplier" | "product"; // Backwards compatibility alias
+  entity_id?: string; // Backwards compatibility alias
   document_type: string;
   evidence_reference: string;
   document_name?: string;
-  issue_date?: string;
+  issue_date?: string | null;
   expiry_date?: string | null;
   presence_status: EvidencePresenceStatus;
   review_status: EvidenceReviewStatus;
   created_at?: string;
+  updated_at?: string;
 }
+
+export interface EvidenceItemRequest {
+  supplier?: string | null;
+  product?: string | null;
+  document_type: string;
+  evidence_reference: string;
+  document_name?: string;
+  issue_date?: string | null;
+  expiry_date?: string | null;
+  presence_status?: string;
+  review_status?: string;
+}
+
+// Backwards compatibility alias
+export type EvidenceMetadata = EvidenceItem;
+export type PaginatedEvidenceItemList = PaginatedResponse<EvidenceItem>;
 
 /**
  * ============================================================================

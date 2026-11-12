@@ -12,6 +12,8 @@ import {
   OrderFrequency,
   RequirementCriterion,
   RequiredEvidenceItem,
+  PaginatedResponse,
+  unwrapPaginated,
   ApiError,
 } from "@/lib/api/types";
 import { Button } from "@/components/forms/Button";
@@ -66,7 +68,8 @@ export default function RequirementsPage() {
     queryKey: ["requirements"],
     queryFn: async () => {
       try {
-        return await apiFetch<BuyerRequirement[]>("/api/v1/requirements/");
+        const res = await apiFetch<BuyerRequirement[] | PaginatedResponse<BuyerRequirement>>("/api/v1/requirements/");
+        return unwrapPaginated(res);
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) return [];
         throw err;
@@ -270,11 +273,11 @@ export default function RequirementsPage() {
       prev.map((r) =>
         r.requirement_id === reqId
           ? {
-              ...r,
-              requirement_status: newStatus,
-              matching_ready: newStatus === "Ready for Matching" ? true : r.matching_ready,
-              version: r.version + 1,
-            }
+            ...r,
+            requirement_status: newStatus,
+            matching_ready: newStatus === "Ready for Matching" ? true : r.matching_ready,
+            version: r.version + 1,
+          }
           : r
       )
     );

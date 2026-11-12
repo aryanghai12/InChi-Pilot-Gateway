@@ -1,4 +1,6 @@
-import { ApiError, ApiErrorPayload } from "./types";
+import { ApiError, ApiErrorPayload, unwrapPaginated } from "./types";
+
+export { unwrapPaginated };
 
 /**
  * Extracts a cookie value by name from document.cookie

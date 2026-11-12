@@ -12,6 +12,10 @@ import {
   EvidenceMetadata,
   TranslationStatus,
   ApiError,
+  unwrapPaginated,
+  PaginatedSupplierList,
+  PaginatedProductList,
+  PaginatedEvidenceItemList,
 } from "@/lib/api/types";
 import { Button } from "@/components/forms/Button";
 import { FormField } from "@/components/forms/FormField";
@@ -59,7 +63,11 @@ export default function SuppliersPage() {
     queryKey: ["suppliers"],
     queryFn: async () => {
       try {
-        return await apiFetch<Supplier[]>("/api/v1/suppliers/");
+        const res = await apiFetch<Supplier[] | PaginatedSupplierList>("/api/v1/suppliers/");
+        return unwrapPaginated(res).map((s) => ({
+          ...s,
+          supplier_id: s.id || s.supplier_id || "",
+        }));
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) {
           // Endpoint not mounted yet on backend
@@ -72,9 +80,9 @@ export default function SuppliersPage() {
     retry: false,
   });
 
-  const selectedSupplier = suppliers.find((s) => s.supplier_id === selectedSupplierId) || null;
+  const selectedSupplier = suppliers.find((s) => (s.id || s.supplier_id) === selectedSupplierId) || null;
 
-  // Products Query for Selected Supplier
+  // Products Query for Selected Supplier (supports ?supplier= or ?supplier_id=)
   const {
     data: products = [],
     isLoading: isLoadingProducts,
@@ -83,7 +91,16 @@ export default function SuppliersPage() {
     queryFn: async () => {
       if (!selectedSupplierId) return [];
       try {
-        return await apiFetch<Product[]>(`/api/v1/products/?supplier_id=${encodeURIComponent(selectedSupplierId)}`);
+        const res = await apiFetch<Product[] | PaginatedProductList>(`/api/v1/products/?supplier=${encodeURIComponent(selectedSupplierId)}`);
+        return unwrapPaginated(res).map((p) => ({
+          ...p,
+          product_id: p.id || p.product_id || "",
+          supplier_id: p.supplier || p.supplier_id || "",
+          minimum_order_quantity: p.moq_value ? Number(p.moq_value) : p.minimum_order_quantity,
+          minimum_order_unit: p.moq_unit || p.minimum_order_unit || "PIECES",
+          indicative_price_min: p.price_min ? Number(p.price_min) : p.indicative_price_min,
+          indicative_price_max: p.price_max ? Number(p.price_max) : p.indicative_price_max,
+        }));
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) return [];
         throw err;
@@ -103,7 +120,11 @@ export default function SuppliersPage() {
     queryFn: async () => {
       if (!selectedSupplierId) return [];
       try {
-        return await apiFetch<EvidenceMetadata[]>(`/api/v1/evidence/?supplier_id=${encodeURIComponent(selectedSupplierId)}`);
+        const res = await apiFetch<EvidenceMetadata[] | PaginatedEvidenceItemList>(`/api/v1/evidence/?supplier=${encodeURIComponent(selectedSupplierId)}`);
+        return unwrapPaginated(res).map((e) => ({
+          ...e,
+          evidence_id: e.id || e.evidence_id || "",
+        }));
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) return [];
         throw err;
@@ -219,11 +240,30 @@ export default function SuppliersPage() {
   });
 
   const updateSupplierMutation = useMutation({
-    mutationFn: ({ supplierId, payload }: { supplierId: string; payload: Partial<Supplier> }) =>
-      apiFetch<Supplier>(`/api/v1/suppliers/${encodeURIComponent(supplierId)}/`, {
+    mutationFn: ({
+      supplierId,
+      action,
+      payload,
+    }: {
+      supplierId: string;
+      action?: "complete" | "archive";
+      payload?: Partial<Supplier>;
+    }) => {
+      if (action === "complete") {
+        return apiFetch<Supplier>(`/api/v1/suppliers/${encodeURIComponent(supplierId)}/complete/`, {
+          method: "POST",
+        });
+      }
+      if (action === "archive") {
+        return apiFetch<Supplier>(`/api/v1/suppliers/${encodeURIComponent(supplierId)}/archive/`, {
+          method: "POST",
+        });
+      }
+      return apiFetch<Supplier>(`/api/v1/suppliers/${encodeURIComponent(supplierId)}/`, {
         method: "PATCH",
         body: JSON.stringify(payload),
-      }),
+      });
+    },
     onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: ["suppliers"] });
       setNotification({
@@ -340,11 +380,26 @@ export default function SuppliersPage() {
       return;
     }
 
+    const typeMapping: Record<string, any> = {
+      Manufacturer: "manufacturer",
+      Trader: "trader",
+      "Merchant Exporter": "merchant_exporter",
+    };
+    const statusMapping: Record<string, any> = {
+      Draft: "draft",
+      Complete: "complete",
+      Archived: "archived",
+    };
+
     createSupplierMutation.mutate({
       legal_name: formData.legal_name.trim(),
       country_of_registration: formData.country_of_registration,
-      supplier_type: formData.supplier_type,
+      supplier_type: typeMapping[formData.supplier_type] || (formData.supplier_type ? formData.supplier_type.toLowerCase() : "manufacturer"),
+      address: formData.address_registration_reference.trim() || undefined,
       address_registration_reference: formData.address_registration_reference.trim() || undefined,
+      contact_name: formData.contact_name.trim() || undefined,
+      contact_email: formData.email.trim() || undefined,
+      contact_phone: formData.phone.trim() || undefined,
       contact_details: {
         contact_name: formData.contact_name.trim() || undefined,
         email: formData.email.trim() || undefined,
@@ -352,16 +407,16 @@ export default function SuppliersPage() {
       },
       industry_description: formData.industry_description.trim() || undefined,
       capability_attributes: formData.capability_attributes.trim() || undefined,
-      record_status: targetStatus,
+      record_status: statusMapping[targetStatus] || targetStatus.toLowerCase(),
     });
   };
 
   const handleUpdateStatus = (supplierId: string, newStatus: SupplierStatus) => {
-    const target = suppliers.find((s) => s.supplier_id === supplierId);
+    const target = suppliers.find((s) => (s.id || s.supplier_id) === supplierId);
     if (!target) return;
 
     // Transition Validation Gate
-    if (newStatus === "Complete") {
+    if (newStatus === "Complete" || newStatus === "complete") {
       if (!target.legal_name || !target.country_of_registration || !target.supplier_type) {
         setNotification({
           type: "error",
@@ -370,12 +425,25 @@ export default function SuppliersPage() {
         });
         return;
       }
+      updateSupplierMutation.mutate({
+        supplierId,
+        action: "complete",
+      });
+      return;
+    }
+
+    if (newStatus === "Archived" || newStatus === "archived") {
+      updateSupplierMutation.mutate({
+        supplierId,
+        action: "archive",
+      });
+      return;
     }
 
     updateSupplierMutation.mutate({
       supplierId,
       payload: {
-        record_status: newStatus,
+        record_status: (newStatus.toLowerCase()) as any,
         version: target.version,
       },
     });
@@ -388,29 +456,34 @@ export default function SuppliersPage() {
     const hasMandarin = Boolean(
       productFormData.product_name_zh.trim() || productFormData.short_description_zh.trim()
     );
-    const translationStatus: TranslationStatus = hasMandarin ? "Provided – unreviewed" : "Not provided";
+    const translationStatus = hasMandarin ? "provided_unreviewed" : "not_provided";
 
     createProductMutation.mutate({
+      supplier: selectedSupplierId,
       supplier_id: selectedSupplierId,
       product_name: productFormData.product_name.trim(),
       product_category: productFormData.product_category,
       description: productFormData.description.trim() || undefined,
       specifications: productFormData.specifications.trim() || undefined,
       origin: productFormData.origin || "India",
+      moq_value: productFormData.minimum_order_quantity ? String(productFormData.minimum_order_quantity) : null,
+      moq_unit: (productFormData.minimum_order_unit || "PIECES").toUpperCase(),
       minimum_order_quantity: productFormData.minimum_order_quantity ? Number(productFormData.minimum_order_quantity) : undefined,
       minimum_order_unit: productFormData.minimum_order_unit || undefined,
+      price_min: productFormData.indicative_price_min ? String(productFormData.indicative_price_min) : null,
+      price_max: productFormData.indicative_price_max ? String(productFormData.indicative_price_max) : null,
       indicative_price_min: productFormData.indicative_price_min ? Number(productFormData.indicative_price_min) : undefined,
       indicative_price_max: productFormData.indicative_price_max ? Number(productFormData.indicative_price_max) : undefined,
-      currency: productFormData.currency,
-      price_basis: productFormData.price_basis,
-      capacity_quantity: productFormData.capacity_quantity ? Number(productFormData.capacity_quantity) : undefined,
-      capacity_unit: productFormData.capacity_unit || undefined,
-      capacity_period: productFormData.capacity_period || undefined,
-      lead_time_value: productFormData.lead_time_value ? Number(productFormData.lead_time_value) : undefined,
-      lead_time_unit: productFormData.lead_time_unit || undefined,
+      currency: productFormData.currency || "USD",
+      price_basis: productFormData.price_basis || "FOB",
+      capacity_quantity: productFormData.capacity_quantity ? String(productFormData.capacity_quantity) : null,
+      capacity_unit: (productFormData.capacity_unit || "PIECES").toUpperCase(),
+      capacity_period: "MONTH",
+      lead_time_value: productFormData.lead_time_value ? Number(productFormData.lead_time_value) : null,
+      lead_time_unit: "DAYS",
       product_name_zh: productFormData.product_name_zh.trim() || undefined,
       short_description_zh: productFormData.short_description_zh.trim() || undefined,
-      translation_status: translationStatus,
+      translation_status: translationStatus as TranslationStatus,
     });
   };
 
@@ -419,12 +492,14 @@ export default function SuppliersPage() {
     if (!selectedSupplierId || !evidenceFormData.evidence_reference.trim()) return;
 
     createEvidenceMutation.mutate({
+      supplier: selectedSupplierId,
+      product: null,
       entity_type: "supplier",
       entity_id: selectedSupplierId,
       document_type: evidenceFormData.document_type,
       document_name: evidenceFormData.document_name.trim() || evidenceFormData.evidence_reference.trim(),
       evidence_reference: evidenceFormData.evidence_reference.trim(),
-      issue_date: evidenceFormData.issue_date || undefined,
+      issue_date: evidenceFormData.issue_date || null,
       expiry_date: evidenceFormData.expiry_date || null,
       presence_status: "Provided",
       review_status: "Pending Review",
@@ -435,10 +510,14 @@ export default function SuppliersPage() {
   const filteredSuppliers = suppliers.filter((s) => {
     const matchesSearch =
       (s.legal_name || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (s.supplier_id || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (s.supplier_id || s.id || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
       (s.industry_description && s.industry_description.toLowerCase().includes(searchTerm.toLowerCase()));
-    const matchesStatus = statusFilter === "All" || s.record_status === statusFilter;
-    const matchesType = typeFilter === "All" || s.supplier_type === typeFilter;
+    const matchesStatus =
+      statusFilter === "All" ||
+      s.record_status.toLowerCase() === statusFilter.toLowerCase();
+    const matchesType =
+      typeFilter === "All" ||
+      s.supplier_type.toLowerCase() === typeFilter.toLowerCase();
     return matchesSearch && matchesStatus && matchesType;
   });
 
