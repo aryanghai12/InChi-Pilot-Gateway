@@ -3,6 +3,18 @@
 # Progress Log — Priyanka Singh (Frontend)
 
 ---
+### Week 3 Progress Report
+
+- **Completed work with evidence:**
+  - Implemented Module M3 (Product Catalogue at `/products`): bilingual spec display, category filters, translation states, and product registration.
+  - Implemented Module M4 (China-Readiness Desk at `/readiness`): `v1.0-pilot` criteria, M4-AC1 completeness guardrail, M4-AC2/AC3 reviewer decision desk, and audit history.
+  - Implemented Module M5 (Buyer Requirements at `/requirements`): Field Dictionary v1.2 (`BUY-001`–`BUY-032`), hard/soft criteria builder, and `BUY-032` readiness gate.
+  - Cleaned all mock/dummy data (`PREVIEW_` and `SAMPLE_` stripped); fully wired to dynamic REST endpoints with contextual empty states.
+- **Tests run:**
+  - `npm --prefix frontend run typecheck` (`tsc --noEmit`) → 0 errors.
+  - `npm --prefix frontend run test` (`vitest run`) → 12/12 unit tests passing.
+- **Blockers:** None.
+- **Next steps:** Coordinate with backend team for end-to-end integration testing of live API payloads.
 
 ### **WEEK 2 (03 Nov – 06 Nov 2026): Backend Contract Alignment, M2 Supplier Registry & M3 Product Catalogue**
 * **Key Deliverables:**
