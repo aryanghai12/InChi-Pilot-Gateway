@@ -799,12 +799,12 @@ export default function ReadinessPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredAssessments.map((a) => {
+              {filteredAssessments.map((a, idx) => {
                 const isComplete = a.completeness === "Complete";
                 const isReady = a.outcome === "China-ready" || a.outcome === "Conditionally ready";
 
                 return (
-                  <tr key={a.assessment_id}>
+                  <tr key={a.assessment_id || (a as any).id || `assessment-${idx}`}>
                     <td>
                       <span style={{ fontFamily: "monospace", fontWeight: 600 }}>{a.assessment_id}</span>
                     </td>

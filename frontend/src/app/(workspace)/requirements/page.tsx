@@ -495,9 +495,9 @@ export default function RequirementsPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredRequirements.map((req) => (
+                {filteredRequirements.map((req, idx) => (
                   <tr
-                    key={req.requirement_id}
+                    key={req.requirement_id || (req as any).id || `req-${idx}`}
                     style={{ borderBottom: "1px solid var(--color-border-subtle)", transition: "background 0.15s ease" }}
                   >
                     <td style={{ padding: "0.9rem 1.25rem" }}>

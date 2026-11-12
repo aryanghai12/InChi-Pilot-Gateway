@@ -689,9 +689,9 @@ export default function SuppliersPage() {
                 </tr>
               </thead>
               <tbody>
-                {filteredSuppliers.map((supplier) => (
+                {filteredSuppliers.map((supplier, idx) => (
                   <tr
-                    key={supplier.supplier_id}
+                    key={supplier.id || supplier.supplier_id || `supplier-${idx}`}
                     style={{ borderBottom: "1px solid var(--color-border-subtle)", transition: "background 0.15s ease" }}
                   >
                     <td style={{ padding: "0.9rem 1.25rem" }}>
@@ -1080,8 +1080,8 @@ export default function SuppliersPage() {
                     />
                   ) : (
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                      {products.map((product) => (
-                        <div key={product.product_id} className={styles.productCard}>
+                      {products.map((product, idx) => (
+                        <div key={product.id || product.product_id || `product-${idx}`} className={styles.productCard}>
                           <div className={styles.productHeader}>
                             <div>
                               <div className={styles.productName}>{product.product_name}</div>
@@ -1168,8 +1168,8 @@ export default function SuppliersPage() {
                     />
                   ) : (
                     <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                      {evidence.map((evd) => (
-                        <div key={evd.evidence_id} className={styles.evidenceRow}>
+                      {evidence.map((evd, idx) => (
+                        <div key={evd.id || evd.evidence_id || `evidence-${idx}`} className={styles.evidenceRow}>
                           <div className={styles.evidenceLeft}>
                             <span className={styles.evidenceDocType}>{evd.document_type}</span>
                             <span style={{ fontSize: "0.8125rem", color: "var(--color-text-main)" }}>

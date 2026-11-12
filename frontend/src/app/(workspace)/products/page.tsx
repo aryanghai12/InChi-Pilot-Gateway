@@ -434,7 +434,7 @@ export default function ProductsPage() {
               </tr>
             </thead>
             <tbody>
-              {filteredProducts.map((p) => {
+              {filteredProducts.map((p, idx) => {
                 const supplierName =
                   (p as any).supplier_name ||
                   suppliers.find((s) => (s.id || s.supplier_id) === (p.supplier || p.supplier_id))?.legal_name ||
@@ -444,7 +444,7 @@ export default function ProductsPage() {
                 else if (p.translation_status === "Provided – unreviewed") badgeClass = styles.transUnreviewed;
 
                 return (
-                  <tr key={p.product_id}>
+                  <tr key={p.id || p.product_id || `product-${idx}`}>
                     <td>
                       <div>
                         <strong>{p.product_name}</strong>
