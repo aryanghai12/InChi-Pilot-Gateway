@@ -136,3 +136,136 @@ export interface EvidenceMetadata {
   review_status: EvidenceReviewStatus;
   created_at?: string;
 }
+
+/**
+ * ============================================================================
+ * M4: China-Readiness Assessment Types (Stage 3 & Component 1)
+ * Workflow States: Draft | Submitted | More information required | Reviewed
+ * Outcomes: Pending review | China-ready | Conditionally ready | Not ready
+ * ============================================================================
+ */
+export type AssessmentStatus =
+  | "Draft"
+  | "Submitted"
+  | "More information required"
+  | "Reviewed";
+
+export type AssessmentOutcome =
+  | "Pending review"
+  | "China-ready"
+  | "Conditionally ready"
+  | "Not ready";
+
+export interface ReadinessQuestion {
+  id: string;
+  category: string;
+  question_text: string;
+  guidance: string;
+  is_mandatory: boolean;
+  required_evidence_type?: string;
+}
+
+export interface AssessmentAnswer {
+  question_id: string;
+  response: "Yes" | "No" | "In Progress" | "N/A" | "";
+  notes?: string;
+  evidence_reference?: string;
+}
+
+export interface AssessmentHistoryEntry {
+  id: string;
+  action: "Created" | "Submitted" | "Returned for info" | "Outcome recorded" | "Resubmitted";
+  actor: string;
+  timestamp: string;
+  notes?: string;
+  outcome?: AssessmentOutcome;
+}
+
+export interface SupplierAssessment {
+  assessment_id: string;
+  supplier_id: string;
+  supplier_name: string;
+  question_set_version: string;
+  status: AssessmentStatus;
+  completeness: CompletenessStatus;
+  outcome: AssessmentOutcome;
+  outcome_reason?: string;
+  missing_items?: string[];
+  submitted_by?: string;
+  submitted_at?: string;
+  reviewed_by?: string;
+  reviewed_at?: string;
+  answers: AssessmentAnswer[];
+  history?: AssessmentHistoryEntry[];
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * ============================================================================
+ * M5: Buyer Requirement Types (from Buyer Requirement Field Dictionary v1.2)
+ * ============================================================================
+ */
+export type RequirementStatus = "Draft" | "In Review" | "Ready for Matching" | "Closed" | "Archived";
+export type CompletenessStatus = "Complete" | "Incomplete";
+export type OrderFrequency = "One-off" | "Monthly" | "Quarterly" | "Annual";
+
+export type ProductCategory =
+  | "Agriculture and Food"
+  | "Textiles"
+  | "Engineering Goods"
+  | "Electronic Goods"
+  | "Chemicals"
+  | "Minerals & Metals"
+  | "Marine Products";
+
+export interface RequirementCriterion {
+  id: string;
+  name: string;
+  type: "mandatory" | "preferred";
+  notes?: string;
+}
+
+export interface RequiredEvidenceItem {
+  id: string;
+  document_name: string;
+  is_mandatory: boolean; // Mandatory eligibility vs Preference
+}
+
+export interface BuyerRequirement {
+  requirement_id: string; // BUY-001
+  buyer_organisation_name: string; // BUY-002
+  buyer_reference?: string; // BUY-003
+  owner_user_id: string; // BUY-004
+  target_market: string; // BUY-005 (Target market != delivery destination)
+  product_category_id: ProductCategory; // BUY-006 (One of the 7 working categories)
+  requirement_title: string; // BUY-007
+  product_specifications?: string; // BUY-008
+  quantity_value?: number; // BUY-009
+  quantity_unit?: string; // BUY-010
+  order_frequency?: OrderFrequency; // BUY-011
+  target_price_min?: number; // BUY-012
+  target_price_max?: number; // BUY-013
+  currency_code?: string; // BUY-014
+  price_basis?: string; // BUY-015
+  required_evidence?: RequiredEvidenceItem[]; // BUY-016
+  delivery_location?: string; // BUY-017
+  delivery_window_start?: string; // BUY-018
+  delivery_window_end?: string; // BUY-019
+  required_lead_time_value?: number; // BUY-020
+  required_lead_time_unit?: string; // BUY-021
+  mandatory_criteria?: RequirementCriterion[]; // BUY-022
+  preferred_criteria?: RequirementCriterion[]; // BUY-023
+  buyer_preferences?: string; // BUY-025
+  requirement_notes?: string; // BUY-026
+  buyer_verification_status?: string; // BUY-027
+  requirement_status: RequirementStatus; // BUY-028
+  completeness_status: CompletenessStatus; // BUY-029
+  version: number; // BUY-030
+  matching_ready: boolean; // BUY-032
+  blocking_reasons?: string[]; // BUY-032
+  created_at?: string; // BUY-031
+  updated_at?: string; // BUY-031
+  created_by?: string; // BUY-031
+  updated_by?: string; // BUY-031
+}

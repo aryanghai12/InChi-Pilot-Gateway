@@ -43,7 +43,7 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
-    href: "/suppliers#products",
+    href: "/products",
     label: "Product Catalogue",
     allowedRoles: ["platform_admin", "commercial_analyst", "reviewer"],
     icon: (
