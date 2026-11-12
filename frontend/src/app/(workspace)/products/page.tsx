@@ -43,12 +43,12 @@ export default function ProductsPage() {
   const [categoryFilter, setCategoryFilter] = useState<string>("All");
   const [translationFilter, setTranslationFilter] = useState<string>("All");
 
-  // Local state (Clean zero-state)
-  const [localProducts, setLocalProducts] = useState<(Product & { supplier_name?: string })[]>([]);
-
   // Modals
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<(Product & { supplier_name?: string }) | null>(null);
+
+  // Form Field Errors
+  const [formErrors, setFormErrors] = useState<Record<string, string[]>>({});
 
   // Notifications
   const [notification, setNotification] = useState<{
@@ -85,13 +85,13 @@ export default function ProductsPage() {
     specifications: "",
     origin: "India",
     minimum_order_quantity: "",
-    minimum_order_unit: "pieces",
+    minimum_order_unit: "PIECES",
     indicative_price_min: "",
     indicative_price_max: "",
     currency: "USD",
     price_basis: "FOB",
     lead_time_value: "",
-    lead_time_unit: "days",
+    lead_time_unit: "DAYS",
     product_name_zh: "",
     short_description_zh: "",
   });
@@ -105,6 +105,8 @@ export default function ProductsPage() {
       }),
     onSuccess: (newProduct) => {
       queryClient.invalidateQueries({ queryKey: ["all_products"] });
+      setIsAddModalOpen(false);
+      setFormErrors({});
       setNotification({
         type: "success",
         title: "Product Synchronized",
@@ -112,12 +114,22 @@ export default function ProductsPage() {
       });
     },
     onError: (err) => {
-      // Keep optimistic local copy with warning banner if backend is unavailable
-      if (err instanceof ApiError && err.status !== 404) {
+      if (err instanceof ApiError) {
+        if (err.fieldErrors && Object.keys(err.fieldErrors).length > 0) {
+          setFormErrors(err.fieldErrors);
+        } else {
+          setFormErrors({ non_field_errors: [err.message || "Failed to save product."] });
+        }
         setNotification({
-          type: "warning",
-          title: "Product Saved Locally",
-          message: `Backend validation notice: ${err.message}`,
+          type: "error",
+          title: "Product Registration Failed",
+          message: err.message || "Please correct the errors in the form.",
+        });
+      } else {
+        setNotification({
+          type: "error",
+          title: "Connection Error",
+          message: "Backend service is currently unreachable.",
         });
       }
     },
@@ -134,7 +146,7 @@ export default function ProductsPage() {
           product_id: p.id || p.product_id || "",
           supplier_id: p.supplier || p.supplier_id || "",
           minimum_order_quantity: p.moq_value ? Number(p.moq_value) : p.minimum_order_quantity,
-          minimum_order_unit: p.moq_unit || p.minimum_order_unit || "pieces",
+          minimum_order_unit: p.moq_unit || p.minimum_order_unit || "PIECES",
           indicative_price_min: p.price_min ? Number(p.price_min) : p.indicative_price_min,
           indicative_price_max: p.price_max ? Number(p.price_max) : p.indicative_price_max,
         }));
@@ -146,7 +158,7 @@ export default function ProductsPage() {
     retry: false,
   });
 
-  const products = remoteProducts && remoteProducts.length > 0 ? remoteProducts : localProducts;
+  const products = remoteProducts || [];
 
   // Filtered Products (Case-insensitive matching for OpenAPI enum compatibility)
   const filteredProducts = useMemo(() => {
@@ -202,20 +214,29 @@ export default function ProductsPage() {
 
   const handleCreateProduct = (e: React.FormEvent) => {
     e.preventDefault();
+    setFormErrors({});
 
+    const errors: Record<string, string[]> = {};
     if (!formData.product_name.trim()) {
-      setNotification({
-        type: "error",
-        title: "Validation Error",
-        message: "Product name is required.",
-      });
-      return;
+      errors.product_name = ["Product name is required."];
     }
 
     const supplier = suppliers.find((s) => (s.id || s.supplier_id) === formData.supplier_id);
-    const newId = `PRD-2026-${String(localProducts.length + 1).padStart(3, "0")}`;
-    const supplierId = supplier?.id || supplier?.supplier_id || formData.supplier_id || `SUP-${Date.now()}`;
-    const supplierName = supplier?.legal_name || "Registered Supplier";
+    const supplierId = supplier?.id || supplier?.supplier_id;
+    if (!supplierId) {
+      errors.supplier = ["Please select a registered supplier."];
+    }
+
+    if (formData.indicative_price_min && formData.indicative_price_max) {
+      if (Number(formData.indicative_price_min) > Number(formData.indicative_price_max)) {
+        errors.price_max = ["Maximum price must be greater than or equal to minimum price."];
+      }
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
 
     let transStatus: TranslationStatus = "not_provided";
     if (formData.product_name_zh.trim() || formData.short_description_zh.trim()) {
@@ -223,14 +244,14 @@ export default function ProductsPage() {
     }
 
     const payload: ProductRequest = {
-      supplier: supplierId,
+      supplier: supplierId!,
       product_name: formData.product_name.trim(),
       product_category: formData.product_category,
       description: formData.description.trim() || undefined,
       specifications: formData.specifications.trim() || undefined,
       origin: formData.origin.trim() || undefined,
       moq_value: formData.minimum_order_quantity ? String(formData.minimum_order_quantity) : null,
-      moq_unit: (formData.minimum_order_unit || "PIECES").toUpperCase(),
+      moq_unit: (formData.minimum_order_unit || "PIECES").toUpperCase() as any,
       price_min: formData.indicative_price_min ? String(formData.indicative_price_min) : null,
       price_max: formData.indicative_price_max ? String(formData.indicative_price_max) : null,
       currency: formData.currency || "USD",
@@ -242,39 +263,11 @@ export default function ProductsPage() {
       translation_status: transStatus,
     };
 
-    const newProduct: Product & { supplier_name: string } = {
-      ...payload,
-      id: newId,
-      product_id: newId,
-      supplier_id: supplierId,
-      supplier_name: supplierName,
-      minimum_order_quantity: formData.minimum_order_quantity ? Number(formData.minimum_order_quantity) : undefined,
-      minimum_order_unit: formData.minimum_order_unit,
-      indicative_price_min: formData.indicative_price_min ? Number(formData.indicative_price_min) : undefined,
-      indicative_price_max: formData.indicative_price_max ? Number(formData.indicative_price_max) : undefined,
-      currency: formData.currency,
-      price_basis: formData.price_basis,
-      lead_time_unit: formData.lead_time_unit,
-      translation_status: transStatus,
-      version: 1,
-      created_by: null,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
-    setLocalProducts([newProduct, ...localProducts]);
-    setIsAddModalOpen(false);
-
-    setNotification({
-      type: "success",
-      title: "Product Added",
-      message: `"${newProduct.product_name}" has been registered into the catalogue.`,
-    });
-
     createProductMutation.mutate(payload);
   };
 
   const handleOpenAddModal = () => {
+    setFormErrors({});
     if (!formData.supplier_id && suppliers.length > 0) {
       setFormData((prev) => ({ ...prev, supplier_id: suppliers[0].id || suppliers[0].supplier_id || "" }));
     }
@@ -442,7 +435,10 @@ export default function ProductsPage() {
             </thead>
             <tbody>
               {filteredProducts.map((p) => {
-                const supplierName = (p as any).supplier_name || "Registered Supplier";
+                const supplierName =
+                  (p as any).supplier_name ||
+                  suppliers.find((s) => (s.id || s.supplier_id) === (p.supplier || p.supplier_id))?.legal_name ||
+                  "Registered Supplier";
                 let badgeClass = styles.transMissing;
                 if (p.translation_status === "Reviewed") badgeClass = styles.transReviewed;
                 else if (p.translation_status === "Provided – unreviewed") badgeClass = styles.transUnreviewed;
@@ -618,8 +614,17 @@ export default function ProductsPage() {
             </div>
 
             <form onSubmit={handleCreateProduct}>
+              {formErrors.non_field_errors && (
+                <div style={{ marginBottom: "1rem" }}>
+                  <AlertBanner
+                    type="error"
+                    title="Validation Error"
+                    message={formErrors.non_field_errors.join(" ")}
+                  />
+                </div>
+              )}
               <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                <FormField label="Supplier Organisation" required>
+                <FormField label="Supplier Organisation" required errors={formErrors.supplier}>
                   <Select
                     value={formData.supplier_id}
                     onChange={(e) => setFormData({ ...formData, supplier_id: e.target.value })}
@@ -637,7 +642,7 @@ export default function ProductsPage() {
                 </FormField>
 
                 <div className={styles.formGrid}>
-                  <FormField label="Product Name (English)" required>
+                  <FormField label="Product Name (English)" required errors={formErrors.product_name}>
                     <Input
                       placeholder="e.g. Organic Black Pepper"
                       value={formData.product_name}
@@ -645,7 +650,7 @@ export default function ProductsPage() {
                     />
                   </FormField>
 
-                  <FormField label="Mandarin Name (中文名称)" hint="Optional per M3-AC4">
+                  <FormField label="Mandarin Name (中文名称)" hint="Optional per M3-AC4" errors={formErrors.product_name_zh}>
                     <Input
                       placeholder="e.g. 有机黑胡椒"
                       value={formData.product_name_zh}
@@ -655,7 +660,7 @@ export default function ProductsPage() {
                 </div>
 
                 <div className={styles.formGrid}>
-                  <FormField label="Product Category" required>
+                  <FormField label="Product Category" required errors={formErrors.product_category}>
                     <Select
                       value={formData.product_category}
                       onChange={(e) => setFormData({ ...formData, product_category: e.target.value as ProductCategory })}
@@ -668,7 +673,7 @@ export default function ProductsPage() {
                     </Select>
                   </FormField>
 
-                  <FormField label="Country of Origin">
+                  <FormField label="Country of Origin" errors={formErrors.origin}>
                     <Input
                       value={formData.origin}
                       onChange={(e) => setFormData({ ...formData, origin: e.target.value })}
@@ -676,7 +681,7 @@ export default function ProductsPage() {
                   </FormField>
                 </div>
 
-                <FormField label="Commercial Description">
+                <FormField label="Commercial Description" errors={formErrors.description}>
                   <Textarea
                     rows={2}
                     placeholder="General description of product quality, harvest, and packaging..."
@@ -685,7 +690,7 @@ export default function ProductsPage() {
                   />
                 </FormField>
 
-                <FormField label="Technical Specifications & Lab Standards">
+                <FormField label="Technical Specifications & Lab Standards" errors={formErrors.specifications}>
                   <Textarea
                     rows={2}
                     placeholder="Moisture limits, bulk density, grade standards (e.g. GB compliance)..."
@@ -695,7 +700,7 @@ export default function ProductsPage() {
                 </FormField>
 
                 <div className={styles.formGrid}>
-                  <FormField label="Minimum Order Quantity (MOQ)">
+                  <FormField label="Minimum Order Quantity (MOQ)" errors={formErrors.moq_value || formErrors.minimum_order_quantity}>
                     <Input
                       type="number"
                       placeholder="e.g. 500"
@@ -704,21 +709,22 @@ export default function ProductsPage() {
                     />
                   </FormField>
 
-                  <FormField label="MOQ Unit">
+                  <FormField label="MOQ Unit" errors={formErrors.moq_unit || formErrors.minimum_order_unit}>
                     <Select
                       value={formData.minimum_order_unit}
                       onChange={(e) => setFormData({ ...formData, minimum_order_unit: e.target.value })}
                     >
-                      <option value="tonnes">tonnes</option>
-                      <option value="kg">kg</option>
-                      <option value="pieces">pieces</option>
-                      <option value="metres">metres</option>
+                      <option value="PIECES">PIECES</option>
+                      <option value="KG">KG</option>
+                      <option value="MT">MT (Metric Tonnes)</option>
+                      <option value="BOXES">BOXES</option>
+                      <option value="CONTAINERS">CONTAINERS</option>
                     </Select>
                   </FormField>
                 </div>
 
                 <div className={styles.formGrid}>
-                  <FormField label="Min Price">
+                  <FormField label="Min Price" errors={formErrors.price_min || formErrors.indicative_price_min}>
                     <Input
                       type="number"
                       step="0.01"
@@ -728,7 +734,7 @@ export default function ProductsPage() {
                     />
                   </FormField>
 
-                  <FormField label="Max Price">
+                  <FormField label="Max Price" errors={formErrors.price_max || formErrors.indicative_price_max}>
                     <Input
                       type="number"
                       step="0.01"
@@ -744,7 +750,7 @@ export default function ProductsPage() {
                 <Button variant="secondary" type="button" onClick={() => setIsAddModalOpen(false)}>
                   Cancel
                 </Button>
-                <Button variant="primary" type="submit">
+                <Button variant="primary" type="submit" isLoading={createProductMutation.isPending}>
                   Save Product to Catalogue
                 </Button>
               </div>

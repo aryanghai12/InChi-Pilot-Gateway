@@ -177,7 +177,7 @@ export default function SuppliersPage() {
     specifications: "",
     origin: "India",
     minimum_order_quantity: "",
-    minimum_order_unit: "pieces",
+    minimum_order_unit: "PIECES",
     indicative_price_min: "",
     indicative_price_max: "",
     currency: "USD",
@@ -190,6 +190,8 @@ export default function SuppliersPage() {
     product_name_zh: "",
     short_description_zh: "",
   });
+
+  const [productFormErrors, setProductFormErrors] = useState<Record<string, string[]>>({});
 
   // ==========================================================================
   // Evidence Form State (EVD)
@@ -290,6 +292,7 @@ export default function SuppliersPage() {
     onSuccess: (newProduct) => {
       queryClient.invalidateQueries({ queryKey: ["products", selectedSupplierId] });
       setIsAddProductOpen(false);
+      setProductFormErrors({});
       setProductFormData({
         product_name: "",
         product_category: "Textiles & Garments",
@@ -297,7 +300,7 @@ export default function SuppliersPage() {
         specifications: "",
         origin: "India",
         minimum_order_quantity: "",
-        minimum_order_unit: "pieces",
+        minimum_order_unit: "PIECES",
         indicative_price_min: "",
         indicative_price_max: "",
         currency: "USD",
@@ -317,11 +320,20 @@ export default function SuppliersPage() {
       });
     },
     onError: (err) => {
-      setNotification({
-        type: "error",
-        title: "Product Save Failed",
-        message: err instanceof ApiError ? err.message : "Could not save product to database.",
-      });
+      if (err instanceof ApiError) {
+        if (err.fieldErrors) setProductFormErrors(err.fieldErrors);
+        setNotification({
+          type: "error",
+          title: "Product Save Failed",
+          message: err.message || "Could not save product to database.",
+        });
+      } else {
+        setNotification({
+          type: "error",
+          title: "Connection Error",
+          message: "Backend service is currently unreachable.",
+        });
+      }
     },
   });
 
@@ -451,7 +463,20 @@ export default function SuppliersPage() {
 
   const handleCreateProduct = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedSupplierId || !productFormData.product_name.trim()) return;
+    setProductFormErrors({});
+
+    if (!productFormData.product_name.trim()) {
+      setProductFormErrors({ product_name: ["Product name is required."] });
+      return;
+    }
+    if (!selectedSupplierId) {
+      setNotification({
+        type: "error",
+        title: "No Supplier Selected",
+        message: "Please select a supplier from the registry first.",
+      });
+      return;
+    }
 
     const hasMandarin = Boolean(
       productFormData.product_name_zh.trim() || productFormData.short_description_zh.trim()
@@ -1227,7 +1252,16 @@ export default function SuppliersPage() {
 
             <form onSubmit={handleCreateProduct}>
               <div className={styles.modalBody}>
-                <FormField label="Product Name (English / Source)" htmlFor="p_name" required>
+                {productFormErrors.non_field_errors && (
+                  <div style={{ marginBottom: "1rem" }}>
+                    <AlertBanner
+                      type="error"
+                      title="Validation Error"
+                      message={productFormErrors.non_field_errors.join(" ")}
+                    />
+                  </div>
+                )}
+                <FormField label="Product Name (English / Source)" htmlFor="p_name" required errors={productFormErrors.product_name}>
                   <Input
                     id="p_name"
                     required
@@ -1238,7 +1272,7 @@ export default function SuppliersPage() {
                 </FormField>
 
                 <div className={styles.formRow2}>
-                  <FormField label="Product Category" htmlFor="p_cat">
+                  <FormField label="Product Category" htmlFor="p_cat" errors={productFormErrors.product_category}>
                     <Select
                       id="p_cat"
                       value={productFormData.product_category}
@@ -1254,7 +1288,7 @@ export default function SuppliersPage() {
                     </Select>
                   </FormField>
 
-                  <FormField label="Country of Origin" htmlFor="p_origin">
+                  <FormField label="Country of Origin" htmlFor="p_origin" errors={productFormErrors.origin}>
                     <Input
                       id="p_origin"
                       placeholder="e.g. India"
@@ -1264,7 +1298,7 @@ export default function SuppliersPage() {
                   </FormField>
                 </div>
 
-                <FormField label="Product Description" htmlFor="p_desc">
+                <FormField label="Product Description" htmlFor="p_desc" errors={productFormErrors.description}>
                   <Textarea
                     id="p_desc"
                     rows={2}
@@ -1274,7 +1308,7 @@ export default function SuppliersPage() {
                   />
                 </FormField>
 
-                <FormField label="Technical Specifications" htmlFor="p_spec">
+                <FormField label="Technical Specifications" htmlFor="p_spec" errors={productFormErrors.specifications}>
                   <Input
                     id="p_spec"
                     placeholder="e.g. Grade 4A, Moisture <11%, Denier 20/22D"
@@ -1286,7 +1320,7 @@ export default function SuppliersPage() {
                 <span className={styles.sectionTitle}>Commercial Terms (M3)</span>
 
                 <div className={styles.formRow2}>
-                  <FormField label="Minimum Order Qty (MOQ)" htmlFor="p_moq">
+                  <FormField label="Minimum Order Qty (MOQ)" htmlFor="p_moq" errors={productFormErrors.moq_value || productFormErrors.minimum_order_quantity}>
                     <Input
                       id="p_moq"
                       type="number"
@@ -1297,23 +1331,23 @@ export default function SuppliersPage() {
                     />
                   </FormField>
 
-                  <FormField label="MOQ Unit" htmlFor="p_moq_unit">
+                  <FormField label="MOQ Unit" htmlFor="p_moq_unit" errors={productFormErrors.moq_unit || productFormErrors.minimum_order_unit}>
                     <Select
                       id="p_moq_unit"
                       value={productFormData.minimum_order_unit}
                       onChange={(e) => setProductFormData({ ...productFormData, minimum_order_unit: e.target.value })}
                     >
-                      <option value="pieces">pieces</option>
-                      <option value="kg">kg</option>
-                      <option value="tonnes">tonnes</option>
-                      <option value="meters">meters</option>
-                      <option value="cartons">cartons</option>
+                      <option value="PIECES">PIECES</option>
+                      <option value="KG">KG</option>
+                      <option value="MT">MT (Metric Tonnes)</option>
+                      <option value="BOXES">BOXES</option>
+                      <option value="CONTAINERS">CONTAINERS</option>
                     </Select>
                   </FormField>
                 </div>
 
                 <div className={styles.formRow4}>
-                  <FormField label="Min Price" htmlFor="p_pmin">
+                  <FormField label="Min Price" htmlFor="p_pmin" errors={productFormErrors.price_min || productFormErrors.indicative_price_min}>
                     <Input
                       id="p_pmin"
                       type="number"
@@ -1324,7 +1358,7 @@ export default function SuppliersPage() {
                       onChange={(e) => setProductFormData({ ...productFormData, indicative_price_min: e.target.value })}
                     />
                   </FormField>
-                  <FormField label="Max Price" htmlFor="p_pmax">
+                  <FormField label="Max Price" htmlFor="p_pmax" errors={productFormErrors.price_max || productFormErrors.indicative_price_max}>
                     <Input
                       id="p_pmax"
                       type="number"

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import styles from "./readiness.module.css";
 import { apiFetch } from "@/lib/api/client";
 import {
@@ -267,6 +267,64 @@ export default function ReadinessPage() {
   };
 
   // ==========================================================================
+  // Backend Mutations: REST Integration with Graceful 404 Fallback
+  // ==========================================================================
+  const createAssessmentMutation = useMutation({
+    mutationFn: (payload: any) =>
+      apiFetch<SupplierAssessment>("/api/v1/assessments/", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+    onSuccess: (newAssessment) => {
+      queryClient.invalidateQueries({ queryKey: ["assessments"] });
+      setActiveAssessmentId(newAssessment.assessment_id || (newAssessment as any).id);
+      setIsNewModalOpen(false);
+      setNotification({
+        type: "success",
+        title: "Assessment Synchronized",
+        message: `Assessment ${newAssessment.assessment_id || ""} successfully recorded in backend.`,
+      });
+    },
+    onError: (err, variables: SupplierAssessment) => {
+      if (err instanceof ApiError && err.status === 404) {
+        // Fallback to local session preview if backend 404
+        setLocalAssessments((prev) => [variables, ...prev]);
+        setActiveAssessmentId(variables.assessment_id);
+        setIsNewModalOpen(false);
+        setNotification({
+          type: "warning",
+          title: "Preview Mode (Backend 404)",
+          message: "Endpoint /api/v1/assessments/ is under construction. Assessment saved in local preview mode.",
+        });
+      } else {
+        setNotification({
+          type: "error",
+          title: "Save Failed",
+          message: err instanceof ApiError ? err.message : "Failed to create assessment.",
+        });
+      }
+    },
+  });
+
+  const updateAssessmentMutation = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: any }) =>
+      apiFetch<SupplierAssessment>(`/api/v1/assessments/${encodeURIComponent(id)}/`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["assessments"] });
+    },
+    onError: (err, { id, payload }) => {
+      if (err instanceof ApiError && err.status === 404) {
+        setLocalAssessments((prev) =>
+          prev.map((a) => (a.assessment_id === id ? { ...a, ...payload, updated_at: new Date().toISOString() } : a))
+        );
+      }
+    },
+  });
+
+  // ==========================================================================
   // Actions: Answer Update
   // ==========================================================================
   const handleUpdateAnswer = (
@@ -276,38 +334,45 @@ export default function ReadinessPage() {
   ) => {
     if (!activeAssessment) return;
 
+    const existingAnswers = [...activeAssessment.answers];
+    const idx = existingAnswers.findIndex((ans) => ans.question_id === questionId);
+
+    if (idx >= 0) {
+      existingAnswers[idx] = {
+        ...existingAnswers[idx],
+        [field]: value,
+      };
+    } else {
+      existingAnswers.push({
+        question_id: questionId,
+        response: field === "response" ? (value as any) : "",
+        notes: field === "notes" ? value : "",
+        evidence_reference: field === "evidence_reference" ? value : "",
+      });
+    }
+
+    const compResult = calculateCompleteness(existingAnswers);
+    const updatedFields = {
+      answers: existingAnswers,
+      completeness: compResult.completeness,
+      missing_items: compResult.missingItems,
+    };
+
     setLocalAssessments((prev) =>
       prev.map((a) => {
         if (a.assessment_id !== activeAssessment.assessment_id) return a;
-
-        const existingAnswers = [...a.answers];
-        const idx = existingAnswers.findIndex((ans) => ans.question_id === questionId);
-
-        if (idx >= 0) {
-          existingAnswers[idx] = {
-            ...existingAnswers[idx],
-            [field]: value,
-          };
-        } else {
-          existingAnswers.push({
-            question_id: questionId,
-            response: field === "response" ? (value as any) : "",
-            notes: field === "notes" ? value : "",
-            evidence_reference: field === "evidence_reference" ? value : "",
-          });
-        }
-
-        const compResult = calculateCompleteness(existingAnswers);
-
         return {
           ...a,
-          answers: existingAnswers,
-          completeness: compResult.completeness,
-          missing_items: compResult.missingItems,
+          ...updatedFields,
           updated_at: new Date().toISOString(),
         };
       })
     );
+
+    updateAssessmentMutation.mutate({
+      id: activeAssessment.assessment_id,
+      payload: updatedFields,
+    });
   };
 
   // ==========================================================================
@@ -334,20 +399,29 @@ export default function ReadinessPage() {
       notes: "Submitted for formal China-Readiness reviewer review.",
     };
 
+    const payload = {
+      status: "Submitted" as AssessmentStatus,
+      outcome: "Pending review" as AssessmentOutcome,
+      submitted_by: "priyanka.singh",
+      submitted_at: new Date().toISOString(),
+      history: [...(activeAssessment.history || []), newHistoryEntry],
+    };
+
     setLocalAssessments((prev) =>
       prev.map((a) => {
         if (a.assessment_id !== activeAssessment.assessment_id) return a;
         return {
           ...a,
-          status: "Submitted",
-          outcome: "Pending review",
-          submitted_by: "priyanka.singh",
-          submitted_at: new Date().toISOString(),
-          history: [...(a.history || []), newHistoryEntry],
+          ...payload,
           updated_at: new Date().toISOString(),
         };
       })
     );
+
+    updateAssessmentMutation.mutate({
+      id: activeAssessment.assessment_id,
+      payload,
+    });
 
     setNotification({
       type: "success",
@@ -380,18 +454,27 @@ export default function ReadinessPage() {
         notes: decisionReason,
       };
 
+      const payload = {
+        status: "More information required" as AssessmentStatus,
+        outcome_reason: decisionReason,
+        history: [...(activeAssessment.history || []), newHistoryEntry],
+      };
+
       setLocalAssessments((prev) =>
         prev.map((a) => {
           if (a.assessment_id !== activeAssessment.assessment_id) return a;
           return {
             ...a,
-            status: "More information required",
-            outcome_reason: decisionReason,
-            history: [...(a.history || []), newHistoryEntry],
+            ...payload,
             updated_at: new Date().toISOString(),
           };
         })
       );
+
+      updateAssessmentMutation.mutate({
+        id: activeAssessment.assessment_id,
+        payload,
+      });
 
       setNotification({
         type: "warning",
@@ -409,21 +492,30 @@ export default function ReadinessPage() {
         notes: decisionReason,
       };
 
+      const payload = {
+        status: "Reviewed" as AssessmentStatus,
+        outcome: decisionOutcome,
+        outcome_reason: decisionReason,
+        reviewed_by: "aryan.ghai (Reviewer)",
+        reviewed_at: new Date().toISOString(),
+        history: [...(activeAssessment.history || []), newHistoryEntry],
+      };
+
       setLocalAssessments((prev) =>
         prev.map((a) => {
           if (a.assessment_id !== activeAssessment.assessment_id) return a;
           return {
             ...a,
-            status: "Reviewed",
-            outcome: decisionOutcome,
-            outcome_reason: decisionReason,
-            reviewed_by: "aryan.ghai (Reviewer)",
-            reviewed_at: new Date().toISOString(),
-            history: [...(a.history || []), newHistoryEntry],
+            ...payload,
             updated_at: new Date().toISOString(),
           };
         })
       );
+
+      updateAssessmentMutation.mutate({
+        id: activeAssessment.assessment_id,
+        payload,
+      });
 
       setNotification({
         type: "success",
@@ -452,7 +544,7 @@ export default function ReadinessPage() {
     const supplierId = selectedSupplier?.supplier_id || newSupplierId;
     const supplierName = selectedSupplier?.legal_name || "Registered Supplier";
 
-    const newId = `ASM-2026-${String(localAssessments.length + 1).padStart(3, "0")}`;
+    const newId = `ASM-2026-${String(assessments.length + 1).padStart(3, "0")}`;
     const initialAnswers: AssessmentAnswer[] = READINESS_QUESTIONS.map((q) => ({
       question_id: q.id,
       response: "",
@@ -484,16 +576,8 @@ export default function ReadinessPage() {
       updated_at: new Date().toISOString(),
     };
 
-    setLocalAssessments([newAssessment, ...localAssessments]);
-    setIsNewModalOpen(false);
-    setActiveAssessmentId(newId);
     setDrawerTab("questionnaire");
-
-    setNotification({
-      type: "success",
-      title: "Assessment Created",
-      message: `New readiness questionnaire opened for ${supplierName}.`,
-    });
+    createAssessmentMutation.mutate(newAssessment);
   };
 
   const handleOpenNewModal = () => {

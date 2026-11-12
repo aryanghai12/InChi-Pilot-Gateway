@@ -185,6 +185,79 @@ export default function RequirementsPage() {
   };
 
   // ==========================================================================
+  // Backend Mutations: REST Integration with Graceful 404 Fallback
+  // ==========================================================================
+  const createRequirementMutation = useMutation({
+    mutationFn: (payload: any) =>
+      apiFetch<BuyerRequirement>("/api/v1/requirements/", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }),
+    onSuccess: (newReq) => {
+      queryClient.invalidateQueries({ queryKey: ["requirements"] });
+      setIsCreateOpen(false);
+      handleResetForm();
+      setNotification({
+        type: "success",
+        title: "Requirement Synchronized",
+        message: `Requirement "${newReq.requirement_title}" successfully saved to backend.`,
+      });
+    },
+    onError: (err, variables: BuyerRequirement) => {
+      if (err instanceof ApiError && err.status === 404) {
+        setLocalRequirements((prev) => [variables, ...prev]);
+        setIsCreateOpen(false);
+        handleResetForm();
+        setNotification({
+          type: "warning",
+          title: "Preview Mode (Backend 404)",
+          message: "Endpoint /api/v1/requirements/ is under construction. Requirement saved in local preview mode.",
+        });
+      } else {
+        setNotification({
+          type: "error",
+          title: "Save Failed",
+          message: err instanceof ApiError ? err.message : "Failed to create requirement.",
+        });
+      }
+    },
+  });
+
+  const updateRequirementMutation = useMutation({
+    mutationFn: ({ id, payload }: { id: string; payload: any }) =>
+      apiFetch<BuyerRequirement>(`/api/v1/requirements/${encodeURIComponent(id)}/`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["requirements"] });
+      setNotification({
+        type: "success",
+        title: "Status Synchronized",
+        message: "Requirement status successfully updated in backend.",
+      });
+    },
+    onError: (err, { id, payload }) => {
+      if (err instanceof ApiError && err.status === 404) {
+        setLocalRequirements((prev) =>
+          prev.map((r) => (r.requirement_id === id ? { ...r, ...payload, version: (r.version || 1) + 1 } : r))
+        );
+        setNotification({
+          type: "warning",
+          title: "Status Updated (Preview)",
+          message: "Endpoint /api/v1/requirements/ is under construction. Status updated in local session.",
+        });
+      } else {
+        setNotification({
+          type: "error",
+          title: "Update Failed",
+          message: err instanceof ApiError ? err.message : "Failed to update requirement status.",
+        });
+      }
+    },
+  });
+
+  // ==========================================================================
   // Form Submission
   // ==========================================================================
   const handleSaveRequirement = (targetStatus: RequirementStatus) => {
@@ -258,34 +331,15 @@ export default function RequirementsPage() {
       created_at: new Date().toISOString(),
     };
 
-    setLocalRequirements([newReq, ...localRequirements]);
-    setIsCreateOpen(false);
-    handleResetForm();
-    setNotification({
-      type: "success",
-      title: "Requirement Captured",
-      message: `Requirement "${newReq.requirement_title}" recorded. Matching readiness: ${isReady ? "READY" : "BLOCKED (Missing inputs)"}.`,
-    });
+    createRequirementMutation.mutate(newReq);
   };
 
   const handleUpdateStatus = (reqId: string, newStatus: RequirementStatus) => {
-    setLocalRequirements((prev) =>
-      prev.map((r) =>
-        r.requirement_id === reqId
-          ? {
-            ...r,
-            requirement_status: newStatus,
-            matching_ready: newStatus === "Ready for Matching" ? true : r.matching_ready,
-            version: r.version + 1,
-          }
-          : r
-      )
-    );
-    setNotification({
-      type: "success",
-      title: "Status Transitioned",
-      message: `Requirement status updated to ${newStatus}.`,
-    });
+    const payload = {
+      requirement_status: newStatus,
+      matching_ready: newStatus === "Ready for Matching" ? true : undefined,
+    };
+    updateRequirementMutation.mutate({ id: reqId, payload });
   };
 
   return (

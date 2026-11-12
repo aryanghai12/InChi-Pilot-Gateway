@@ -29,19 +29,42 @@ function LoginForm() {
     ensureCsrfToken();
   }, []);
 
-  const handleDemoSignIn = () => {
-    queryClient.setQueryData(["currentUser"], {
-      id: "demo-user-1",
-      email: "priyanka@bncs.local",
-      first_name: "Priyanka",
-      last_name: "Singh",
-      role: "commercial_analyst",
-      role_display: "Commercial Analyst",
-      is_active: true,
-      is_verified: true,
-      is_staff: false,
-    });
-    router.push(nextUrl);
+  const handleDemoSignIn = async () => {
+    setIsLoading(true);
+    setErrorMessage(null);
+    setFieldErrors({});
+
+    try {
+      // First attempt to log in to Django with test credentials
+      const res = await apiFetch<any>("/api/v1/auth/login/", {
+        method: "POST",
+        body: JSON.stringify({
+          email: "analyst@inchi.local",
+          password: "AnalystPass123!",
+        }),
+      });
+      const user = res?.user || res;
+      if (user && typeof user === "object" && "id" in user) {
+        queryClient.setQueryData(["currentUser"], user);
+      }
+      router.push(nextUrl);
+    } catch {
+      // Fallback to standalone client demo session if backend is offline/unreachable
+      queryClient.setQueryData(["currentUser"], {
+        id: "demo-user-1",
+        email: "analyst@inchi.local",
+        first_name: "Priyanka",
+        last_name: "Singh",
+        role: "commercial_analyst",
+        role_display: "Commercial Analyst",
+        is_active: true,
+        is_verified: true,
+        is_staff: false,
+      });
+      router.push(nextUrl);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,13 +75,18 @@ function LoginForm() {
 
     try {
       // Backend expects lowercase normalized email & password (ENDPOINT_DATA_AND_BEHAVIOR §2)
-      await apiFetch("/api/v1/auth/login/", {
+      const res = await apiFetch<any>("/api/v1/auth/login/", {
         method: "POST",
         body: JSON.stringify({
           email: email.trim().toLowerCase(),
           password,
         }),
       });
+
+      const user = res?.user || res;
+      if (user && typeof user === "object" && "id" in user) {
+        queryClient.setQueryData(["currentUser"], user);
+      }
 
       // Redirect to return url or dashboard
       router.push(nextUrl);
@@ -106,7 +134,7 @@ function LoginForm() {
             id="email"
             type="email"
             autoComplete="email"
-            placeholder="analyst@bncs.local"
+            placeholder="analyst@inchi.local"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}

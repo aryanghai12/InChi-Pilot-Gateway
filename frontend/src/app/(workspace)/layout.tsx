@@ -33,7 +33,7 @@ export default function WorkspaceLayout({
     isError,
   } = useQuery<CurrentUser>({
     queryKey: ["currentUser"],
-    queryFn: () => apiFetch<CurrentUser>("/api/v1/auth/me/"),
+    queryFn: () => apiFetch<CurrentUser>("/api/v1/auth/me/", { skipAuthRedirect: true }),
     staleTime: 5 * 60 * 1000,
     retry: false,
   });

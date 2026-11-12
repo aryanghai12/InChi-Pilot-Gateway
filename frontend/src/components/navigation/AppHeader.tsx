@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import styles from "./navigation.module.css";
 import { CurrentUser } from "@/lib/api/types";
 import { apiFetch } from "@/lib/api/client";
@@ -13,6 +14,7 @@ interface AppHeaderProps {
 
 export function AppHeader({ user }: AppHeaderProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const handleLogout = async () => {
     try {
@@ -20,6 +22,7 @@ export function AppHeader({ user }: AppHeaderProps) {
     } catch (err) {
       console.warn("Logout error:", err);
     } finally {
+      queryClient.clear();
       router.push("/login");
     }
   };

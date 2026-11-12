@@ -13,8 +13,9 @@ export function getCookie(name: string): string | null {
   return match ? decodeURIComponent(match[3]) : null;
 }
 
-interface FetchOptions extends RequestInit {
+export interface FetchOptions extends RequestInit {
   _isCsrfRetry?: boolean;
+  skipAuthRedirect?: boolean;
 }
 
 /**
@@ -45,6 +46,14 @@ export async function apiFetch<T = unknown>(
   url: string,
   options: FetchOptions = {}
 ): Promise<T> {
+  let normalizedUrl = url;
+  if (normalizedUrl.startsWith("/api/")) {
+    const [path, query] = normalizedUrl.split("?");
+    if (!path.endsWith("/")) {
+      normalizedUrl = `${path}/${query ? `?${query}` : ""}`;
+    }
+  }
+
   const method = (options.method || "GET").toUpperCase();
   const headers = new Headers(options.headers || {});
 
@@ -61,7 +70,7 @@ export async function apiFetch<T = unknown>(
     headers.set("Content-Type", "application/json");
   }
 
-  const response = await fetch(url, {
+  const response = await fetch(normalizedUrl, {
     ...options,
     method,
     headers,
@@ -101,7 +110,11 @@ export async function apiFetch<T = unknown>(
 
   // Session expiry / unauthenticated: 401 with code "not_authenticated"
   if (response.status === 401 && apiError.code === "not_authenticated") {
-    if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
+    if (
+      !options.skipAuthRedirect &&
+      typeof window !== "undefined" &&
+      !window.location.pathname.startsWith("/login")
+    ) {
       const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
       // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.href = `/login?next=${returnUrl}`;

@@ -7,10 +7,15 @@ const DJANGO_STATIC_PREFIX = (process.env.DJANGO_STATIC_PREFIX || "static").repl
 const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
+  skipTrailingSlashRedirect: true,
 
   // Single-origin proxy rewrites to Django backend (ARCHITECTURE.md TD-09, §5, §7)
   async rewrites() {
     return [
+      {
+        source: "/api/:path*/",
+        destination: `${BACKEND_ORIGIN}/api/:path*/`,
+      },
       {
         source: "/api/:path*",
         destination: `${BACKEND_ORIGIN}/api/:path*`,
