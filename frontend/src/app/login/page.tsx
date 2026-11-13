@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
@@ -123,8 +125,53 @@ function LoginForm() {
   return (
     <div className={styles.loginCard}>
       <div className={styles.header}>
-        <h1 className={styles.title}>InChi Pilot Gateway</h1>
-        <p className={styles.subtitle}>Sign in with your internal BNCS account</p>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "0.85rem" }}>
+          <div
+            style={{
+              width: 42,
+              height: 42,
+              background: "linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)",
+              borderRadius: 10,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#FFFFFF",
+              boxShadow: "0 0 14px rgba(37, 99, 235, 0.4)",
+            }}
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14" />
+            </svg>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
+          <h1 className={styles.title}>InChi Gateway</h1>
+          <span
+            style={{
+              fontSize: "0.625rem",
+              fontWeight: 700,
+              color: "#2563EB",
+              background: "#EFF6FF",
+              border: "1px solid #BFDBFE",
+              padding: "0.15rem 0.5rem",
+              borderRadius: 9999,
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+            }}
+          >
+            v0.1 PILOT
+          </span>
+        </div>
+        <p className={styles.subtitle}>Supervised AI Matching &amp; Cross-Border Trade Gateway</p>
       </div>
 
       {errorMessage && (
@@ -193,7 +240,7 @@ function LoginForm() {
       </form>
 
       <div className={styles.notice}>
-        Private internal pilot for authorized BNCS personnel only. Unauthorized access is monitored and audited.
+        Private internal pilot for authorized BNCS personnel only. User accounts are provisioned by the Platform Administrator in accordance with Architecture Decision D-12 (no public self-registration).
       </div>
     </div>
   );

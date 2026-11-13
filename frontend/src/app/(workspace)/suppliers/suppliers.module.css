@@ -18,7 +18,7 @@
 }
 
 .pageTitle {
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family-sans);
   font-size: 1.85rem;
   font-weight: 700;
   color: var(--color-text-main);
@@ -220,7 +220,7 @@
 }
 
 .modalTitle {
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family-sans);
   font-size: 1.35rem;
   font-weight: 700;
   color: var(--color-text-main);

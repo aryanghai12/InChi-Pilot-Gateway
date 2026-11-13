@@ -1,6 +1,40 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { apiFetch, getCookie } from "./client";
-import { ApiError } from "./types";
+import { ApiError, unwrapPaginated, PaginatedResponse } from "./types";
+
+describe("unwrapPaginated", () => {
+  it("extracts results from a DRF PaginatedResponse envelope", () => {
+    const paginated: PaginatedResponse<{ id: string; name: string }> = {
+      count: 2,
+      next: null,
+      previous: null,
+      results: [
+        { id: "uuid-1", name: "Supplier A" },
+        { id: "uuid-2", name: "Supplier B" },
+      ],
+    };
+
+    const unwrapped = unwrapPaginated(paginated);
+    expect(unwrapped).toHaveLength(2);
+    expect(unwrapped[0].name).toBe("Supplier A");
+    expect(unwrapped.filter((s) => s.name.includes("A"))).toHaveLength(1);
+  });
+
+  it("returns the original array when given a direct array response", () => {
+    const rawArray = [{ id: "1", name: "Product X" }];
+    const unwrapped = unwrapPaginated(rawArray);
+    expect(unwrapped).toHaveLength(1);
+    expect(unwrapped).toBe(rawArray);
+  });
+
+  it("returns an empty array when given null, undefined, or empty envelope", () => {
+    expect(unwrapPaginated(null)).toEqual([]);
+    expect(unwrapPaginated(undefined)).toEqual([]);
+    expect(
+      unwrapPaginated({ count: 0, next: null, previous: null, results: [] })
+    ).toEqual([]);
+  });
+});
 
 describe("getCookie", () => {
   beforeEach(() => {

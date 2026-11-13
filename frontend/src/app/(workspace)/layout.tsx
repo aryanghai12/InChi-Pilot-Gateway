@@ -51,7 +51,7 @@ export default function WorkspaceLayout({
 
   return (
     <div className={styles.container}>
-      <AppSidebar userRole={user?.role} />
+      <AppSidebar user={user} userRole={user?.role} />
       <div className={styles.contentWrapper}>
         <AppHeader user={user} />
         {isDemo && (
