@@ -88,6 +88,12 @@ def custom_exception_handler(exc, context):
         elif isinstance(response.data, list):
             field_errors["non_field_errors"] = [str(item) for item in response.data]
 
+        # Preserve non_field_errors or detail as primary descriptive message
+        if "non_field_errors" in field_errors and field_errors["non_field_errors"]:
+            message = field_errors["non_field_errors"][0]
+        elif "detail" in field_errors and field_errors["detail"]:
+            message = field_errors["detail"][0]
+
     elif isinstance(exc, NotFound):
         error_code = "not_found"
         message = getattr(exc, "detail", "The requested resource was not found.")
