@@ -6,24 +6,26 @@ Only Vishal Chauhan writes in this file. Newest entry first.
 
 <!-- Add new entries directly below this line. -->
 
-## This week's work breakdown
 
-### Tuesday
+### Week 1 — Definition, architecture and delivery skeleton
 
-- Finalised the buyer-requirement schema and field mapping.
-- Documented the open data decisions and data dictionary.
+- Reviewed the Buyer Requirement Field Dictionary v1.2.
+- Prepared the buyer-requirement schema mapping.
+- Documented the data dictionary and open data decisions.
+- Defined the database versioning and audit approach.
 
-### Wednesday
+### Week 2 — Authenticated supplier-product vertical slice
 
-- Implemented the buyer-requirement models, migrations, constraints and indexes.
-- Created the 20-record synthetic CSV fixture and seed command.
+- Created the centralized PostgreSQL database connection configuration.
+- Created the buyer-requirement Django models.
+- Added initial migrations, database constraints and indexes.
+- Added requirement versioning, quantity, pricing, delivery and criteria tables.
+- Added the initial synthetic seed-data structure.
 
-### Thursday
+### Week 3 — Supplier registry and profile quality
 
-- Added database tests and validated the work on PostgreSQL.
+- Added the 20-row synthetic CSV test fixture and repeatable seed command.
+- Added database tests for validation, constraints and seed repeatability.
+- Validated migrations, seed data and tests on PostgreSQL.
 - Verified PostgreSQL backup and restore.
 - Copied the reviewed database package into the shared project database folder.
-
-### Next
-
-- Coordinate database integration with the backend member.
