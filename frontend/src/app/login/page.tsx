@@ -1,5 +1,7 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import React, { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQueryClient } from "@tanstack/react-query";
@@ -29,19 +31,42 @@ function LoginForm() {
     ensureCsrfToken();
   }, []);
 
-  const handleDemoSignIn = () => {
-    queryClient.setQueryData(["currentUser"], {
-      id: "demo-user-1",
-      email: "priyanka@bncs.local",
-      first_name: "Priyanka",
-      last_name: "Singh",
-      role: "commercial_analyst",
-      role_display: "Commercial Analyst",
-      is_active: true,
-      is_verified: true,
-      is_staff: false,
-    });
-    router.push(nextUrl);
+  const handleDemoSignIn = async () => {
+    setIsLoading(true);
+    setErrorMessage(null);
+    setFieldErrors({});
+
+    try {
+      // First attempt to log in to Django with test credentials
+      const res = await apiFetch<any>("/api/v1/auth/login/", {
+        method: "POST",
+        body: JSON.stringify({
+          email: "analyst@inchi.local",
+          password: "AnalystPass123!",
+        }),
+      });
+      const user = res?.user || res;
+      if (user && typeof user === "object" && (user.id || user.email)) {
+        queryClient.setQueryData(["currentUser"], user);
+      }
+      router.push(nextUrl);
+    } catch {
+      // Fallback to standalone client demo session if backend is offline/unreachable
+      queryClient.setQueryData(["currentUser"], {
+        id: "demo-user-1",
+        email: "analyst@inchi.local",
+        first_name: "Priyanka",
+        last_name: "Singh",
+        role: "commercial_analyst",
+        role_display: "Commercial Analyst",
+        is_active: true,
+        is_verified: true,
+        is_staff: false,
+      });
+      router.push(nextUrl);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,7 +77,7 @@ function LoginForm() {
 
     try {
       // Backend expects lowercase normalized email & password (ENDPOINT_DATA_AND_BEHAVIOR §2)
-      await apiFetch("/api/v1/auth/login/", {
+      const res = await apiFetch<any>("/api/v1/auth/login/", {
         method: "POST",
         body: JSON.stringify({
           email: email.trim().toLowerCase(),
@@ -60,15 +85,32 @@ function LoginForm() {
         }),
       });
 
+      const user = res?.user || res;
+      if (user && typeof user === "object" && (user.id || user.email)) {
+        queryClient.setQueryData(["currentUser"], user);
+      }
+
       // Redirect to return url or dashboard
       router.push(nextUrl);
     } catch (err) {
       if (err instanceof ApiError) {
-        setErrorMessage(
+        // Extract structured non_field_errors (e.g. invalid credentials masked by exception handler)
+        const nonFieldError =
+          err.fieldErrors?.non_field_errors?.[0] ||
+          err.fieldErrors?.detail?.[0];
+
+        const isGenericValidationNotice =
+          err.message &&
+          (err.message.includes("Input validation failed") ||
+            err.message.includes("check field errors"));
+
+        const displayMessage =
           err.status === 404
             ? "Backend API (:8000) not detected. Use 'Explore with Demo Session' to preview the frontend."
-            : err.message || "Invalid email or password."
-        );
+            : nonFieldError ||
+              (isGenericValidationNotice ? "Invalid email or password." : err.message || "Invalid email or password.");
+
+        setErrorMessage(displayMessage);
         if (err.fieldErrors) {
           setFieldErrors(err.fieldErrors);
         }
@@ -83,8 +125,53 @@ function LoginForm() {
   return (
     <div className={styles.loginCard}>
       <div className={styles.header}>
-        <h1 className={styles.title}>InChi Pilot Gateway</h1>
-        <p className={styles.subtitle}>Sign in with your internal BNCS account</p>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "0.85rem" }}>
+          <div
+            style={{
+              width: 42,
+              height: 42,
+              background: "linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)",
+              borderRadius: 10,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              color: "#FFFFFF",
+              boxShadow: "0 0 14px rgba(37, 99, 235, 0.4)",
+            }}
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 2v20M2 12h20M4.93 4.93l14.14 14.14M4.93 19.07l14.14-14.14" />
+            </svg>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
+          <h1 className={styles.title}>InChi Gateway</h1>
+          <span
+            style={{
+              fontSize: "0.625rem",
+              fontWeight: 700,
+              color: "#2563EB",
+              background: "#EFF6FF",
+              border: "1px solid #BFDBFE",
+              padding: "0.15rem 0.5rem",
+              borderRadius: 9999,
+              textTransform: "uppercase",
+              letterSpacing: "0.05em",
+            }}
+          >
+            v0.1 PILOT
+          </span>
+        </div>
+        <p className={styles.subtitle}>Supervised AI Matching &amp; Cross-Border Trade Gateway</p>
       </div>
 
       {errorMessage && (
@@ -106,7 +193,7 @@ function LoginForm() {
             id="email"
             type="email"
             autoComplete="email"
-            placeholder="analyst@bncs.local"
+            placeholder="analyst@inchi.local"
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -153,7 +240,7 @@ function LoginForm() {
       </form>
 
       <div className={styles.notice}>
-        Private internal pilot for authorized BNCS personnel only. Unauthorized access is monitored and audited.
+        Private internal pilot for authorized BNCS personnel only. User accounts are provisioned by the Platform Administrator in accordance with Architecture Decision D-12 (no public self-registration).
       </div>
     </div>
   );

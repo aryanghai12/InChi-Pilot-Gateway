@@ -88,7 +88,7 @@
 }
 
 .searchContainer:focus-within {
-  border-color: var(--color-border-focus, #1e3a2f);
+  border-color: var(--color-border-focus, #1d4ed8);
   background-color: #ffffff;
   box-shadow: 0 0 0 2px rgba(30, 58, 47, 0.1);
 }
@@ -133,7 +133,7 @@
 }
 
 .filterSelect:focus {
-  border-color: var(--color-border-focus, #1e3a2f);
+  border-color: var(--color-border-focus, #1d4ed8);
 }
 
 .resetFiltersBtn {

@@ -39,7 +39,7 @@
 }
 
 .heroTitle {
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family-sans);
   font-size: 2.25rem;
   font-weight: 700;
   line-height: 1.15;
@@ -52,7 +52,7 @@
   display: block;
   font-style: italic;
   font-weight: 500;
-  color: #2D4C3E;
+  color: #1D4ED8;
   margin-top: 0.15rem;
 }
 
@@ -76,13 +76,13 @@
   font-weight: 600;
   text-decoration: none;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(30, 58, 47, 0.2);
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.25);
 }
 
 .heroCta:hover {
   background-color: var(--color-primary-hover);
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(30, 58, 47, 0.25);
+  box-shadow: 0 6px 16px rgba(29, 78, 216, 0.35);
   color: #FFFFFF;
 }
 
@@ -147,7 +147,7 @@
   font-weight: 700;
   color: var(--color-text-main);
   line-height: 1.1;
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family-sans);
 }
 
 .statTrend {
@@ -186,7 +186,7 @@
 }
 
 .cardTitle {
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family-sans);
   font-size: 1.1rem;
   font-weight: 600;
   color: var(--color-text-main);
@@ -255,7 +255,7 @@
 }
 
 .gaugeScore {
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family-sans);
   font-size: 1.9rem;
   font-weight: 700;
   color: var(--color-text-main);
@@ -425,7 +425,7 @@
 }
 
 .stepperTitle {
-  font-family: var(--font-family-serif);
+  font-family: var(--font-family-sans);
   font-size: 1.05rem;
   font-weight: 700;
   color: var(--color-text-main);
@@ -483,12 +483,12 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background-color: #142820;
+  background-color: #1E40AF;
   color: #FFFFFF;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 0 4px rgba(30, 58, 47, 0.2);
+  box-shadow: 0 0 0 4px rgba(29, 78, 216, 0.2);
 }
 
 .stepCirclePending {

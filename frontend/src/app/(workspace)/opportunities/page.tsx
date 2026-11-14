@@ -1,9 +1,33 @@
 "use client";
 
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { apiFetch } from "@/lib/api/client";
+import { unwrapPaginated, ApiError } from "@/lib/api/types";
 import { EmptyState } from "@/components/feedback/EmptyState";
+import { AlertBanner } from "@/components/feedback/AlertBanner";
+import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 
 export default function OpportunitiesPage() {
+  const { data: opportunities, isLoading, error } = useQuery<any[]>({
+    queryKey: ["opportunities"],
+    queryFn: async () => {
+      try {
+        const res = await apiFetch<any>("/api/v1/opportunities/");
+        return unwrapPaginated(res);
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 404) {
+          return null as any;
+        }
+        throw err;
+      }
+    },
+    staleTime: 30 * 1000,
+    retry: false,
+  });
+
+  const isUnderConstruction = opportunities === null || (error instanceof ApiError && error.status === 404);
+
   return (
     <div>
       <div style={{ marginBottom: "1.5rem" }}>
@@ -15,10 +39,26 @@ export default function OpportunitiesPage() {
         </p>
       </div>
 
-      <EmptyState
-        title="No Commercial Opportunities"
-        guidance="Opportunities are generated exclusively from accepted candidate dispositions in a matching run."
-      />
+      {isUnderConstruction && (
+        <div style={{ marginBottom: "1.5rem" }}>
+          <AlertBanner
+            type="info"
+            title="Feature Under Backend Construction"
+            message="The Commercial Opportunities service (/api/v1/opportunities/) is currently under backend development. Opportunities generated from accepted candidate matches will automatically synchronize here once deployed."
+          />
+        </div>
+      )}
+
+      {isLoading ? (
+        <div style={{ padding: "3rem", display: "flex", justifyContent: "center" }}>
+          <LoadingSpinner label="Loading commercial pipeline..." />
+        </div>
+      ) : (
+        <EmptyState
+          title="No Commercial Opportunities"
+          guidance="Opportunities are generated exclusively from accepted candidate dispositions in a matching run."
+        />
+      )}
     </div>
   );
 }

@@ -33,7 +33,7 @@ export default function WorkspaceLayout({
     isError,
   } = useQuery<CurrentUser>({
     queryKey: ["currentUser"],
-    queryFn: () => apiFetch<CurrentUser>("/api/v1/auth/me/"),
+    queryFn: () => apiFetch<CurrentUser>("/api/v1/auth/me/", { skipAuthRedirect: true }),
     staleTime: 5 * 60 * 1000,
     retry: false,
   });
@@ -51,7 +51,7 @@ export default function WorkspaceLayout({
 
   return (
     <div className={styles.container}>
-      <AppSidebar userRole={user?.role} />
+      <AppSidebar user={user} userRole={user?.role} />
       <div className={styles.contentWrapper}>
         <AppHeader user={user} />
         {isDemo && (

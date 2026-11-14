@@ -5,7 +5,9 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import styles from "./dashboard.module.css";
 import { apiFetch } from "@/lib/api/client";
+import { unwrapPaginated, ApiError } from "@/lib/api/types";
 import { EmptyState } from "@/components/feedback/EmptyState";
+import { AlertBanner } from "@/components/feedback/AlertBanner";
 
 interface DashboardMetrics {
   total_suppliers?: number;
@@ -28,16 +30,59 @@ interface DashboardSummaryResponse {
 }
 
 export default function DashboardPage() {
-  const { data, isLoading } = useQuery<DashboardSummaryResponse>({
+  const { data: summaryData, isLoading: isSummaryLoading } = useQuery<DashboardSummaryResponse | null>({
     queryKey: ["dashboardSummary"],
-    queryFn: () => apiFetch<DashboardSummaryResponse>("/api/v1/dashboard/summary/"),
+    queryFn: async () => {
+      try {
+        return await apiFetch<DashboardSummaryResponse>("/api/v1/dashboard/summary/");
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 404) {
+          return null;
+        }
+        throw err;
+      }
+    },
     staleTime: 60 * 1000,
     retry: false,
   });
 
-  const metrics = data?.metrics;
-  const recentMatches = data?.recent_matches || [];
-  const readinessScore = data?.average_readiness ?? 0;
+  const { data: suppliers = [], isLoading: isSuppliersLoading } = useQuery<any[]>({
+    queryKey: ["suppliers"],
+    queryFn: async () => {
+      try {
+        const res = await apiFetch<any>("/api/v1/suppliers/");
+        return unwrapPaginated(res);
+      } catch {
+        return [];
+      }
+    },
+    staleTime: 60 * 1000,
+    retry: false,
+  });
+
+  const { data: products = [], isLoading: isProductsLoading } = useQuery<any[]>({
+    queryKey: ["all_products"],
+    queryFn: async () => {
+      try {
+        const res = await apiFetch<any>("/api/v1/products/");
+        return unwrapPaginated(res);
+      } catch {
+        return [];
+      }
+    },
+    staleTime: 60 * 1000,
+    retry: false,
+  });
+
+  const isLoading = isSummaryLoading && isSuppliersLoading && isProductsLoading;
+  const metrics = summaryData?.metrics;
+  const totalSuppliers = metrics?.total_suppliers ?? suppliers.length;
+  const totalProducts = metrics?.total_products ?? products.length;
+  const activeMatches = metrics?.active_matches ?? 0;
+  const openOpportunities = metrics?.open_opportunities ?? 0;
+  const recentMatches = summaryData?.recent_matches || [];
+  const readinessScore = summaryData?.average_readiness ?? 0;
+  const isSummaryPending = summaryData === null;
 
   return (
     <div className={styles.dashboardContainer}>
@@ -65,8 +110,18 @@ export default function DashboardPage() {
       </section>
 
       {/* ====================================================================
-          2. METRICS ROW: Live database counts (0 when unpopulated)
+          2. METRICS ROW: Live database counts (computed from registry when summary 404s)
           ==================================================================== */}
+      {isSummaryPending && (
+        <div style={{ marginBottom: "1.25rem" }}>
+          <AlertBanner
+            type="info"
+            title="Live Registry Integration Active"
+            message="Backend summary endpoint (/api/v1/dashboard/summary/) is currently under construction. Supplier and product metrics are computed directly from live registry data."
+          />
+        </div>
+      )}
+
       <section className={styles.statsRow} aria-label="Key Platform Metrics">
         {/* Suppliers Stat */}
         <div className={styles.statCard}>
@@ -82,7 +137,7 @@ export default function DashboardPage() {
             <span className={styles.statLabel}>Suppliers</span>
             <div className={styles.statValues}>
               <span className={styles.statNumber}>
-                {isLoading ? "—" : metrics?.total_suppliers ?? 0}
+                {isLoading ? "—" : totalSuppliers}
               </span>
             </div>
           </div>
@@ -101,7 +156,7 @@ export default function DashboardPage() {
             <span className={styles.statLabel}>Products</span>
             <div className={styles.statValues}>
               <span className={styles.statNumber}>
-                {isLoading ? "—" : metrics?.total_products ?? 0}
+                {isLoading ? "—" : totalProducts}
               </span>
             </div>
           </div>
@@ -118,7 +173,7 @@ export default function DashboardPage() {
             <span className={styles.statLabel}>AI Matches</span>
             <div className={styles.statValues}>
               <span className={styles.statNumber}>
-                {isLoading ? "—" : metrics?.active_matches ?? 0}
+                {isLoading ? "—" : activeMatches}
               </span>
             </div>
           </div>
@@ -136,7 +191,7 @@ export default function DashboardPage() {
             <span className={styles.statLabel}>Opportunities</span>
             <div className={styles.statValues}>
               <span className={styles.statNumber}>
-                {isLoading ? "—" : metrics?.open_opportunities ?? 0}
+                {isLoading ? "—" : openOpportunities}
               </span>
             </div>
           </div>

@@ -1,57 +1,72 @@
-/* Global CSS variables & warm silk InChi design tokens */
+/* InChi Pilot Gateway — Enterprise Design Tokens (Stitch Design System) */
 :root {
-  --color-bg-app: #FAF7F2;
+  --color-bg-app: #F4F6F9;
   --color-bg-surface: #FFFFFF;
-  --color-bg-subtle: #F2EEE7;
-  --color-bg-hover: #EBE5DB;
-  --color-bg-active-pill: #E2ECE5;
+  --color-bg-subtle: #F1F5F9;
+  --color-bg-hover: #E2E8F0;
+  --color-bg-active-pill: #1D4ED8;
 
-  --color-text-main: #1A211E;
-  --color-text-muted: #66736B;
-  --color-text-subtle: #8A968E;
+  /* Sidebar Tokens */
+  --color-bg-sidebar: #0B132B;
+  --color-bg-sidebar-hover: rgba(255, 255, 255, 0.06);
+  --color-sidebar-text: #94A3B8;
+  --color-sidebar-text-hover: #F8FAFC;
+  --color-sidebar-border: #1E293B;
+
+  /* Text Tokens */
+  --color-text-main: #0F172A;
+  --color-text-muted: #64748B;
+  --color-text-subtle: #94A3B8;
   --color-text-inverse: #FFFFFF;
 
-  --color-border: #E8E2D8;
-  --color-border-subtle: #EFEBE4;
-  --color-border-focus: #1E3A2F;
+  /* Border Tokens */
+  --color-border: #E2E8F0;
+  --color-border-subtle: #F1F5F9;
+  --color-border-focus: #1D4ED8;
 
-  --color-primary: #1E3A2F;
-  --color-primary-hover: #142820;
-  --color-primary-light: #E4EDE6;
+  /* Brand & Primary */
+  --color-primary: #1D4ED8;
+  --color-primary-hover: #1E40AF;
+  --color-primary-light: #EFF6FF;
 
-  --color-accent-gold: #D9824B;
-  --color-accent-gold-light: #FDF3EB;
+  /* Dark Hero Card Tokens */
+  --color-dark-card-bg: #0C1A30;
+  --color-dark-card-border: #1E3A5F;
+  --color-dark-panel-bg: rgba(255, 255, 255, 0.04);
+  --color-dark-panel-border: rgba(255, 255, 255, 0.08);
 
-  --color-success-bg: #E8F5EE;
-  --color-success-text: #1E663E;
-  --color-success-border: #A3D9B8;
-  --color-success-bar: #2B7A4C;
+  /* Status Colors */
+  --color-success-bg: #ECFDF5;
+  --color-success-text: #047857;
+  --color-success-border: #A7F3D0;
+  --color-success-bar: #10B981;
 
-  --color-warning-bg: #FEF7EA;
-  --color-warning-text: #965B12;
-  --color-warning-border: #F7D493;
+  --color-warning-bg: #FFFBEB;
+  --color-warning-text: #92400E;
+  --color-warning-border: #FDE68A;
 
-  --color-danger-bg: #FDF0F0;
-  --color-danger-text: #A12525;
-  --color-danger-border: #F7B8B8;
+  --color-danger-bg: #FEF2F2;
+  --color-danger-text: #B91C1C;
+  --color-danger-border: #FECACA;
 
-  --color-info-bg: #F0F6F9;
-  --color-info-text: #1C5370;
-  --color-info-border: #B2D8EB;
+  --color-info-bg: #EFF6FF;
+  --color-info-text: #1D4ED8;
+  --color-info-border: #BFDBFE;
 
-  --font-family-serif: "Playfair Display", Georgia, "Times New Roman", serif;
   --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   --radius-sm: 6px;
   --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 24px;
   --radius-full: 9999px;
 
-  --shadow-subtle: 0 1px 3px 0 rgba(40, 30, 20, 0.04);
-  --shadow-sm: 0 2px 6px 0 rgba(40, 30, 20, 0.05);
-  --shadow-md: 0 4px 14px -2px rgba(40, 30, 20, 0.08);
+  --shadow-subtle: 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.06), 0 1px 2px 0 rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
 
   --focus-ring: 2px solid var(--color-primary);
   --focus-offset: 2px;
@@ -98,9 +113,4 @@ table {
 button {
   font-family: inherit;
   cursor: pointer;
-}
-
-input, select, textarea {
-  font-family: inherit;
-  font-size: 1rem;
 }
