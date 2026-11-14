@@ -28,6 +28,7 @@ ALLOWED_HOSTS = [
 INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.contenttypes",
+    "apps.demand.apps.DemandConfig",
 ]
 
 # Centralized PostgreSQL Database Configuration
