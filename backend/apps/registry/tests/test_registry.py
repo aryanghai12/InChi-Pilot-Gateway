@@ -277,3 +277,64 @@ class ProductCatalogueTests(TestCase):
         response = self.client.patch(f"/api/v1/products/{product.id}/", update_payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
         self.assertEqual(response.json()["code"], "conflict")
+
+    def test_frontend_supplier_payload_compatibility(self):
+        """Verify frontend-specific payload shape (nested contact_details, address alias, Title Case) works."""
+        self.client.force_login(self.analyst)
+
+        frontend_payload = {
+            "legal_name": "Frontend Compatible Exporters",
+            "country_of_registration": "India",
+            "supplier_type": "Manufacturer",  # Title Case
+            "address_registration_reference": "Plot 42, Export City",
+            "contact_details": {
+                "contact_name": "Priyanka Singh",
+                "email": "priyanka@frontend.local",
+                "phone": "+91 9876543210",
+            },
+            "industry_description": "Agricultural commodities",
+            "record_status": "Draft",  # Title Case
+        }
+        response = self.client.post("/api/v1/suppliers/", frontend_payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        data = response.json()
+
+        # Check both id and supplier_id are exposed
+        self.assertIn("id", data)
+        self.assertIn("supplier_id", data)
+        self.assertEqual(data["id"], data["supplier_id"])
+        self.assertEqual(data["supplier_type"], "manufacturer")
+        self.assertEqual(data["record_status"], "draft")
+        self.assertEqual(data["address"], "Plot 42, Export City")
+        self.assertEqual(data["contact_details"]["contact_name"], "Priyanka Singh")
+        self.assertEqual(data["contact_details"]["email"], "priyanka@frontend.local")
+
+    def test_frontend_product_payload_compatibility(self):
+        """Verify frontend-specific product payload (supplier_id alias, minimum_order_quantity, indicative_price) works."""
+        self.client.force_login(self.analyst)
+
+        frontend_payload = {
+            "supplier_id": str(self.supplier.id),
+            "product_name": "Frontend Sourced Basmati",
+            "product_category": "Agriculture and Food",
+            "minimum_order_quantity": 25,
+            "minimum_order_unit": "tonnes",
+            "indicative_price_min": 750,
+            "indicative_price_max": 850,
+            "currency": "USD",
+            "price_basis": "FOB",
+            "translation_status": "Not provided",
+        }
+        response = self.client.post("/api/v1/products/", frontend_payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        data = response.json()
+
+        # Check both id and product_id are exposed
+        self.assertIn("id", data)
+        self.assertIn("product_id", data)
+        self.assertEqual(data["id"], data["product_id"])
+        self.assertEqual(data["supplier_id"], str(self.supplier.id))
+        self.assertEqual(data["translation_status"], "not_provided")
+        self.assertEqual(data["minimum_order_quantity"], 25.0)
+        self.assertEqual(data["indicative_price_min"], 750.0)
+

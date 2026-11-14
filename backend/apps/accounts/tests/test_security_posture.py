@@ -69,7 +69,7 @@ class SecurityPostureTests(TestCase):
         self.assertIn("sessionid", response.cookies)
 
     def test_sec_04_login_invalid_credentials_returns_400(self):
-        """Negative test: Invalid password rejected with standard error shape."""
+        """Negative test: Invalid password rejected with standard error shape and descriptive message."""
         payload = {
             "email": "analyst@bncs.local",
             "password": "WrongPassword!",
@@ -77,6 +77,8 @@ class SecurityPostureTests(TestCase):
         response = self.client.post("/api/v1/auth/login/", payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         data = response.json()
+        self.assertEqual(data.get("code"), "validation_error")
+        self.assertEqual(data.get("message"), "Invalid email or password.")
         self.assertIn("field_errors", data)
 
     def test_sec_05_analyst_forbidden_from_admin_user_management(self):

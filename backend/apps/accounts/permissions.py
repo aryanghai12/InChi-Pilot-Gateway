@@ -1,4 +1,5 @@
 from rest_framework.permissions import BasePermission
+from rest_framework.exceptions import PermissionDenied
 from apps.accounts.models import Role
 from apps.accounts.policy import is_role_allowed, OBJECT_RULES
 
@@ -58,12 +59,12 @@ class RolePermission(BasePermission):
         # Self-review check
         if rules.get("deny_self_review"):
             if hasattr(obj, "submitted_by") and obj.submitted_by == request.user:
-                return False
+                raise PermissionDenied("Reviewer cannot approve an assessment they submitted.")
 
         # Self-deactivation check
         if rules.get("deny_self_deactivate"):
             if obj == request.user:
-                return False
+                raise PermissionDenied("You cannot deactivate your own account.")
 
         return True
 
