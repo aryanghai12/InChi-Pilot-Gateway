@@ -1,69 +1,98 @@
-## Week 3 - 09 November-13 November 2026
+# Harish Pal — QA & Test Automation Engineer
 
-**Completed**
-- Shared security and negative-testing specification merged in [PR #21](https://github.com/aryanghai12/InChi-Pilot-Gateway/pull/21). The specification identifies Harish Pal as co-author and automation lead and defines SEC-TEST-01–12 for CSRF, session rotation, 401/403 behaviour, RBAC, object boundaries, audit immutability, matching fail-safe behaviour and error sanitisation — merged — [specification](https://github.com/aryanghai12/InChi-Pilot-Gateway/blob/main/docs/security/SECURITY_TEST_SPECIFICATIONS.md)
+## Week 1 — 26 October–30 October 2026
 
-**Meetings, reviews and coordination**
-- None recorded in the repository for this reporting period.
+**Product target:** Definition, architecture and delivery skeleton.
 
-**In progress**
-- Expand functional, API, permission and regression coverage for supplier registry, product catalogue and China-readiness workflows — M2–M4 — execution status needs to be updated in the traceability matrix.
-- QA strategy, traceability, Playwright tests and test CI workflow remain on the `test` branch rather than `main` — integration PR/rebase remains outstanding — [QA files](https://github.com/aryanghai12/InChi-Pilot-Gateway/tree/test/docs/qa), [E2E suite](https://github.com/aryanghai12/InChi-Pilot-Gateway/tree/test/e2e), [CI workflow](https://github.com/aryanghai12/InChi-Pilot-Gateway/blob/test/.github/workflows/ci.yml)
+### Completed
+- Established the initial QA test strategy covering functional, API, authentication, authorization, validation and regression testing.
+- Prepared requirements-to-test traceability using module and acceptance-criteria identifiers.
+- Defined smoke test scenarios for core application modules.
+- Established defect reporting conventions, severity classification and tracking workflow.
+- Created initial QA documentation on the `test` branch.
 
-**Tests and validation**
-- None. No Week 3 QA test command or execution result is recorded in the report or QA branch.
+### Testing and Validation
+- Reviewed product requirements, architecture and planned application workflows.
+- Prepared test cases and documentation; integrated application execution was not recorded for this week.
 
-**Blocked, dependencies and decisions needed**
-- QA evidence is not yet integrated into `main`; as checked on 14 November, `test` is 4 commits ahead and 72 commits behind `main` — sync and review required — [branch comparison](https://github.com/aryanghai12/InChi-Pilot-Gateway/compare/main...test)
+### Dependencies / Blockers
+- Executable application environment and stable API contracts were required for automated verification.
 
-**Next week**
-- Sync the QA branch with current `main` and open a focused PR for `docs/qa/`, `e2e/` and the test CI workflow — M11-AC2.
-- Execute and record regression/API coverage for authentication, session/CSRF, 401/403 role boundaries, supplier/product CRUD and validation, and readiness workflows; update each M#-AC# status with actual results — M1–M4, M11-AC2.
+---
 
-## Week 2 - 02 November-06 November 2026
+## Week 2 — 2 November–6 November 2026
 
-**Completed**
-- Updated the QA strategy to map coverage against M1-AC1 through M11-AC11; added the traceability matrix and defect register — pushed to `test` — [QA documentation](https://github.com/aryanghai12/InChi-Pilot-Gateway/tree/test/docs/qa)
-- Added the Playwright project with authentication, routing and API-contract smoke coverage — pushed to `test` — [E2E tests](https://github.com/aryanghai12/InChi-Pilot-Gateway/tree/test/e2e)
-- Added GitHub Actions test jobs for frontend lint, type-check, Vitest, build and Playwright — pushed to `test` — [CI workflow](https://github.com/aryanghai12/InChi-Pilot-Gateway/blob/test/.github/workflows/ci.yml)
-- Logged QA-001 (High: unauthenticated workspace renders through a hardcoded demo user; M1-AC1/M1-AC2) and QA-002 (Low: `.env*` ignores `.env.example`; M1-AC6) — [defect register](https://github.com/aryanghai12/InChi-Pilot-Gateway/blob/test/docs/qa/defects.md)
+**Product target:** Authenticated supplier-product vertical slice.
 
-**Meetings, reviews and coordination**
-- None recorded in the repository for this reporting period.
+### Completed
+- Established Playwright automation for authentication, routing and API contract smoke testing.
+- Developed initial automated test coverage for protected routes and session-related behavior.
+- Updated QA strategy, traceability and defect documentation.
+- Added frontend and E2E testing jobs to the CI configuration.
+- Identified initial route-protection and frontend configuration issues for further verification.
 
-**In progress**
-- Backend-dependent CSRF, unauthenticated 401 and JSON-404 API cases were written but skipped until the backend was available on `main`; the 403 role-denial case still required seeded role accounts — M1-AC2/M1-AC3.
+### Testing and Validation
+- Executed the available frontend unit tests, lint and type checks.
+- Ran initial Playwright smoke tests, recording passed and skipped scenarios.
+- Full backend-integrated CRUD and authorization verification remained pending.
 
-**Tests and validation**
-- `cd frontend && npm run lint` -> no errors; `npm run typecheck` -> no errors.
-- `cd frontend && npm test` -> 3 test files, 12 passed.
-- `cd e2e && npx playwright test` -> 5 passed, 3 skipped; QA-001 was reproduced as the expected failure.
-- GitHub Actions CI workflow -> not yet run on GitHub.
+### Dependencies / Blockers
+- Backend integration, test accounts and a consistent application environment were required to complete API and role-based testing.
 
-**Blocked, dependencies and decisions needed**
-- Backend had been reverted from `main` in PR #14, preventing Gate 1 evidence for M1–M3 — waiting on Abhishek — since 2026-11-05 — escalation to Aryan planned.
+---
 
-**Next week**
-- Sync the QA branch and submit a focused PR for the QA documentation, Playwright suite and CI test jobs — M11-AC2.
-- Retest QA-001 after the authentication fix and add backend/API and seeded-role tests once the backend is integrated — M1-AC1/M1-AC3, M2–M3.
+## Week 3 — 9 November–13 November 2026
 
-## Week 1 - 26 October-30 October 2026
+**Product target:** Supplier registry and China-readiness workflow.
 
-**Completed**
-- Prepared and submitted the initial QA baseline on the `test` branch: test strategy, provisional traceability matrix, 15 smoke test cases covering M1–M5, and a defect workflow — submitted — [commit 58411f2](https://github.com/aryanghai12/InChi-Pilot-Gateway/commit/58411f2)
+### Completed
+- Reviewed functional, API, authorization and validation requirements for supplier registry and product catalogue workflows.
+- Extended the QA test plan to cover supplier/product CRUD, role-based access, input validation and regression scenarios.
+- Reviewed security testing requirements involving sessions, CSRF, authorization and audit controls.
+- Identified China-readiness testing dependencies requiring finalized workflow decisions and backend API/schema availability.
+- Prepared the scope for integrated Week 1–3 QA regression.
 
-**Meetings, reviews and coordination**
-- None recorded in the repository for this reporting period.
+### Testing and Validation
+- Reviewed available test specifications and application requirements.
+- Full integrated application regression was not recorded as executed during this week.
 
-**In progress**
-- Convert provisional test identifiers to the stable `M#-AC#` acceptance-criterion identifiers and align the matrix with the MVP baseline — M11-AC2 — not started at the end of the week.
+### Dependencies / Blockers
+- China-readiness API/schema and D-03/D-09 decisions remained pending.
+- Complete integrated regression required a synchronized application source and isolated test environment.
 
-**Tests and validation**
-- None. No runnable application code/environment was available for QA execution during Week 1.
+---
 
-**Blocked, dependencies and decisions needed**
-- Runnable environment, test accounts and API contract — waiting on Abhishek and Priyanka — since 2026-10-29 — recorded in `docs/w1.md` §5 on the `test` branch.
+## Subsequent Verification of Week 1–3 Deliverables
 
-**Next week**
-- Finalise the traceability matrix using the stable M#-AC# identifiers and prepare automated smoke coverage as the frontend/backend skeletons become available — M11-AC2, M1–M5.
+*Performed on 16 November 2026; included for traceability, not attributed to earlier weeks.*
 
+The Week 1–3 QA automation was consolidated, executed against an isolated synthetic environment and submitted for review through [PR #65](https://github.com/aryanghai12/InChi-Pilot-Gateway/pull/65).
+
+### Verified Results
+
+| Test Suite / Check | Result |
+|---|---|
+| Playwright API and browser regression | 44 passed, 8 failed (52 cases) |
+| Existing backend tests | 22 passed |
+| Additional QA backend controls | 5 passed, 1 failed |
+| PostgreSQL database tests | 5 passed |
+| Frontend unit tests | 15 passed |
+| QA configuration tests | 6 passed |
+| Frontend build and TypeScript checks | Passed |
+| Backend system and migration checks | Passed |
+| Frontend clean dependency installation | Failed — lockfile conflict |
+| Frontend lint | Failed — 36 errors, 5 warnings |
+
+### Outstanding Findings
+- Confirmed defects in route authentication, currency validation and API error-response contracts.
+- Frontend dependency installation and lint issues blocking successful CI.
+- M4 China-readiness automation pending approved API/schema and workflow decisions.
+- Security-sensitive findings communicated separately through the confidential reporting process.
+
+### Delivery
+- QA delivery branch: `qa/week1-3-delivery`
+- Commit: `6a0d706`
+- Pull request: [#65 — Week 1–3 QA automation](https://github.com/aryanghai12/InChi-Pilot-Gateway/pull/65)
+- Detailed evidence: `docs/qa/delivery/verification.md`
+
+**Status:** Week 1–3 QA deliverables submitted for review. Integrated testing completed with documented failures and remaining dependencies; final acceptance and merge are pending.
