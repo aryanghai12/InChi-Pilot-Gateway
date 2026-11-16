@@ -1,0 +1,145 @@
+{
+  "branch": "qa/week1-3-delivery",
+  "base_revision": "e89ab65c8d07848c6bb30d06dc5d826978138b70",
+  "source_state": "Uncommitted QA candidate; product code unchanged",
+  "started_utc": "2026-11-16T06:04:53.541115+00:00",
+  "finished_utc": "2026-11-16T06:08:06.607720+00:00",
+  "playwright": {
+    "passed": 44,
+    "failed": 8,
+    "skipped": 0,
+    "flaky": 0,
+    "cases": 52,
+    "method": "Single complete public suite execution in the clean worktree"
+  },
+  "existing_backend": {
+    "passed": 22,
+    "failed": 0
+  },
+  "qa_backend": {
+    "passed": 5,
+    "failed": 1
+  },
+  "database": {
+    "passed": 5,
+    "failed": 0
+  },
+  "frontend_unit": {
+    "passed": 15,
+    "failed": 0
+  },
+  "qa_configuration": {
+    "passed": 6,
+    "failed": 0
+  },
+  "checks": [
+    {
+      "name": "postgres-start",
+      "exit_code": 0
+    },
+    {
+      "name": "database-version",
+      "exit_code": 0
+    },
+    {
+      "name": "backend-check",
+      "exit_code": 0
+    },
+    {
+      "name": "backend-migration-drift",
+      "exit_code": 0
+    },
+    {
+      "name": "backend-tests",
+      "exit_code": 0
+    },
+    {
+      "name": "qa-backend-controls",
+      "exit_code": 1
+    },
+    {
+      "name": "database-tests",
+      "exit_code": 0
+    },
+    {
+      "name": "backend-migrate",
+      "exit_code": 0
+    },
+    {
+      "name": "seed-roles",
+      "exit_code": 0
+    },
+    {
+      "name": "frontend-lint",
+      "exit_code": 1
+    },
+    {
+      "name": "frontend-typecheck",
+      "exit_code": 0
+    },
+    {
+      "name": "frontend-tests",
+      "exit_code": 0
+    },
+    {
+      "name": "qa-config",
+      "exit_code": 0
+    },
+    {
+      "name": "qa-typecheck",
+      "exit_code": 0
+    },
+    {
+      "name": "qa-discovery",
+      "exit_code": 0
+    },
+    {
+      "name": "frontend-build",
+      "exit_code": 0
+    },
+    {
+      "name": "qa-preflight",
+      "exit_code": 0
+    },
+    {
+      "name": "playwright-regression",
+      "exit_code": 1
+    },
+    {
+      "name": "postgres-stop",
+      "exit_code": 0
+    }
+  ],
+  "clean_install": "Fail: committed override/lock mismatch",
+  "frontend_lint": {
+    "errors": 36,
+    "warnings": 5,
+    "status": "Fail"
+  },
+  "node_versions": {
+    "node": "v22.19.0",
+    "next": "16.4.6",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "vitest": "3.2.7",
+    "tinypool": "2.2.0",
+    "typescript": "5.9.3"
+  },
+  "python_packages": {
+    "Django": "5.2.19",
+    "djangorestframework": "3.18.3",
+    "pytest": "9.2.0",
+    "pytest-django": "4.14.0",
+    "psycopg": "3.3.9",
+    "django-cors-headers": "4.9.0",
+    "drf-spectacular": "0.30.0"
+  },
+  "remaining_listeners": {
+    "55439": false,
+    "58001": false,
+    "53001": false
+  },
+  "remote_ci": "Not Run",
+  "readiness": "Blocked",
+  "raw_artifacts": "Excluded; retained only in ignored local runtime storage"
+}
