@@ -1,0 +1,4 @@
+-r requirements.txt
+# Test-only dependencies for ai_matching/tests/.
+httpx==0.28.1         # BSD-3 — required by fastapi.testclient.TestClient
+pytest==9.2.0         # MIT
