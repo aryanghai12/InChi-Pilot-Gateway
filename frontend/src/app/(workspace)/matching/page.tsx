@@ -3,21 +3,21 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api/client";
-import { unwrapPaginated, ApiError } from "@/lib/api/types";
+import { unwrapPaginated, ApiError, PaginatedResponse } from "@/lib/api/types";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { AlertBanner } from "@/components/feedback/AlertBanner";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 
 export default function MatchingPage() {
-  const { data: runs, isLoading, error } = useQuery<any[]>({
+  const { data: runs, isLoading, error } = useQuery<unknown[] | null>({
     queryKey: ["matchingRuns"],
     queryFn: async () => {
       try {
-        const res = await apiFetch<any>("/api/v1/matching/runs/");
+        const res = await apiFetch<unknown[] | PaginatedResponse<unknown>>("/api/v1/matching/runs/");
         return unwrapPaginated(res);
       } catch (err) {
         if (err instanceof ApiError && err.status === 404) {
-          return null as any;
+          return null;
         }
         throw err;
       }

@@ -58,7 +58,6 @@ export default function SuppliersPage() {
     data: suppliers = [],
     isLoading: isLoadingSuppliers,
     isError: isSuppliersError,
-    error: suppliersError,
   } = useQuery<Supplier[]>({
     queryKey: ["suppliers"],
     queryFn: async () => {
@@ -392,12 +391,12 @@ export default function SuppliersPage() {
       return;
     }
 
-    const typeMapping: Record<string, any> = {
+    const typeMapping: Record<string, SupplierType> = {
       Manufacturer: "manufacturer",
       Trader: "trader",
       "Merchant Exporter": "merchant_exporter",
     };
-    const statusMapping: Record<string, any> = {
+    const statusMapping: Record<string, SupplierStatus> = {
       Draft: "draft",
       Complete: "complete",
       Archived: "archived",
@@ -455,7 +454,7 @@ export default function SuppliersPage() {
     updateSupplierMutation.mutate({
       supplierId,
       payload: {
-        record_status: (newStatus.toLowerCase()) as any,
+        record_status: (newStatus.toLowerCase()) as SupplierStatus,
         version: target.version,
       },
     });

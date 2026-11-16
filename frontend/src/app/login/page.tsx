@@ -38,14 +38,14 @@ function LoginForm() {
 
     try {
       // First attempt to log in to Django with test credentials
-      const res = await apiFetch<any>("/api/v1/auth/login/", {
+      const res = await apiFetch<Record<string, unknown>>("/api/v1/auth/login/", {
         method: "POST",
         body: JSON.stringify({
           email: "analyst@inchi.local",
           password: "AnalystPass123!",
         }),
       });
-      const user = res?.user || res;
+      const user = (res?.user || res) as Record<string, unknown> | null;
       if (user && typeof user === "object" && (user.id || user.email)) {
         queryClient.setQueryData(["currentUser"], user);
       }
@@ -77,7 +77,7 @@ function LoginForm() {
 
     try {
       // Backend expects lowercase normalized email & password (ENDPOINT_DATA_AND_BEHAVIOR §2)
-      const res = await apiFetch<any>("/api/v1/auth/login/", {
+      const res = await apiFetch<Record<string, unknown>>("/api/v1/auth/login/", {
         method: "POST",
         body: JSON.stringify({
           email: email.trim().toLowerCase(),
@@ -85,7 +85,7 @@ function LoginForm() {
         }),
       });
 
-      const user = res?.user || res;
+      const user = (res?.user || res) as Record<string, unknown> | null;
       if (user && typeof user === "object" && (user.id || user.email)) {
         queryClient.setQueryData(["currentUser"], user);
       }
