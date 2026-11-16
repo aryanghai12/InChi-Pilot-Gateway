@@ -1000,6 +1000,223 @@ paths:
           description: ''
         '400':
           description: Validation failed.
+  /api/v1/requirements/:
+    get:
+      operationId: v1_requirements_list
+      description: Returns a paginated list of buyer procurement requirements. Supports filtering by status, product category, and target market.
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+        description: Filter requirements by product category.
+      - in: query
+        name: market
+        schema:
+          type: string
+        description: Filter requirements by destination market.
+      - in: query
+        name: page
+        schema:
+          type: integer
+        description: A page number within the paginated result set.
+      - in: query
+        name: page_size
+        schema:
+          type: integer
+        description: Number of results to return per page.
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: A search term for buyer organisation, requirement title, reference, or delivery location.
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Filter requirements by workflow status (draft, ready_for_matching, closed).
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBuyerRequirementList'
+          description: ''
+    post:
+      operationId: v1_requirements_create
+      description: Create a new buyer procurement requirement record. Minimum draft save requires buyer organisation name and product category.
+      summary: Create Buyer Requirement
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BuyerRequirementRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BuyerRequirementRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BuyerRequirementRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuyerRequirement'
+          description: ''
+        '400':
+          description: Validation error.
+  /api/v1/requirements/{id}/:
+    get:
+      operationId: v1_requirements_retrieve
+      description: Retrieve complete details for a specific buyer requirement, including structured criteria and readiness status.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this requirement.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuyerRequirement'
+          description: ''
+    patch:
+      operationId: v1_requirements_partial_update
+      description: Partially update fields of an existing buyer requirement. Enforces optimistic concurrency via the version field.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this requirement.
+        required: true
+      tags:
+      - v1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBuyerRequirementRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBuyerRequirementRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBuyerRequirementRequest'
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuyerRequirement'
+          description: ''
+        '409':
+          description: Concurrency conflict (record updated by another user).
+    delete:
+      operationId: v1_requirements_destroy
+      description: Soft-delete or archive a buyer requirement.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this requirement.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '204':
+          description: No content.
+  /api/v1/requirements/{id}/mark-ready/:
+    post:
+      operationId: v1_requirements_mark_ready_create
+      description: Validates all mandatory eligibility criteria (BUY-032) and transitions requirement from Draft to Ready for Matching.
+      summary: Mark Requirement Ready for Matching
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this requirement.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuyerRequirement'
+          description: Requirement successfully marked as Ready for Matching.
+        '400':
+          description: Validation failed due to missing mandatory criteria.
+  /api/v1/requirements/{id}/close/:
+    post:
+      operationId: v1_requirements_close_create
+      description: Transitions an active requirement to Closed, removing it from candidate matching runs.
+      summary: Close Requirement
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this requirement.
+        required: true
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BuyerRequirement'
+          description: Requirement has been closed.
+  /api/v1/dashboard/summary/:
+    get:
+      operationId: v1_dashboard_summary_retrieve
+      description: Returns aggregate gateway metrics (total_suppliers, total_products, active_matches, open_opportunities, average_readiness) for dashboard cards.
+      summary: Get Dashboard Summary Metrics
+      tags:
+      - v1
+      security:
+      - cookieAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardSummary'
+          description: Summary metrics loaded successfully.
 components:
   schemas:
     BlankEnum:
@@ -2023,3 +2240,310 @@ components:
       type: apiKey
       in: cookie
       name: sessionid
+    BuyerRequirement:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        requirement_id:
+          type: string
+          format: uuid
+          readOnly: true
+        buyer_organisation_name:
+          type: string
+          maxLength: 255
+        buyer_reference:
+          type: string
+          maxLength: 100
+        owner:
+          type: string
+          format: uuid
+          nullable: true
+        requirement_title:
+          type: string
+          maxLength: 255
+        target_market:
+          type: string
+          maxLength: 100
+          default: China
+        product_category:
+          $ref: '#/components/schemas/ProductCategoryEnum'
+        product_category_id:
+          type: string
+        product_specifications:
+          type: string
+        quantity_value:
+          type: string
+          format: decimal
+          nullable: true
+        quantity_unit:
+          type: string
+          maxLength: 50
+        order_frequency:
+          $ref: '#/components/schemas/OrderFrequencyEnum'
+        target_price_min:
+          type: string
+          format: decimal
+          nullable: true
+        target_price_max:
+          type: string
+          format: decimal
+          nullable: true
+        currency_code:
+          type: string
+          maxLength: 10
+          default: USD
+        price_basis:
+          type: string
+          maxLength: 50
+          default: FOB
+        delivery_location:
+          type: string
+          maxLength: 255
+        delivery_window_start:
+          type: string
+          format: date
+          nullable: true
+        delivery_window_end:
+          type: string
+          format: date
+          nullable: true
+        required_lead_time_value:
+          type: integer
+          minimum: 0
+          nullable: true
+        required_lead_time_unit:
+          type: string
+          maxLength: 30
+          default: days
+        mandatory_criteria:
+          type: array
+          items: {}
+        preferred_criteria:
+          type: array
+          items: {}
+        required_evidence:
+          type: array
+          items: {}
+        priority_weights:
+          type: object
+        buyer_preferences:
+          type: object
+        requirement_notes:
+          type: string
+        requirement_status:
+          $ref: '#/components/schemas/RequirementStatusEnum'
+        completeness_status:
+          type: string
+          readOnly: true
+          enum: [Complete, Incomplete]
+        matching_ready:
+          type: boolean
+          readOnly: true
+        blocking_reasons:
+          type: array
+          items:
+            type: string
+          readOnly: true
+        version:
+          type: integer
+        created_by:
+          type: string
+          format: uuid
+          nullable: true
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - buyer_organisation_name
+      - product_category
+    BuyerRequirementRequest:
+      type: object
+      properties:
+        buyer_organisation_name:
+          type: string
+          maxLength: 255
+        buyer_reference:
+          type: string
+          maxLength: 100
+        requirement_title:
+          type: string
+          maxLength: 255
+        target_market:
+          type: string
+          maxLength: 100
+        product_category:
+          $ref: '#/components/schemas/ProductCategoryEnum'
+        product_category_id:
+          type: string
+        product_specifications:
+          type: string
+        quantity_value:
+          type: number
+          format: decimal
+        quantity_unit:
+          type: string
+        order_frequency:
+          $ref: '#/components/schemas/OrderFrequencyEnum'
+        target_price_min:
+          type: number
+          format: decimal
+        target_price_max:
+          type: number
+          format: decimal
+        currency_code:
+          type: string
+        price_basis:
+          type: string
+        delivery_location:
+          type: string
+        delivery_window_start:
+          type: string
+          format: date
+        delivery_window_end:
+          type: string
+          format: date
+        required_lead_time_value:
+          type: integer
+        required_lead_time_unit:
+          type: string
+        mandatory_criteria:
+          type: array
+          items: {}
+        preferred_criteria:
+          type: array
+          items: {}
+        requirement_notes:
+          type: string
+        requirement_status:
+          $ref: '#/components/schemas/RequirementStatusEnum'
+      required:
+      - buyer_organisation_name
+      - product_category
+    PatchedBuyerRequirementRequest:
+      type: object
+      properties:
+        buyer_organisation_name:
+          type: string
+        buyer_reference:
+          type: string
+        requirement_title:
+          type: string
+        target_market:
+          type: string
+        product_category:
+          $ref: '#/components/schemas/ProductCategoryEnum'
+        product_category_id:
+          type: string
+        product_specifications:
+          type: string
+        quantity_value:
+          type: number
+        quantity_unit:
+          type: string
+        order_frequency:
+          $ref: '#/components/schemas/OrderFrequencyEnum'
+        target_price_min:
+          type: number
+        target_price_max:
+          type: number
+        currency_code:
+          type: string
+        price_basis:
+          type: string
+        delivery_location:
+          type: string
+        delivery_window_start:
+          type: string
+          format: date
+        delivery_window_end:
+          type: string
+          format: date
+        required_lead_time_value:
+          type: integer
+        required_lead_time_unit:
+          type: string
+        mandatory_criteria:
+          type: array
+          items: {}
+        preferred_criteria:
+          type: array
+          items: {}
+        requirement_notes:
+          type: string
+        requirement_status:
+          $ref: '#/components/schemas/RequirementStatusEnum'
+        version:
+          type: integer
+    PaginatedBuyerRequirementList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+        previous:
+          type: string
+          nullable: true
+          format: uri
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BuyerRequirement'
+    RequirementStatusEnum:
+      enum:
+      - draft
+      - ready_for_matching
+      - closed
+      type: string
+      description: '* `draft` - Draft * `ready_for_matching` - Ready for matching * `closed` - Closed'
+    OrderFrequencyEnum:
+      enum:
+      - one_off
+      - monthly
+      - quarterly
+      - annual
+      type: string
+    ProductCategoryEnum:
+      enum:
+      - Agriculture and Food
+      - Textiles
+      - Engineering Goods
+      - Electronic Goods
+      - Chemicals
+      - Minerals & Metals
+      - Marine Products
+      type: string
+    DashboardSummary:
+      type: object
+      properties:
+        total_suppliers:
+          type: integer
+          example: 45
+        total_products:
+          type: integer
+          example: 128
+        active_matches:
+          type: integer
+          example: 12
+        open_opportunities:
+          type: integer
+          example: 8
+        average_readiness:
+          type: number
+          format: float
+          example: 82.5
