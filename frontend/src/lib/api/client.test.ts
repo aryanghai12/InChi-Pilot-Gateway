@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { apiFetch, getCookie } from "./client";
 import { ApiError, unwrapPaginated, PaginatedResponse } from "./types";
@@ -158,5 +159,84 @@ describe("apiFetch", () => {
 
     expect(result).toEqual({ retried: true });
     expect(mockFetch).toHaveBeenCalledTimes(3);
+  });
+
+  describe("401 unauthenticated redirect handling", () => {
+    const originalLocation = window.location;
+
+    beforeEach(() => {
+      delete (window as any).location;
+      window.location = {
+        ...originalLocation,
+        pathname: "/requirements",
+        search: "?tab=criteria",
+        href: "http://localhost:3000/requirements?tab=criteria",
+      } as any;
+    });
+
+    afterEach(() => {
+      (window as any).location = originalLocation;
+    });
+
+    it("redirects unauthenticated 401 requests to /login?next=<path>", async () => {
+      vi.mocked(fetch).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            code: "not_authenticated",
+            message: "Authentication credentials were not provided.",
+          }),
+          { status: 401, headers: { "Content-Type": "application/json" } }
+        )
+      );
+
+      await expect(apiFetch("/api/v1/auth/me/")).rejects.toThrow(ApiError);
+      expect(window.location.href).toBe("/login?next=%2Frequirements%3Ftab%3Dcriteria");
+    });
+
+    it("redirects 401 with standard DRF detail without code", async () => {
+      vi.mocked(fetch).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            detail: "Authentication credentials were not provided.",
+          }),
+          { status: 401, headers: { "Content-Type": "application/json" } }
+        )
+      );
+
+      await expect(apiFetch("/api/v1/requirements/")).rejects.toThrow(ApiError);
+      expect(window.location.href).toBe("/login?next=%2Frequirements%3Ftab%3Dcriteria");
+    });
+
+    it("does not redirect when skipAuthRedirect is true", async () => {
+      window.location.href = "http://localhost:3000/requirements";
+
+      vi.mocked(fetch).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ detail: "Not logged in" }),
+          { status: 401, headers: { "Content-Type": "application/json" } }
+        )
+      );
+
+      await expect(
+        apiFetch("/api/v1/auth/me/", { skipAuthRedirect: true })
+      ).rejects.toThrow(ApiError);
+
+      expect(window.location.href).toBe("http://localhost:3000/requirements");
+    });
+
+    it("does not redirect when already on /login", async () => {
+      window.location.pathname = "/login";
+      window.location.href = "http://localhost:3000/login";
+
+      vi.mocked(fetch).mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ detail: "Invalid credentials" }),
+          { status: 401, headers: { "Content-Type": "application/json" } }
+        )
+      );
+
+      await expect(apiFetch("/api/v1/auth/login/")).rejects.toThrow(ApiError);
+      expect(window.location.href).toBe("http://localhost:3000/login");
+    });
   });
 });

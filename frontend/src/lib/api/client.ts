@@ -108,8 +108,8 @@ export async function apiFetch<T = unknown>(
     return apiFetch<T>(url, { ...options, _isCsrfRetry: true });
   }
 
-  // Session expiry / unauthenticated: 401 with code "not_authenticated"
-  if (response.status === 401 && apiError.code === "not_authenticated") {
+  // Session expiry / unauthenticated: 401
+  if (response.status === 401) {
     if (
       !options.skipAuthRedirect &&
       typeof window !== "undefined" &&
