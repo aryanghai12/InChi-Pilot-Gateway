@@ -1,10 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import styles from "./workspace.module.css";
 import { apiFetch } from "@/lib/api/client";
-import { CurrentUser } from "@/lib/api/types";
+import { CurrentUser, ApiError } from "@/lib/api/types";
 import { AppHeader } from "@/components/navigation/AppHeader";
 import { AppSidebar } from "@/components/navigation/AppSidebar";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
@@ -31,12 +31,38 @@ export default function WorkspaceLayout({
     data: fetchedUser,
     isLoading,
     isError,
+    error,
   } = useQuery<CurrentUser>({
     queryKey: ["currentUser"],
-    queryFn: () => apiFetch<CurrentUser>("/api/v1/auth/me/", { skipAuthRedirect: true }),
+    queryFn: () => apiFetch<CurrentUser>("/api/v1/auth/me/"),
     staleTime: 5 * 60 * 1000,
     retry: false,
   });
+
+  const isUnauthorized =
+    error instanceof ApiError
+      ? error.status === 401
+      : error && typeof error === "object" && "status" in error
+      ? (error as { status: unknown }).status === 401
+      : false;
+
+  useEffect(() => {
+    if (isUnauthorized) {
+      if (typeof window !== "undefined" && !window.location.pathname.startsWith("/login")) {
+        const returnUrl = encodeURIComponent(window.location.pathname + window.location.search);
+        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+        window.location.href = `/login?next=${returnUrl}`;
+      }
+    }
+  }, [isUnauthorized]);
+
+  if (isUnauthorized) {
+    return (
+      <div className={styles.centerLoading}>
+        <LoadingSpinner label="Redirecting to login..." />
+      </div>
+    );
+  }
 
   const isDemo = isError || !fetchedUser;
   const user = fetchedUser || FALLBACK_DEMO_USER;

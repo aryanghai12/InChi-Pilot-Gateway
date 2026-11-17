@@ -10,8 +10,6 @@ import {
   RequirementStatus,
   ProductCategory,
   OrderFrequency,
-  RequirementCriterion,
-  RequiredEvidenceItem,
   PaginatedResponse,
   unwrapPaginated,
   ApiError,
@@ -188,7 +186,7 @@ export default function RequirementsPage() {
   // Backend Mutations: REST Integration with Graceful 404 Fallback
   // ==========================================================================
   const createRequirementMutation = useMutation({
-    mutationFn: (payload: any) =>
+    mutationFn: (payload: BuyerRequirement) =>
       apiFetch<BuyerRequirement>("/api/v1/requirements/", {
         method: "POST",
         body: JSON.stringify(payload),
@@ -224,7 +222,7 @@ export default function RequirementsPage() {
   });
 
   const updateRequirementMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: any }) =>
+    mutationFn: ({ id, payload }: { id: string; payload: Partial<BuyerRequirement> | Record<string, unknown> }) =>
       apiFetch<BuyerRequirement>(`/api/v1/requirements/${encodeURIComponent(id)}/`, {
         method: "PATCH",
         body: JSON.stringify(payload),
@@ -497,7 +495,7 @@ export default function RequirementsPage() {
               <tbody>
                 {filteredRequirements.map((req, idx) => (
                   <tr
-                    key={req.requirement_id || (req as any).id || `req-${idx}`}
+                    key={req.requirement_id || (req as unknown as { id?: string }).id || `req-${idx}`}
                     style={{ borderBottom: "1px solid var(--color-border-subtle)", transition: "background 0.15s ease" }}
                   >
                     <td style={{ padding: "0.9rem 1.25rem" }}>

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import styles from "./dashboard.module.css";
 import { apiFetch } from "@/lib/api/client";
-import { unwrapPaginated, ApiError } from "@/lib/api/types";
+import { unwrapPaginated, ApiError, PaginatedResponse } from "@/lib/api/types";
 import { EmptyState } from "@/components/feedback/EmptyState";
 import { AlertBanner } from "@/components/feedback/AlertBanner";
 
@@ -46,11 +46,11 @@ export default function DashboardPage() {
     retry: false,
   });
 
-  const { data: suppliers = [], isLoading: isSuppliersLoading } = useQuery<any[]>({
+  const { data: suppliers = [], isLoading: isSuppliersLoading } = useQuery<unknown[]>({
     queryKey: ["suppliers"],
     queryFn: async () => {
       try {
-        const res = await apiFetch<any>("/api/v1/suppliers/");
+        const res = await apiFetch<unknown[] | PaginatedResponse<unknown>>("/api/v1/suppliers/");
         return unwrapPaginated(res);
       } catch {
         return [];
@@ -60,11 +60,11 @@ export default function DashboardPage() {
     retry: false,
   });
 
-  const { data: products = [], isLoading: isProductsLoading } = useQuery<any[]>({
+  const { data: products = [], isLoading: isProductsLoading } = useQuery<unknown[]>({
     queryKey: ["all_products"],
     queryFn: async () => {
       try {
-        const res = await apiFetch<any>("/api/v1/products/");
+        const res = await apiFetch<unknown[] | PaginatedResponse<unknown>>("/api/v1/products/");
         return unwrapPaginated(res);
       } catch {
         return [];

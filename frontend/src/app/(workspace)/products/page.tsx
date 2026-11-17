@@ -9,6 +9,7 @@ import {
   ProductRequest,
   ProductCategory,
   TranslationStatus,
+  MoqUnit,
   Supplier,
   PaginatedProductList,
   PaginatedSupplierList,
@@ -158,7 +159,7 @@ export default function ProductsPage() {
     retry: false,
   });
 
-  const products = remoteProducts || [];
+  const products = useMemo(() => remoteProducts || [], [remoteProducts]);
 
   // Filtered Products (Case-insensitive matching for OpenAPI enum compatibility)
   const filteredProducts = useMemo(() => {
@@ -251,7 +252,7 @@ export default function ProductsPage() {
       specifications: formData.specifications.trim() || undefined,
       origin: formData.origin.trim() || undefined,
       moq_value: formData.minimum_order_quantity ? String(formData.minimum_order_quantity) : null,
-      moq_unit: (formData.minimum_order_unit || "PIECES").toUpperCase() as any,
+      moq_unit: (formData.minimum_order_unit || "PIECES").toUpperCase() as MoqUnit,
       price_min: formData.indicative_price_min ? String(formData.indicative_price_min) : null,
       price_max: formData.indicative_price_max ? String(formData.indicative_price_max) : null,
       currency: formData.currency || "USD",
@@ -436,7 +437,7 @@ export default function ProductsPage() {
             <tbody>
               {filteredProducts.map((p, idx) => {
                 const supplierName =
-                  (p as any).supplier_name ||
+                  p.supplier_name ||
                   suppliers.find((s) => (s.id || s.supplier_id) === (p.supplier || p.supplier_id))?.legal_name ||
                   "Registered Supplier";
                 let badgeClass = styles.transMissing;
@@ -500,7 +501,7 @@ export default function ProductsPage() {
                     <td>
                       <Button
                         variant="secondary"
-                        onClick={() => setSelectedProduct(p as any)}
+                        onClick={() => setSelectedProduct(p)}
                       >
                         View Specs
                       </Button>

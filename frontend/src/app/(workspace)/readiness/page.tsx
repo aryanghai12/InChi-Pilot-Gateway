@@ -270,14 +270,14 @@ export default function ReadinessPage() {
   // Backend Mutations: REST Integration with Graceful 404 Fallback
   // ==========================================================================
   const createAssessmentMutation = useMutation({
-    mutationFn: (payload: any) =>
+    mutationFn: (payload: SupplierAssessment) =>
       apiFetch<SupplierAssessment>("/api/v1/assessments/", {
         method: "POST",
         body: JSON.stringify(payload),
       }),
     onSuccess: (newAssessment) => {
       queryClient.invalidateQueries({ queryKey: ["assessments"] });
-      setActiveAssessmentId(newAssessment.assessment_id || (newAssessment as any).id);
+      setActiveAssessmentId(newAssessment.assessment_id || (newAssessment as unknown as { id?: string }).id || null);
       setIsNewModalOpen(false);
       setNotification({
         type: "success",
@@ -307,7 +307,7 @@ export default function ReadinessPage() {
   });
 
   const updateAssessmentMutation = useMutation({
-    mutationFn: ({ id, payload }: { id: string; payload: any }) =>
+    mutationFn: ({ id, payload }: { id: string; payload: Partial<SupplierAssessment> | Record<string, unknown> }) =>
       apiFetch<SupplierAssessment>(`/api/v1/assessments/${encodeURIComponent(id)}/`, {
         method: "PATCH",
         body: JSON.stringify(payload),
@@ -345,7 +345,7 @@ export default function ReadinessPage() {
     } else {
       existingAnswers.push({
         question_id: questionId,
-        response: field === "response" ? (value as any) : "",
+        response: field === "response" ? (value as AssessmentAnswer["response"]) : "",
         notes: field === "notes" ? value : "",
         evidence_reference: field === "evidence_reference" ? value : "",
       });
@@ -664,7 +664,7 @@ export default function ReadinessPage() {
                   role="tab"
                   aria-selected={isActive}
                   className={`${styles.statusTab} ${isActive ? styles.statusTabActive : ""}`}
-                  onClick={() => setStatusFilter(tab.value as any)}
+                  onClick={() => setStatusFilter(tab.value as "All" | AssessmentStatus)}
                 >
                   <span>{tab.label}</span>
                   <span className={styles.tabBadge}>{count}</span>
@@ -726,7 +726,7 @@ export default function ReadinessPage() {
               <select
                 className={styles.filterSelect}
                 value={outcomeFilter}
-                onChange={(e) => setOutcomeFilter(e.target.value as any)}
+                onChange={(e) => setOutcomeFilter(e.target.value as "All" | AssessmentOutcome)}
               >
                 <option value="All">All Outcomes</option>
                 <option value="Pending review">Pending Review</option>
@@ -741,7 +741,7 @@ export default function ReadinessPage() {
               <select
                 className={styles.filterSelect}
                 value={completenessFilter}
-                onChange={(e) => setCompletenessFilter(e.target.value as any)}
+                onChange={(e) => setCompletenessFilter(e.target.value as "All" | CompletenessStatus)}
               >
                 <option value="All">All Completeness</option>
                 <option value="Complete">Complete (Passed)</option>
@@ -804,7 +804,7 @@ export default function ReadinessPage() {
                 const isReady = a.outcome === "China-ready" || a.outcome === "Conditionally ready";
 
                 return (
-                  <tr key={a.assessment_id || (a as any).id || `assessment-${idx}`}>
+                  <tr key={a.assessment_id || (a as unknown as { id?: string }).id || `assessment-${idx}`}>
                     <td>
                       <span style={{ fontFamily: "monospace", fontWeight: 600 }}>{a.assessment_id}</span>
                     </td>
@@ -963,7 +963,7 @@ export default function ReadinessPage() {
                         ✓ All Mandatory Compliance Criteria Answered
                       </div>
                       <p style={{ margin: 0, fontSize: "0.8125rem" }}>
-                        Completeness verified. Assessment is eligible for review queue submission. Note per M4-AC2: Completeness alone does not constitute "China-ready" status.
+                        Completeness verified. Assessment is eligible for review queue submission. Note per M4-AC2: Completeness alone does not constitute &quot;China-ready&quot; status.
                       </p>
                     </div>
                   )}
@@ -1088,7 +1088,7 @@ export default function ReadinessPage() {
                   <FormField label="Review Action Type">
                     <Select
                       value={decisionActionType}
-                      onChange={(e) => setDecisionActionType(e.target.value as any)}
+                      onChange={(e) => setDecisionActionType(e.target.value as "record_outcome" | "request_info")}
                     >
                       <option value="record_outcome">Record Final Assessment Outcome</option>
                       <option value="request_info">Return for Clarification (More Information Required)</option>
@@ -1099,7 +1099,7 @@ export default function ReadinessPage() {
                     <FormField label="China-Readiness Outcome (Human-Set)">
                       <Select
                         value={decisionOutcome}
-                        onChange={(e) => setDecisionOutcome(e.target.value as any)}
+                        onChange={(e) => setDecisionOutcome(e.target.value as AssessmentOutcome)}
                       >
                         <option value="China-ready">China-Ready (Full trade compliance verified)</option>
                         <option value="Conditionally ready">Conditionally Ready (Actionable minor conditions pending)</option>
