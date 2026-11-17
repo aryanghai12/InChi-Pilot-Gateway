@@ -5,10 +5,11 @@ Combines rule-based preference score and semantic similarity score using approve
 
 Author: Alok Tiwari (C7 — AI Matching and Data Intelligence Engineer)
 Architecture: Component B (FastAPI AI Matching Engine)
-Status: Structural Scaffolding (Pending Implementation Approval)
+Status: Structural Scaffolding — Week 4/5 work, not started.
 
 NOTE ON ARCHITECTURE & DECISIONS:
-# PENDING DECISION: D-05/D-06 (Scoring Weights & Thresholds pending BNCS approval)
+# PENDING DECISION: D-05 (Weighted preference criteria, weights and the semantic signal
+# weight; MVP_FEATURES §12. D-06 is the disposition vocabulary, not weights.)
 # Weights and formulas are unapproved placeholders; no scoring logic implemented here.
 """
 

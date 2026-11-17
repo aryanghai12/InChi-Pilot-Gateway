@@ -121,7 +121,22 @@ A dedicated Python/FastAPI service executing the AI algorithms:
 ## 3. Proposed Target Folder Structure (Design Specification — Not Implemented Code)
 
 > [!NOTE]
-> The folder structure below is the **planned target layout** for C7 workstream implementation. As of 5 November 2026, **none of these application folders or files exist yet** (the repository remains in the documentation and design phase). Implementation will begin only upon explicit authorization. Database models, migrations, and table schemas remain strictly owned by Vishal (C6), and DRF endpoints/serializers coordinate with Abhishek (C5).
+> The folder structure below was the **original target layout**. **As of 16 November 2026 the implemented layout differs.** The existing scaffold was kept rather than restructured:
+>
+> | Target (below) | Implemented |
+> |---|---|
+> | `ai_matching/engine/{eligibility,semantic,scoring,ranking,explainability}/` | `ai_matching/services/{eligibility,semantic_matcher,similarity,hybrid_scorer,ranking,explainability,preprocessing,matching_pipeline}.py` |
+> | `schemas/requirement.py`, `matching_request.py`, `matching_response.py` | `schemas/buyer.py`, `matching.py`, `result.py`, `supplier.py`, `common.py` |
+> | `embeddings/` | Embedding-ready text in `services/preprocessing.py`; providers in `providers/` |
+> | `apps/matching/selectors/supplier_selector.py` | `apps/matching/services/supplier_selector.py` |
+> | `apps/matching/services/matching_client.py` | `apps/matching/integrations/ai_engine_client.py` |
+> | n/a | `apps/matching/schemas/` (request/response dataclasses), `apps/matching/exceptions/` |
+>
+> **Implemented (Weeks 1–3):** contract schemas on both sides, FastAPI app with `/health` and `/match`, configuration, exceptions, Stage 1 preprocessing and normalisation, quality flags, embedding-ready records, the provider interface (`none` only), cosine similarity, the semantic coordinator, the Django request builder, candidate mapping and HTTP client, and tests.
+>
+> **Not implemented (pending approvals):** eligibility (D-04), scoring and ranking (D-05), explainability, semantic provider (D-11), persistence (`result_handler.py`, `matching_service.py`, which need Vishal's models).
+>
+> See [MATCHING_CONTRACT.md](MATCHING_CONTRACT.md), [PREPROCESSING.md](PREPROCESSING.md), [EMBEDDING_MODEL_SELECTION.md](EMBEDDING_MODEL_SELECTION.md) and [EVALUATION_AND_FALLBACK_DESIGN.md](EVALUATION_AND_FALLBACK_DESIGN.md). Database models, migrations and table schemas remain owned by Vishal (C6); DRF endpoints and serializers by Abhishek (C5).
 
 
 
@@ -440,22 +455,16 @@ flowchart TD
 
 
 
+IDs follow MVP_FEATURES §12 and ARCHITECTURE.md §9. *Corrected 16 Nov 2026: earlier versions of this table used D-03, D-04, D-06, D-12 and D-15 for the wrong topics.*
+
 | Decision ID | Topic | Status | Owner |
-
 |---|---|---|---|
-
-| **D-03** | Mandatory eligibility criteria definitions | Pending BNCS Approval (criteria examples are illustrative) | BNCS |
-
-| **D-04** | Eligibility rule format and configuration schema | Proposed (JSON schema) | Alok + Abhishek |
-
-| **D-05** | Preference criteria list | Pending BNCS Approval | BNCS |
-
-| **D-06** | Scoring weights ($w_{\text{rule}}$, $w_{\text{sem}}$) | Pending BNCS Approval (placeholder in `v0-UNAPPROVED.json`) | BNCS |
-
-| **D-11** | Local embedding model selection | **TBD / Proposed / Pending Confirmation** (Sentence-Transformers vs FastEmbed) | Alok + Ajendra + Mentor |
-
-| **D-12** | Database vector storage strategy | **Proposed / Pending Confirmation** (co-owned with Vishal; Vishal owns models/migrations) | Alok + Vishal |
-
-| **D-15** | Matching engine runtime and deployment arrangement | **Proposed / Pending Confirmation** (FastAPI service in backend directory) | Team + Mentor |
-
-| **D-20** | LLM provider and model | **None in v0.1** (Explicitly out of scope) | BNCS + Mentor |
+| **D-04** | Mandatory eligibility criteria and handling of unknown values | Pending BNCS approval (Gate 2). Criteria examples are illustrative. | BNCS (Adrika drafts) |
+| **D-05** | Weighted preference criteria, weights and the semantic signal weight | Pending BNCS approval. Placeholder config only, marked `UNAPPROVED`. | BNCS (Adrika drafts) |
+| **D-06** | Disposition vocabulary and deciding role (consumer of match results) | Pending BNCS approval | BNCS |
+| **D-03** | Readiness questions and outcome labels (readiness inputs to matching) | Pending BNCS approval | BNCS (Adrika drafts) |
+| **D-11** | Embedding library and model | **Open.** Shortlist in [EMBEDDING_MODEL_SELECTION.md](EMBEDDING_MODEL_SELECTION.md) | Alok + Ajendra; Aryan records |
+| **TD-01** | pgvector column design on `Product` | Selected; dimension waits for D-11 | Vishal (models, migrations) with Alok |
+| *(no ID yet)* | Engine runtime and deployment arrangement. ARCHITECTURE.md §6.3 labels it "D-15", but D-15 is "does a Reviewer approve a requirement before matching". Needs its own §9 entry. | Proposed | Team + mentor; Aryan records |
+| *(no ID yet)* | Rules-only fallback conflict | **Open** ([EVALUATION_AND_FALLBACK_DESIGN.md](EVALUATION_AND_FALLBACK_DESIGN.md)) | Aryan → mentor + BNCS |
+| **D-20** | LLM provider and model | None in v0.1 | BNCS + mentor |
