@@ -1,0 +1,81 @@
+{
+  "source_revision": "a7cc398647414256df03f644d259694edaa857f0",
+  "date": "2026-11-16",
+  "method": "Latest observed public-case outcome across full and focused runs; restricted coverage/evidence excluded. Not a single complete suite execution.",
+  "public_playwright_counts": {
+    "passed": 44,
+    "failed": 8,
+    "skipped": 0
+  },
+  "public_case_count": 52,
+  "restricted_coverage": "Maintained separately; no diagnostic details included",
+  "backend": {
+    "passed": 22,
+    "failed": 0
+  },
+  "qa_backend": {
+    "passed": 5,
+    "failed": 1
+  },
+  "database": {
+    "passed": 5,
+    "failed": 0
+  },
+  "frontend": {
+    "passed": 15,
+    "failed": 0
+  },
+  "qa_configuration": {
+    "passed": 6,
+    "failed": 0
+  },
+  "remote_ci": "Not Run",
+  "readiness": "Blocked",
+  "environment": {
+    "node": {
+      "node": "v22.19.0",
+      "next": "16.4.6",
+      "react": "19.3.1",
+      "react-dom": "19.3.1",
+      "vitest": "3.2.7",
+      "tinypool": "2.2.0",
+      "typescript": "5.9.3",
+      "playwright": "1.64.1"
+    },
+    "python_packages": {
+      "Django": "5.2.19",
+      "djangorestframework": "3.18.3",
+      "pytest": "9.2.0",
+      "pytest-django": "4.14.0",
+      "python-dotenv": "1.2.4",
+      "psycopg": "3.3.9",
+      "psycopg-binary": "3.3.9",
+      "django-cors-headers": "4.9.0",
+      "drf-spectacular": "0.30.0"
+    },
+    "dependency_differences": {
+      "next": {
+        "locked": "16.4.3",
+        "actual": "16.4.6"
+      },
+      "tinypool": {
+        "locked": "1.1.1",
+        "actual": "2.2.0"
+      }
+    },
+    "database": {
+      "postgresql": "17.12",
+      "pgvector": "0.8.7"
+    }
+  },
+  "findings": {
+    "QA-001": "Four route-guard assertions fail",
+    "QA-002": "Configuration-example path matches frontend ignore rule",
+    "QA-003": "Omitted currency accepted with 201 instead of 400",
+    "QA-005": "CSRF denial is 403 HTML instead of JSON",
+    "QA-006": "Unknown API path is 404 HTML instead of JSON",
+    "QA-B04": "Clean install fails due to override/lock mismatch",
+    "QA-B05": "Lint has 36 errors and 5 warnings"
+  },
+  "artifact_policy": "Reviewed structured summary only. Raw terminal output, diagnostic metadata and machine reports remain in ignored local storage."
+}

@@ -1,0 +1,197 @@
+# Test jobs: Harish. Security jobs remain in Ajendra's separate workflow.
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [main, test, qa/week1-3-delivery]
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+    inputs:
+      stack_url:
+        description: "Optional running synthetic Next.js origin for API regression"
+        type: string
+      stack_revision:
+        description: "Deployed source revision (required with stack_url)"
+        type: string
+permissions:
+  contents: read
+jobs:
+  qa-tooling:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: e2e
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+      - run: npm ci
+      - run: npm run test:config
+      - run: npm run test:list
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: qa-discovery
+          path: |
+            e2e/playwright-report/
+            e2e/test-results/
+          retention-days: 14
+
+  application-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require source before claiming application CI
+        shell: bash
+        run: |
+          for file in frontend/package.json frontend/package-lock.json backend/manage.py backend/requirements-dev.txt; do
+            if [ ! -f "$file" ]; then
+              echo "::error::Blocked: $file is absent. Coordinate source integration or use the manual external-stack job."
+              exit 1
+            fi
+          done
+
+  frontend:
+    needs: application-source
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  backend:
+    needs: application-source
+    runs-on: ubuntu-latest
+    services:
+      db:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_DB: inchi_ci
+          POSTGRES_USER: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d inchi_ci"
+          --health-interval 10s --health-timeout 5s --health-retries 5
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      DJANGO_SETTINGS_MODULE: config.settings
+      DATABASE_URL: postgresql://postgres@localhost:5432/inchi_ci
+      ALLOWED_HOSTS: localhost,127.0.0.1,testserver
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install -r requirements-dev.txt -r ../database/requirements.txt
+      - name: Generate ephemeral CI signing key
+        run: python -c "import secrets, os; open(os.environ['GITHUB_ENV'], 'a').write('SECRET_KEY=' + secrets.token_urlsafe(48) + '\n')"
+      - run: python manage.py check
+      - run: python manage.py makemigrations --check --dry-run
+      - run: python -m pytest --ds=config.settings apps/accounts/tests apps/registry/tests ../e2e/backend/test_controls.py --junitxml=test-results/backend.xml
+      - name: Database model and seed regression
+        if: ${{ !cancelled() }}
+        run: python -m pytest --ds=config.settings apps/demand/tests --junitxml=test-results/database.xml
+        working-directory: database
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-results
+          path: |
+            backend/test-results/
+            database/test-results/
+          retention-days: 14
+
+  e2e:
+    needs: [frontend, qa-tooling]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            frontend/package-lock.json
+            e2e/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - run: npm ci
+        working-directory: e2e
+      - run: npm run preflight
+        working-directory: e2e
+      - run: npx playwright install --with-deps chromium
+        working-directory: e2e
+      - run: npm test
+        working-directory: e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontend-smoke-results
+          path: |
+            e2e/playwright-report/
+            e2e/test-results/
+          retention-days: 14
+
+  external-api-regression:
+    if: github.event_name == 'workflow_dispatch' && inputs.stack_url != ''
+    needs: qa-tooling
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: e2e
+    env:
+      E2E_BASE_URL: ${{ inputs.stack_url }}
+      E2E_STACK_REVISION: ${{ inputs.stack_revision }}
+      E2E_BACKEND: "1"
+      E2E_API_ONLY: "1"
+      E2E_ANALYST_EMAIL: ${{ secrets.E2E_ANALYST_EMAIL }}
+      E2E_ANALYST_PASSWORD: ${{ secrets.E2E_ANALYST_PASSWORD }}
+      E2E_REVIEWER_EMAIL: ${{ secrets.E2E_REVIEWER_EMAIL }}
+      E2E_REVIEWER_PASSWORD: ${{ secrets.E2E_REVIEWER_PASSWORD }}
+      E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+      E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+      - name: Require deployed source revision
+        shell: bash
+        run: |
+          if [ -z "$E2E_STACK_REVISION" ]; then
+            echo "::error::Supply stack_revision for attributable execution evidence"
+            exit 1
+          fi
+          printf 'QA revision: %s\nStack revision: %s\n' "$GITHUB_SHA" "$E2E_STACK_REVISION" > stack-evidence.txt
+      - run: npm ci
+      - run: npm run preflight
+      - run: npm test
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: external-api-results
+          path: |
+            e2e/playwright-report/
+            e2e/test-results/
+            e2e/stack-evidence.txt
+          retention-days: 14
