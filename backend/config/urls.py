@@ -1,9 +1,13 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, re_path, include
 from django.conf import settings
 from django.http import JsonResponse
 from django.utils import timezone
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from config.exceptions import api_catchall_404, custom_404_handler
+
+# API-aware 404 handler for production
+handler404 = "config.exceptions.custom_404_handler"
 
 
 def health_check(request):
@@ -32,4 +36,7 @@ urlpatterns = [
     path("api/v1/auth/", include("apps.accounts.urls")),
     path("api/v1/", include("apps.registry.urls")),
     path("api/v1/", include("apps.demand.urls")),
+
+    # Catch-all for unmatched API routes (QA-006 / TD-09)
+    re_path(r"^api/.*$", api_catchall_404, name="api-catchall-404"),
 ]
