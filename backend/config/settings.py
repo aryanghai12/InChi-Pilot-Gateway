@@ -151,6 +151,7 @@ SESSION_COOKIE_SECURE = os.getenv("SESSION_COOKIE_SECURE", "False").lower() in (
 CSRF_COOKIE_HTTPONLY = False  # Allows Next.js frontend to read token for X-CSRFToken header
 CSRF_COOKIE_SAMESITE = "Lax"
 CSRF_COOKIE_SECURE = os.getenv("CSRF_COOKIE_SECURE", "False").lower() in ("true", "1")
+CSRF_FAILURE_VIEW = "config.exceptions.csrf_failure"
 
 # CSRF Trusted Origins & CORS
 csrf_trusted = os.getenv("CSRF_TRUSTED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
