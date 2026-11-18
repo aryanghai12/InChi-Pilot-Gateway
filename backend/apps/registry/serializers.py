@@ -8,6 +8,7 @@ from apps.registry.models import (
     Product,
     TranslationStatus,
     EvidenceItem,
+    CurrencyCode,
 )
 
 
@@ -279,9 +280,18 @@ class ProductSerializer(serializers.ModelSerializer):
             if not moq_unit:
                 errors["moq_unit"] = ["Minimum order unit is required when MOQ is provided."]
 
-        # Pricing validation
+        # Pricing validation (M3-AC2 / QA-003)
         price_min = attrs.get("price_min", getattr(self.instance, "price_min", None))
         price_max = attrs.get("price_max", getattr(self.instance, "price_max", None))
+        has_pricing = (price_min is not None or price_max is not None)
+
+        if has_pricing:
+            raw_currency = self.initial_data.get("currency")
+            if raw_currency is None or not str(raw_currency).strip():
+                errors["currency"] = ["Currency is required when product pricing is specified."]
+            elif attrs.get("currency") not in [c.value for c in CurrencyCode]:
+                errors["currency"] = [f"'{raw_currency}' is not an approved currency code."]
+
         if price_min is not None and price_min <= Decimal("0"):
             errors["price_min"] = ["Minimum price must be greater than zero."]
         if price_max is not None and price_max <= Decimal("0"):

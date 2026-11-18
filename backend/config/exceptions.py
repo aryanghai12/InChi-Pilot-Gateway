@@ -11,12 +11,62 @@ from rest_framework.exceptions import (
 )
 from rest_framework.response import Response
 from rest_framework import status
+from django.http import JsonResponse
 
 
 class ConflictError(APIException):
     status_code = status.HTTP_409_CONFLICT
     default_detail = "This record has been modified by another process. Please refresh and try again."
     default_code = "conflict"
+
+
+def csrf_failure(request, reason=""):
+    """
+    QA-005 / M1-AC3 / TD-05: Standardized JSON CSRF failure view.
+    Invoked by Django's CsrfViewMiddleware when CSRF cookie/token validation fails.
+    Returns HTTP 403 with Content-Type: application/json and code 'csrf_failed'.
+    """
+    correlation_id = getattr(request, "correlation_id", str(uuid.uuid4()))
+    return JsonResponse(
+        {
+            "code": "csrf_failed",
+            "message": "CSRF verification failed. Request rejected.",
+            "field_errors": {},
+            "correlation_id": correlation_id,
+        },
+        status=status.HTTP_403_FORBIDDEN,
+        content_type="application/json",
+    )
+
+
+def custom_404_handler(request, exception=None):
+    """
+    QA-006 / TD-09: API-aware 404 handler.
+    Returns structured JSON 404 response for any /api/ request.
+    Non-API requests retain standard HTML error page.
+    """
+    correlation_id = getattr(request, "correlation_id", str(uuid.uuid4()))
+    if request.path.startswith("/api/") or "application/json" in request.headers.get("Accept", ""):
+        return JsonResponse(
+            {
+                "code": "not_found",
+                "message": "The requested API endpoint was not found.",
+                "field_errors": {},
+                "correlation_id": correlation_id,
+            },
+            status=status.HTTP_404_NOT_FOUND,
+            content_type="application/json",
+        )
+    from django.views.defaults import page_not_found
+    return page_not_found(request, exception)
+
+
+def api_catchall_404(request, *args, **kwargs):
+    """
+    Catch-all view mounted at the end of /api/ patterns.
+    Ensures unmatched API endpoints return JSON 404 in both DEBUG=True and DEBUG=False.
+    """
+    return custom_404_handler(request)
 
 
 def custom_exception_handler(exc, context):
