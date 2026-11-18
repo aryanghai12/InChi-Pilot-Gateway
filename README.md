@@ -100,7 +100,7 @@ Planned top-level layout. Each directory is created when work on it starts:
 | `frontend/` | Next.js App Router app: pages, shared components, API client and frontend unit tests | Priyanka |
 | `backend/` | Django project: API, auth, workflow services (Abhishek); models, migrations, seed data (Vishal); Django matching integration layer `apps/matching/` and FastAPI AI matching engine `ai_matching/` (Alok) | Abhishek, Vishal, Alok |
 | `e2e/` | Playwright end-to-end and regression suite | Harish |
-| `docker-compose.yml`, `.env.example` | Local and demo environment: `db`, `backend`, `frontend` | Abhishek (with Vishal and Priyanka) |
+| `docker-compose.yml`, `.env.example` | Local and demo environment: `db`, `backend`, `matching`, `frontend` | Abhishek (with Vishal and Priyanka) |
 | `.github/` | CI workflows and Dependabot | Harish (tests), Ajendra (security) |
 | `docs/governance/`, `docs/product/`, `docs/security/`, `docs/data/`, `docs/ai/`, `docs/qa/`, `docs/api/` | Registers and reports; product definitions; security pack; data dictionary; matching and evaluation; QA evidence; generated OpenAPI | Aryan, Adrika, Ajendra, Vishal, Alok, Harish, Abhishek |
 
@@ -108,7 +108,46 @@ The full tree, file-level ownership, reviewers and "when to coordinate with whom
 
 ## Setup and running
 
-There is nothing to run yet. Setup steps, environment variables (via `.env.example`) and seed-data loading will be documented here once the backend and frontend skeletons land (Week 1 target). The planned entry point is `docker compose up`, followed by the `create_platform_admin` and `seed_demo` commands, with the app opened at `http://localhost:3000` (ARCHITECTURE.md §8). These commands do not exist yet.
+The whole stack (PostgreSQL + pgvector, Django, the FastAPI matching engine and Next.js) starts with one command. You need Docker with Compose v2.
+
+```bash
+cp .env.example .env          # once; replace POSTGRES_PASSWORD and DJANGO_SECRET_KEY
+docker compose up --build     # add -d to run in the background
+```
+
+Then open **http://localhost:3000**. The first build takes a few minutes. Later starts are fast.
+
+| Service | What it runs | Reachable from the host |
+|---|---|---|
+| `db` | PostgreSQL 17 + pgvector 0.8.6, named volume `postgres_data` | `127.0.0.1:${DB_HOST_PORT:-5432}` (native development) |
+| `matching` | FastAPI AI matching engine (`backend/ai_matching/`). Running it as its own service is pending D-15 | No (internal `:8001`) |
+| `backend` | Django + DRF under gunicorn. Start-up waits for the database, applies migrations and collects admin static files | No (internal `:8000`) |
+| `frontend` | Next.js standalone server. Proxies `/api/`, the admin path and `/static/` to Django (TD-09) | `127.0.0.1:${FRONTEND_HOST_PORT:-3000}` |
+
+Services start in dependency order and wait on healthchecks (`db` → `matching` → `backend` → `frontend`). `docker compose ps` shows the health of each one.
+
+**First administrator.** Before the first start, set `INITIAL_ADMIN_EMAIL` and `INITIAL_ADMIN_PASSWORD` in `.env` (synthetic values only). The backend then runs `create_platform_admin` once, and skips it when a platform admin already exists. Alternatively, run `docker compose exec backend python manage.py create_platform_admin --email <synthetic email>` at any time. `seed_demo` does not exist yet.
+
+**Everyday commands**
+
+| Task | Command |
+|---|---|
+| Follow logs | `docker compose logs -f backend` |
+| Rebuild after code or dependency changes | `docker compose up --build -d` |
+| Django shell or management command | `docker compose exec backend python manage.py <command>` |
+| Stop (keeps data) | `docker compose down` |
+| Reset the database (**deletes all local data**) | `docker compose down -v` |
+| Database only, for native Django/Next.js development | `docker compose up db` |
+
+**Notes and limitations**
+
+- Without `.env`, Compose stops with "Set POSTGRES_PASSWORD in .env". Never commit `.env`.
+- `POSTGRES_PASSWORD` may contain only letters, digits, `-` and `_`, because it is embedded in `DATABASE_URL`.
+- `BACKEND_ORIGIN`, `ADMIN_URL_PATH` and `DJANGO_STATIC_PREFIX` are baked into the frontend image at build time. After changing them, run `docker compose up --build`.
+- The frontend binds to loopback by default. For a LAN demo, set `FRONTEND_BIND=0.0.0.0`, and also add that host to `DJANGO_ALLOWED_HOSTS` and its origin to `DJANGO_CSRF_TRUSTED_ORIGINS`.
+- `database/docker-compose.yml` is the older database-only setup. It uses fixed names (`inchi_postgres`, port 5432), so do not run it alongside the root stack on the same port.
+- Embedding provider and model remain unset (D-11), and there is no LLM (D-20).
+- This is a non-production pilot environment for synthetic data only. It is not a hardened deployment.
 
 ## Tests and validation
 

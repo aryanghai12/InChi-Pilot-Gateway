@@ -1,0 +1,10 @@
+node_modules
+.next
+out
+coverage
+build
+.env
+.env.*
+!.env.example
+npm-debug.log*
+*.pem

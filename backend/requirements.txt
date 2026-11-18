@@ -3,3 +3,7 @@ djangorestframework>=3.18.2,<4.0.0
 drf-spectacular>=0.28.0
 django-cors-headers>=4.4.0
 python-dotenv>=1.0.1
+# Container runtime (ARCHITECTURE.md §1 "Django under gunicorn", §5 WhiteNoise for admin static)
+psycopg[binary]>=3.2.0,<4      # LGPL-3.0 — PostgreSQL driver (DATABASE_URL); same range as database/requirements.txt
+gunicorn>=23.0.0               # MIT — WSGI server for the backend container
+whitenoise>=6.7.0              # MIT — serves Django admin static files behind the Next.js proxy
