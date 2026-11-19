@@ -108,7 +108,7 @@ function LoginForm() {
           err.status === 404
             ? "Authentication service is currently unavailable. Please try again later or explore using Demo Session."
             : nonFieldError ||
-              (isGenericValidationNotice ? "Invalid email or password." : err.message || "Invalid email or password.");
+            (isGenericValidationNotice ? "Invalid email or password." : err.message || "Invalid email or password.");
 
         setErrorMessage(displayMessage);
         if (err.fieldErrors) {
@@ -153,23 +153,8 @@ function LoginForm() {
             </svg>
           </div>
         </div>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
           <h1 className={styles.title}>InChi Gateway</h1>
-          <span
-            style={{
-              fontSize: "0.625rem",
-              fontWeight: 700,
-              color: "#2563EB",
-              background: "#EFF6FF",
-              border: "1px solid #BFDBFE",
-              padding: "0.15rem 0.5rem",
-              borderRadius: 9999,
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-            }}
-          >
-            v0.1 PILOT
-          </span>
         </div>
         <p className={styles.subtitle}>Supervised AI Matching &amp; Cross-Border Trade Gateway</p>
       </div>
@@ -240,7 +225,7 @@ function LoginForm() {
       </form>
 
       <div className={styles.notice}>
-        Private internal pilot for authorized BNCS personnel only. User accounts are provisioned by the Platform Administrator in accordance with Architecture Decision D-12 (no public self-registration).
+        Private internal platform for authorized BNCS personnel only. User accounts are provisioned by the Platform Administrator in accordance with Architecture Decision D-12 (no public self-registration).
       </div>
     </div>
   );
