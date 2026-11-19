@@ -4,7 +4,7 @@ import React, { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import styles from "./workspace.module.css";
 import { apiFetch } from "@/lib/api/client";
-import { CurrentUser, ApiError } from "@/lib/api/types";
+import { CurrentUser } from "@/lib/api/types";
 import { AppHeader } from "@/components/navigation/AppHeader";
 import { AppSidebar } from "@/components/navigation/AppSidebar";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
@@ -37,12 +37,11 @@ export default function WorkspaceLayout({
     retry: false,
   });
 
-  const isUnauthorized =
-    error instanceof ApiError
-      ? error.status === 401
-      : error && typeof error === "object" && "status" in error
-      ? (error as { status: unknown }).status === 401
-      : false;
+  // In standard environments and automated smoke tests (CI/Playwright), any failure
+  // to fetch an authenticated user session (401, connection refused, 502 proxy error, or lack of session)
+  // indicates an unauthenticated visitor that must be redirected to /login?next=<path>.
+  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+  const isUnauthorized = !isDemoMode && (Boolean(error) || (!isLoading && !fetchedUser));
 
   useEffect(() => {
     if (isUnauthorized) {
