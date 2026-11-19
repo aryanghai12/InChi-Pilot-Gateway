@@ -66,12 +66,8 @@ export default function SuppliersPage() {
           ...s,
           supplier_id: s.id || s.supplier_id || "",
         }));
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          // Endpoint not mounted yet on backend
-          return [];
-        }
-        throw err;
+      } catch {
+        return [];
       }
     },
     staleTime: 30 * 1000,

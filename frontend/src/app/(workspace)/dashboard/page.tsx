@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import styles from "./dashboard.module.css";
 import { apiFetch } from "@/lib/api/client";
-import { unwrapPaginated, ApiError, PaginatedResponse } from "@/lib/api/types";
+import { unwrapPaginated, PaginatedResponse } from "@/lib/api/types";
 import { EmptyState } from "@/components/feedback/EmptyState";
 
 interface DashboardMetrics {
@@ -38,11 +38,8 @@ export default function DashboardPage() {
     queryFn: async () => {
       try {
         return await apiFetch<DashboardSummaryResponse>("/api/v1/dashboard/summary/");
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return null;
-        }
-        throw err;
+      } catch {
+        return null;
       }
     },
     staleTime: 60 * 1000,

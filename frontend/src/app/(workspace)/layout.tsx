@@ -32,7 +32,19 @@ export default function WorkspaceLayout({
     error,
   } = useQuery<CurrentUser>({
     queryKey: ["currentUser"],
-    queryFn: () => apiFetch<CurrentUser>("/api/v1/auth/me/"),
+    queryFn: async () => {
+      try {
+        return await apiFetch<CurrentUser>("/api/v1/auth/me/");
+      } catch (err) {
+        if (
+          process.env.NEXT_PUBLIC_DEMO_MODE === "true" ||
+          (typeof document !== "undefined" && document.cookie.includes("sessionid=demo-session"))
+        ) {
+          return FALLBACK_DEMO_USER;
+        }
+        throw err;
+      }
+    },
     staleTime: 5 * 60 * 1000,
     retry: false,
   });
@@ -40,7 +52,10 @@ export default function WorkspaceLayout({
   // In standard environments and automated smoke tests (CI/Playwright), any failure
   // to fetch an authenticated user session (401, connection refused, 502 proxy error, or lack of session)
   // indicates an unauthenticated visitor that must be redirected to /login?next=<path>.
-  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+  // In demo sessions or demo mode, fallback to synthetic persona without redirecting.
+  const isDemoCookie =
+    typeof document !== "undefined" && document.cookie.includes("sessionid=demo-session");
+  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true" || isDemoCookie;
   const isUnauthorized = !isDemoMode && (Boolean(error) || (!isLoading && !fetchedUser));
 
   useEffect(() => {

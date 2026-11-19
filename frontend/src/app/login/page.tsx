@@ -52,7 +52,11 @@ function LoginForm() {
       if (typeof document !== "undefined") {
         document.cookie = "sessionid=demo-session; path=/; SameSite=Lax";
       }
-      router.push(nextUrl);
+      if (typeof window !== "undefined") {
+        window.location.href = nextUrl;
+      } else {
+        router.push(nextUrl);
+      }
     } catch {
       // Fallback to standalone client demo session if backend is offline/unreachable
       if (typeof document !== "undefined") {
@@ -69,7 +73,11 @@ function LoginForm() {
         is_verified: true,
         is_staff: false,
       });
-      router.push(nextUrl);
+      if (typeof window !== "undefined") {
+        window.location.href = nextUrl;
+      } else {
+        router.push(nextUrl);
+      }
     } finally {
       setIsLoading(false);
     }
