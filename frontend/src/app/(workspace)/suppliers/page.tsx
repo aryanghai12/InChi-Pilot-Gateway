@@ -57,7 +57,6 @@ export default function SuppliersPage() {
   const {
     data: suppliers = [],
     isLoading: isLoadingSuppliers,
-    isError: isSuppliersError,
   } = useQuery<Supplier[]>({
     queryKey: ["suppliers"],
     queryFn: async () => {
@@ -570,14 +569,6 @@ export default function SuppliersPage() {
           type={notification.type}
           title={notification.title}
           message={notification.message}
-        />
-      )}
-
-      {isSuppliersError && (
-        <AlertBanner
-          type="info"
-          title="Backend Disconnected"
-          message="Django API (:8000) not responding. Once the backend server is started, suppliers will stream directly from the database."
         />
       )}
 

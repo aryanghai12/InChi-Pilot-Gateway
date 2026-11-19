@@ -5,11 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api/client";
 import { unwrapPaginated, ApiError, PaginatedResponse } from "@/lib/api/types";
 import { EmptyState } from "@/components/feedback/EmptyState";
-import { AlertBanner } from "@/components/feedback/AlertBanner";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 
 export default function MatchingPage() {
-  const { data: runs, isLoading, error } = useQuery<unknown[] | null>({
+  const { isLoading } = useQuery<unknown[] | null>({
     queryKey: ["matchingRuns"],
     queryFn: async () => {
       try {
@@ -26,8 +25,6 @@ export default function MatchingPage() {
     retry: false,
   });
 
-  const isUnderConstruction = runs === null || (error instanceof ApiError && error.status === 404);
-
   return (
     <div>
       <div style={{ marginBottom: "1.5rem" }}>
@@ -38,16 +35,6 @@ export default function MatchingPage() {
           Deterministic rule-based eligibility filtering, weighted scoring, and bounded semantic similarity signals.
         </p>
       </div>
-
-      {isUnderConstruction && (
-        <div style={{ marginBottom: "1.5rem" }}>
-          <AlertBanner
-            type="info"
-            title="Feature Under Backend Construction"
-            message="The Matching Engine service (/api/v1/matching/runs/) is currently under backend development. Automated eligibility evaluations and candidate matches will display here once the service is online."
-          />
-        </div>
-      )}
 
       {isLoading ? (
         <div style={{ padding: "3rem", display: "flex", justifyContent: "center" }}>

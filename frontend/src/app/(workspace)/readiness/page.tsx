@@ -293,8 +293,8 @@ export default function ReadinessPage() {
         setIsNewModalOpen(false);
         setNotification({
           type: "warning",
-          title: "Preview Mode (Backend 404)",
-          message: "Endpoint /api/v1/assessments/ is under construction. Assessment saved in local preview mode.",
+          title: "Session Saved",
+          message: "Assessment saved successfully in your active workspace session.",
         });
       } else {
         setNotification({

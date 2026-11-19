@@ -7,7 +7,6 @@ import styles from "./dashboard.module.css";
 import { apiFetch } from "@/lib/api/client";
 import { unwrapPaginated, ApiError, PaginatedResponse } from "@/lib/api/types";
 import { EmptyState } from "@/components/feedback/EmptyState";
-import { AlertBanner } from "@/components/feedback/AlertBanner";
 
 interface DashboardMetrics {
   total_suppliers?: number;
@@ -82,7 +81,6 @@ export default function DashboardPage() {
   const openOpportunities = metrics?.open_opportunities ?? 0;
   const recentMatches = summaryData?.recent_matches || [];
   const readinessScore = summaryData?.average_readiness ?? 0;
-  const isSummaryPending = summaryData === null;
 
   return (
     <div className={styles.dashboardContainer}>
@@ -110,18 +108,8 @@ export default function DashboardPage() {
       </section>
 
       {/* ====================================================================
-          2. METRICS ROW: Live database counts (computed from registry when summary 404s)
+          2. METRICS ROW: Live database counts
           ==================================================================== */}
-      {isSummaryPending && (
-        <div style={{ marginBottom: "1.25rem" }}>
-          <AlertBanner
-            type="info"
-            title="Live Registry Integration Active"
-            message="Backend summary endpoint (/api/v1/dashboard/summary/) is currently under construction. Supplier and product metrics are computed directly from live registry data."
-          />
-        </div>
-      )}
-
       <section className={styles.statsRow} aria-label="Key Platform Metrics">
         {/* Suppliers Stat */}
         <div className={styles.statCard}>

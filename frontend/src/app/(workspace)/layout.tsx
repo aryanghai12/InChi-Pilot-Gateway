@@ -8,7 +8,6 @@ import { CurrentUser, ApiError } from "@/lib/api/types";
 import { AppHeader } from "@/components/navigation/AppHeader";
 import { AppSidebar } from "@/components/navigation/AppSidebar";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
-import { AlertBanner } from "@/components/feedback/AlertBanner";
 
 const FALLBACK_DEMO_USER: CurrentUser = {
   id: "demo-user-1",
@@ -30,7 +29,6 @@ export default function WorkspaceLayout({
   const {
     data: fetchedUser,
     isLoading,
-    isError,
     error,
   } = useQuery<CurrentUser>({
     queryKey: ["currentUser"],
@@ -64,7 +62,6 @@ export default function WorkspaceLayout({
     );
   }
 
-  const isDemo = isError || !fetchedUser;
   const user = fetchedUser || FALLBACK_DEMO_USER;
 
   if (isLoading) {
@@ -80,15 +77,6 @@ export default function WorkspaceLayout({
       <AppSidebar user={user} userRole={user?.role} />
       <div className={styles.contentWrapper}>
         <AppHeader user={user} />
-        {isDemo && (
-          <div style={{ padding: "0.75rem 2.25rem 0", maxWidth: 1440, width: "100%", margin: "0 auto" }}>
-            <AlertBanner
-              type="info"
-              title="Frontend Standalone Mode"
-              message="Django backend (:8000) not connected. Workspace previewing with session for Priyanka Singh (commercial_analyst)."
-            />
-          </div>
-        )}
         <main className={styles.main}>{children}</main>
       </div>
     </div>

@@ -106,7 +106,7 @@ function LoginForm() {
 
         const displayMessage =
           err.status === 404
-            ? "Backend API (:8000) not detected. Use 'Explore with Demo Session' to preview the frontend."
+            ? "Authentication service is currently unavailable. Please try again later or explore using Demo Session."
             : nonFieldError ||
               (isGenericValidationNotice ? "Invalid email or password." : err.message || "Invalid email or password.");
 
