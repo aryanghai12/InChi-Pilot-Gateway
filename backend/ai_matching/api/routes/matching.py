@@ -8,13 +8,19 @@ mapping by the exception handlers in main.py.
 
 Author: Alok Tiwari (C7 — AI Matching and Data Intelligence Engineer)
 Architecture: Component B (FastAPI AI Matching Engine)
-Status: Week 2 implementation. Until D-04 is approved every call ends with a
-503 "stage_not_available" error envelope; no results are produced.
+Status: Implemented. Until an approved scoring configuration exists (D-04,
+D-05) every real call ends with a 503 "stage_not_available" error envelope.
 """
 
 from fastapi import APIRouter, Depends
 
-from ai_matching.api.dependencies import correlation_id_dependency
+from ai_matching.api.dependencies import (
+    correlation_id_dependency,
+    embedding_provider_dependency,
+    settings_dependency,
+)
+from ai_matching.core.config import EngineSettings
+from ai_matching.providers.base import EmbeddingProvider
 from ai_matching.schemas.matching import MatchRequest
 from ai_matching.schemas.result import MatchResponse
 from ai_matching.services.matching_pipeline import run_pipeline
@@ -23,7 +29,12 @@ router = APIRouter(tags=["matching"])
 
 
 @router.post("/match", response_model=MatchResponse)
-def match(request: MatchRequest, correlation_id: str = Depends(correlation_id_dependency)) -> MatchResponse:
+def match(
+    request: MatchRequest,
+    correlation_id: str = Depends(correlation_id_dependency),
+    settings: EngineSettings = Depends(settings_dependency),
+    provider: EmbeddingProvider = Depends(embedding_provider_dependency),
+) -> MatchResponse:
     if not request.correlation_id:
         request = request.model_copy(update={"correlation_id": correlation_id})
-    return run_pipeline(request)
+    return run_pipeline(request, settings, provider)

@@ -39,7 +39,11 @@ _REQUIREMENT = {
         }
     ],
     "preference_criteria": [
-        {"preference_key": "shorter_lead_time", "value": {"preferred_max_days": 45}, "weight_key": "lead_time"}
+        # Structured preference (comparison vocabulary, contract §6).
+        {"preference_key": "lead_time", "value": {"operator": "lte", "value": 45, "unit": "DAYS"},
+         "weight_key": "lead_time"},
+        # Seed-style unstructured preference: reported as not scored.
+        {"preference_key": "shorter_lead_time", "value": {"preferred_max_days": 45}, "weight_key": "lead_time"},
     ],
     "evidence_criteria": [{"evidence_type": "QUALITY_CERTIFICATE", "classification": "mandatory"}],
 }
@@ -96,3 +100,94 @@ def match_request_payload(candidates: list[dict] | None = None, **overrides) -> 
     }
     payload.update(overrides)
     return payload
+
+
+# ---------------------------------------------------------------------------
+# Test doubles: scoring configuration, settings and a deterministic embedder.
+# Weights below are SYNTHETIC test values, not proposed or approved weights.
+# ---------------------------------------------------------------------------
+
+import json
+import re
+import tempfile
+from pathlib import Path
+
+from ai_matching.core.config import EngineSettings
+from ai_matching.providers.base import EmbeddingProvider
+
+TEST_CONFIG_VERSION = "test-approved-v1"
+
+
+def scoring_config(**overrides) -> dict:
+    config = {
+        "version": TEST_CONFIG_VERSION,
+        "status": "approved",
+        "approved_by": "synthetic-test",
+        "approved_at": "2026-11-19",
+        "decision_refs": ["TEST-ONLY"],
+        "hybrid_weights": {"rule": 0.5, "semantic": 0.5},
+        "preference_weights": {"lead_time": 1.0},
+        "semantic_score_mapping": "clamp_negative_to_zero",
+    }
+    config.update(overrides)
+    return config
+
+
+class CriteriaDir:
+    """Context manager: a temporary criteria directory holding the given config files."""
+
+    def __init__(self, *configs: dict):
+        self._configs = configs or (scoring_config(),)
+
+    def __enter__(self) -> Path:
+        self._tmp = tempfile.TemporaryDirectory()
+        path = Path(self._tmp.name)
+        for config in self._configs:
+            (path / f"{config['version']}.json").write_text(json.dumps(config), encoding="utf-8")
+        return path
+
+    def __exit__(self, *exc) -> None:
+        self._tmp.cleanup()
+
+
+def settings(criteria_dir: Path, allow_unapproved: bool = False, provider: str = "sentence_transformers") -> EngineSettings:
+    return EngineSettings(
+        host="127.0.0.1",
+        port=8001,
+        embedding_provider=provider,
+        embedding_model_name="test-double-model" if provider != "none" else None,
+        criteria_dir=criteria_dir,
+        allow_unapproved_config=allow_unapproved,
+    )
+
+
+class KeywordEmbedder(EmbeddingProvider):
+    """Deterministic bag-of-words embedder over a fixed vocabulary. Never a real model."""
+
+    name = "keyword-test-double"
+    VOCABULARY = ("circuit", "board", "electronic", "component", "cotton", "textile", "steel", "synthetic")
+
+    def __init__(self, fail: bool = False):
+        self.fail = fail
+        self.calls = 0
+
+    @property
+    def model_id(self) -> str:
+        return "keyword-test-double"
+
+    @property
+    def dimension(self) -> int:
+        return len(self.VOCABULARY) + 1
+
+    def embed(self, texts):
+        self.calls += 1
+        if self.fail:
+            from ai_matching.core.exceptions import EmbeddingGenerationError
+
+            raise EmbeddingGenerationError("Synthetic embedding failure.")
+        vectors = []
+        for text in texts:
+            words = re.findall(r"[a-z]+", text.lower())
+            vector = [float(sum(w.startswith(v) for w in words)) for v in self.VOCABULARY]
+            vectors.append(vector + [1.0])  # bias term keeps every vector non-zero
+        return vectors

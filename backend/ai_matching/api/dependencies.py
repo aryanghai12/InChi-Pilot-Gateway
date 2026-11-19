@@ -34,6 +34,7 @@ def settings_dependency() -> EngineSettings:
 
 
 def embedding_provider_dependency() -> EmbeddingProvider:
+    """Creating the provider is cheap; the model itself is loaded lazily and cached once per process."""
     return get_embedding_provider(get_settings())
 
 
