@@ -122,8 +122,14 @@ jobs:
   e2e:
     needs: [frontend, qa-tooling]
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.cache/qa-browsers
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -135,19 +141,20 @@ jobs:
         working-directory: frontend
       - run: npm ci
         working-directory: e2e
-      - run: npm run preflight
-        working-directory: e2e
+      - run: python -m pip install -r backend/requirements-dev.txt
       - run: npx playwright install --with-deps chromium
         working-directory: e2e
-      - run: npm test
-        working-directory: e2e
+      - name: Run E2E against disposable synthetic stack
+        run: python e2e/scripts/local-qa.py --phase e2e --evidence-dir .cache/qa-evidence/ci
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: frontend-smoke-results
+          include-hidden-files: true
           path: |
             e2e/playwright-report/
             e2e/test-results/
+            .cache/qa-evidence/ci/
           retention-days: 14
 
   external-api-regression:

@@ -1,7 +1,7 @@
 """Run the existing suites on disposable PostgreSQL 17 and loopback-only services.
 
 Usage: .venv/Scripts/python.exe e2e/scripts/local-qa.py
-Requires installed project dependencies, Docker Desktop and Playwright Chromium.
+Requires installed project dependencies, Docker Compose and Playwright Chromium.
 Credentials exist only in process environments; no .env or product settings are edited.
 """
 import json
@@ -18,11 +18,10 @@ from datetime import datetime, timezone
 
 ROOT = Path(__file__).resolve().parents[2]
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument("--phase", choices=["full", "browser-retest"], default="full")
+parser.add_argument("--phase", choices=["full", "e2e", "browser-retest"], default="full")
 parser.add_argument("--evidence-dir", type=Path)
+parser.add_argument("--docker-context", help="Optional Docker context (otherwise uses the active context)")
 options = parser.parse_args()
-if subprocess.check_output(["git", "branch", "--show-current"], cwd=ROOT, text=True).strip() not in {"test", "qa/week1-3-delivery"}:
-    raise SystemExit("Local QA runner must execute on an assigned QA branch")
 EVIDENCE = options.evidence_dir or ROOT / ".cache/qa-evidence" / datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%S")
 if (EVIDENCE / "summary.json").exists():
     raise SystemExit("Evidence already exists; select a new --evidence-dir to preserve prior results")
@@ -37,7 +36,7 @@ env.update({
     "QA_DB_PASSWORD": secrets.token_urlsafe(32), "SECRET_KEY": secrets.token_urlsafe(48),
     "E2E_BASE_URL": "http://127.0.0.1:53001", "E2E_BACKEND": "1",
     "BACKEND_ORIGIN": "http://127.0.0.1:58001", "NEXT_TELEMETRY_DISABLED": "1",
-    "PLAYWRIGHT_BROWSERS_PATH": str(ROOT / ".cache/qa-browsers"),
+    "PLAYWRIGHT_BROWSERS_PATH": os.environ.get("PLAYWRIGHT_BROWSERS_PATH", str(ROOT / ".cache/qa-browsers")),
 })
 env.pop("E2E_API_ONLY", None)
 for role in ["ANALYST", "REVIEWER", "ADMIN"]:
@@ -48,7 +47,11 @@ secret_values = [value for key, value in env.items() if key.startswith("E2E_") a
 secret_values += [env["QA_DB_PASSWORD"], env["SECRET_KEY"]]
 summary = {"qa_revision": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
            "started_utc": datetime.now(timezone.utc).isoformat(), "checks": []}
-compose = ["docker", "--context", "desktop-linux", "compose", "-p", "inchi-qa-verification", "-f", str(ROOT / "e2e/docker-compose.qa.yml")]
+compose = ["docker"]
+if options.docker_context:
+    compose += ["--context", options.docker_context]
+compose += ["compose", "-p", "inchi-qa-verification", "-f", str(ROOT / "e2e/docker-compose.qa.yml")]
+npm = "npm.cmd" if os.name == "nt" else "npm"
 processes = []
 handles = []
 
@@ -129,21 +132,24 @@ print("Created three synthetic role accounts in the disposable QA database; cred
     if run("seed-roles", [python, "-"], ROOT / "backend", code=seed):
         raise RuntimeError("Synthetic role setup failed")
     if options.phase == "full":
-        run("frontend-lint", ["npm.cmd", "run", "lint"], ROOT / "frontend")
-        run("frontend-typecheck", ["npm.cmd", "run", "typecheck"], ROOT / "frontend")
-        run("frontend-tests", ["npm.cmd", "test"], ROOT / "frontend")
-        run("qa-config", ["npm.cmd", "run", "test:config"], ROOT / "e2e")
+        run("frontend-lint", [npm, "run", "lint"], ROOT / "frontend")
+        run("frontend-typecheck", [npm, "run", "typecheck"], ROOT / "frontend")
+        run("frontend-tests", [npm, "test"], ROOT / "frontend")
+        run("qa-config", [npm, "run", "test:config"], ROOT / "e2e")
     run("qa-typecheck", ["node", str(ROOT / "frontend/node_modules/typescript/bin/tsc"), "--project", "tsconfig.json"], ROOT / "e2e")
-    run("qa-discovery", ["npm.cmd", "run", "test:list"], ROOT / "e2e")
-    if options.phase == "full" and run("frontend-build", ["npm.cmd", "run", "build"], ROOT / "frontend"):
+    run("qa-discovery", [npm, "run", "test:list"], ROOT / "e2e")
+    if options.phase != "browser-retest" and run("frontend-build", [npm, "run", "build"], ROOT / "frontend"):
         raise RuntimeError("Production frontend build failed; browser/API execution blocked")
     backend = start("backend", [python, "manage.py", "runserver", "127.0.0.1:58001", "--noreload"], ROOT / "backend")
     wait_url("http://127.0.0.1:58001/api/v1/health/", backend)
     frontend = start("frontend", ["node", "node_modules/next/dist/bin/next", "start", "--hostname", "127.0.0.1", "--port", "53001"], ROOT / "frontend")
     wait_url(env["E2E_BASE_URL"] + "/login", frontend)
-    run("qa-preflight", ["npm.cmd", "run", "preflight"], ROOT / "e2e")
+    # Check Django through the built Next.js proxy before any browser assertions.
+    wait_url(env["E2E_BASE_URL"] + "/api/v1/health/", frontend)
+    if run("qa-preflight", [npm, "run", "preflight"], ROOT / "e2e"):
+        raise RuntimeError("Full-stack E2E configuration failed preflight")
     selection = ["auth.spec.ts", "workspace.spec.ts"] if options.phase == "browser-retest" else []
-    run("playwright-regression", ["npm.cmd", "test", "--", *selection, "--workers=2", "--retries=0"], ROOT / "e2e")
+    run("playwright-regression", [npm, "test", "--", *selection, "--workers=2", "--retries=0"], ROOT / "e2e")
     for source, destination in [("results.json", "playwright-results.json"), ("junit.xml", "playwright-junit.xml")]:
         path = ROOT / "e2e/test-results" / source
         if path.exists():
