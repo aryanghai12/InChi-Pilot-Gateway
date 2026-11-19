@@ -682,7 +682,7 @@ export default function ReadinessPage() {
         <div className={styles.titleArea}>
           <h1>China-Readiness Assessments</h1>
           <p className={styles.subtitle}>
-            Baseline v2.2 — Standardized 18-question evaluation of Indian suppliers against Chinese buyer demand.
+            Standardized evaluation and compliance verification of suppliers for cross-border trade qualification.
           </p>
         </div>
         <div>
@@ -706,7 +706,7 @@ export default function ReadinessPage() {
         <div className={styles.statCard}>
           <span className={styles.statLabel}>Total Assessments</span>
           <span className={styles.statValue}>{stats.total}</span>
-          <span className={styles.statHint}>Baseline v2.2 registered evaluations</span>
+          <span className={styles.statHint}>Registered supplier evaluations</span>
         </div>
         <div className={styles.statCard}>
           <span className={styles.statLabel}>Submitted / In Review</span>
@@ -718,7 +718,7 @@ export default function ReadinessPage() {
           <span className={styles.statValue} style={{ color: "var(--color-primary)" }}>
             {stats.readyForMatching}
           </span>
-          <span className={styles.statHint}>Passed mandatory baseline gates</span>
+          <span className={styles.statHint}>Qualified for trade matching</span>
         </div>
         <div className={styles.statCard}>
           <span className={styles.statLabel}>Information Required</span>
@@ -873,7 +873,6 @@ export default function ReadinessPage() {
                 <th>Assessment ID</th>
                 <th>Supplier Legal Name</th>
                 <th>Assessed Product</th>
-                <th>Baseline Version</th>
                 <th>Workflow State</th>
                 <th>Readiness Outcome</th>
                 <th>Last Updated</th>
@@ -897,11 +896,6 @@ export default function ReadinessPage() {
                     <td>
                       <span style={{ fontSize: "0.8125rem", color: "var(--color-text-main)" }}>
                         {a.product_name || a.product_ids?.[0] || "All supplier products"}
-                      </span>
-                    </td>
-                    <td>
-                      <span style={{ fontSize: "0.8125rem", color: "var(--color-text-muted)" }}>
-                        {a.questionnaire_version || QUESTION_SET_VERSION}
                       </span>
                     </td>
                     <td>
@@ -985,8 +979,8 @@ export default function ReadinessPage() {
                   <span className={styles.contextValue}>{activeAssessment.product_name || "Linked via CR-06"}</span>
                 </div>
                 <div className={styles.contextItem}>
-                  <span className={styles.contextLabel}>Baseline Specification</span>
-                  <span className={styles.contextValue}>{activeAssessment.questionnaire_version}</span>
+                  <span className={styles.contextLabel}>Compliance Standard</span>
+                  <span className={styles.contextValue}>China Cross-Border Trade</span>
                 </div>
                 <div className={styles.contextItem}>
                   <span className={styles.contextLabel}>Human Disposition</span>
@@ -1034,7 +1028,7 @@ export default function ReadinessPage() {
                         </span>
                       </div>
                       <p style={{ margin: 0, fontSize: "0.8125rem", color: "var(--color-text-muted)" }}>
-                        Per Baseline v2.2 Section 6.1, all mandatory baseline questions must be answered, at least one Product record linked, and CR-18 confirmed.
+                        All mandatory evaluation criteria must be answered, at least one product record linked, and confirmation declaration provided.
                       </p>
                       {activeSubmissionCheck.blockingItems.length > 0 && (
                         <div>
@@ -1068,10 +1062,10 @@ export default function ReadinessPage() {
                   ) : (
                     <div className={`${styles.bannerBox} ${styles.bannerSuccess}`}>
                       <div className={styles.bannerTitle}>
-                        ✓ Section 6.1 Submission Gate Passed
+                        ✓ Evaluation Criteria Complete
                       </div>
                       <p style={{ margin: 0, fontSize: "0.8125rem" }}>
-                        All 18 baseline criteria verified and confirmed. Ready for formal Reviewer evaluation.
+                        All 18 criteria verified and confirmed. Ready for formal commercial reviewer disposition.
                       </p>
                     </div>
                   )}
@@ -1257,14 +1251,14 @@ export default function ReadinessPage() {
                   </FormField>
 
                   {decisionActionType === "record_outcome" && (
-                    <FormField label="China-Readiness Outcome (Section 1 / Section 5.1)">
+                    <FormField label="China-Readiness Outcome">
                       <Select
                         value={decisionOutcome}
                         onChange={(e) => setDecisionOutcome(e.target.value as AssessmentOutcome)}
                       >
-                        <option value="Ready for Matching">Ready for Matching (All mandatory baseline criteria satisfied)</option>
-                        <option value="Information Required">Information Required (Unresolved discrepancy or expired evidence)</option>
-                        <option value="Not Currently Eligible">Not Currently Eligible (Confirmed baseline failure)</option>
+                        <option value="Ready for Matching">Ready for Matching (Qualified for trade matching)</option>
+                        <option value="Information Required">Information Required (Requires additional documentation)</option>
+                        <option value="Not Currently Eligible">Not Currently Eligible (Trade qualification criteria not met)</option>
                       </Select>
                     </FormField>
                   )}
@@ -1386,7 +1380,7 @@ export default function ReadinessPage() {
             </FormField>
 
             <div style={{ marginTop: "1rem", fontSize: "0.8125rem", color: "var(--color-text-muted)" }}>
-              Baseline Specification: <strong>{QUESTION_SET_VERSION}</strong> (18 baseline criteria, categorical evidence conditions).
+              Standard: <strong>Cross-Border Trade Assessment</strong> (18 compliance criteria with categorical evidence verification).
             </div>
 
             <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.75rem", marginTop: "1.5rem" }}>
