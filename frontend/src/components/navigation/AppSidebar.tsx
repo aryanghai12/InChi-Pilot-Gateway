@@ -107,7 +107,7 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
-    href: "/audit",
+    href: "/reports",
     label: "Reports & Insights",
     allowedRoles: ["platform_admin", "commercial_analyst", "reviewer"],
     icon: (
@@ -119,7 +119,7 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
-    href: "/audit#documents",
+    href: "/documents",
     label: "Documents",
     allowedRoles: ["platform_admin", "commercial_analyst", "reviewer"],
     icon: (
@@ -208,7 +208,8 @@ export function AppSidebar({ user, userRole = "commercial_analyst" }: AppSidebar
             {visibleItems.map((item) => {
               const isActive =
                 pathname === item.href ||
-                (item.href !== "/dashboard" && pathname.startsWith(item.href.split("#")[0]));
+                (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`)) ||
+                (item.href === "/reports" && pathname === "/audit");
               return (
                 <li key={item.href}>
                   <Link
