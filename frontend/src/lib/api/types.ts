@@ -398,3 +398,14 @@ export interface BuyerRequirement {
   created_by?: string; // BUY-031
   updated_by?: string; // BUY-031
 }
+
+/**
+ * ============================================================================
+ * OpenAPI 3.0.3 Generated Type Aliases
+ * ============================================================================
+ */
+export type { paths as ApiPaths, components as ApiComponents } from "./schema";
+export type BackendBuyerRequirement = import("./schema").components["schemas"]["BuyerRequirement"];
+export type BackendBuyerRequirementRequest = import("./schema").components["schemas"]["BuyerRequirementRequest"];
+export type BackendDashboardSummary = import("./schema").components["schemas"]["DashboardSummary"];
+

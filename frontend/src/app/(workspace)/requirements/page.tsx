@@ -317,7 +317,49 @@ export default function RequirementsPage() {
     createRequirementMutation.mutate(newReq);
   };
 
-  const handleUpdateStatus = (reqId: string, newStatus: RequirementStatus) => {
+  const handleUpdateStatus = async (reqId: string, newStatus: RequirementStatus) => {
+    if (newStatus === "Ready for Matching") {
+      try {
+        await apiFetch(`/api/v1/requirements/${encodeURIComponent(reqId)}/mark-ready/`, { method: "POST" });
+        queryClient.invalidateQueries({ queryKey: ["requirements"] });
+        setNotification({
+          type: "success",
+          title: "Status Synchronized",
+          message: "Requirement marked ready for matching in backend.",
+        });
+        return;
+      } catch (err) {
+        if (!(err instanceof ApiError && err.status === 404)) {
+          setNotification({
+            type: "error",
+            title: "Transition Blocked",
+            message: err instanceof ApiError ? err.message : "Failed to mark requirement ready for matching.",
+          });
+          return;
+        }
+      }
+    } else if (newStatus === "Closed") {
+      try {
+        await apiFetch(`/api/v1/requirements/${encodeURIComponent(reqId)}/close/`, { method: "POST" });
+        queryClient.invalidateQueries({ queryKey: ["requirements"] });
+        setNotification({
+          type: "success",
+          title: "Requirement Closed",
+          message: "Requirement closed successfully in backend.",
+        });
+        return;
+      } catch (err) {
+        if (!(err instanceof ApiError && err.status === 404)) {
+          setNotification({
+            type: "error",
+            title: "Close Failed",
+            message: err instanceof ApiError ? err.message : "Failed to close requirement.",
+          });
+          return;
+        }
+      }
+    }
+
     const payload = {
       requirement_status: newStatus,
       matching_ready: newStatus === "Ready for Matching" ? true : undefined,

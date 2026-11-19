@@ -23,9 +23,13 @@ interface RecentMatchItem {
 }
 
 interface DashboardSummaryResponse {
+  total_suppliers?: number;
+  total_products?: number;
+  active_matches?: number;
+  open_opportunities?: number;
+  average_readiness?: number;
   metrics?: DashboardMetrics;
   recent_matches?: RecentMatchItem[];
-  average_readiness?: number;
 }
 
 export default function DashboardPage() {
@@ -75,10 +79,10 @@ export default function DashboardPage() {
 
   const isLoading = isSummaryLoading && isSuppliersLoading && isProductsLoading;
   const metrics = summaryData?.metrics;
-  const totalSuppliers = metrics?.total_suppliers ?? suppliers.length;
-  const totalProducts = metrics?.total_products ?? products.length;
-  const activeMatches = metrics?.active_matches ?? 0;
-  const openOpportunities = metrics?.open_opportunities ?? 0;
+  const totalSuppliers = summaryData?.total_suppliers ?? metrics?.total_suppliers ?? suppliers.length;
+  const totalProducts = summaryData?.total_products ?? metrics?.total_products ?? products.length;
+  const activeMatches = summaryData?.active_matches ?? metrics?.active_matches ?? 0;
+  const openOpportunities = summaryData?.open_opportunities ?? metrics?.open_opportunities ?? 0;
   const recentMatches = summaryData?.recent_matches || [];
   const readinessScore = summaryData?.average_readiness ?? 0;
 
