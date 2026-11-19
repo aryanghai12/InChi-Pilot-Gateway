@@ -1,5 +1,5 @@
 # Gitleaks Configuration for InChi Pilot Gateway
-# Maintained by: DevSecOps & Security Policy
+# Maintained by: Ajendra Nath Tripathi (Cybersecurity and DevSecOps Engineer) & Security Policy
 # Used in CI (.github/workflows/security.yml) and local security scans
 
 title = "InChi Pilot Gateway Secret Scanning Policy"

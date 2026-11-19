@@ -1,0 +1,120 @@
+# InChi Pilot Gateway — reference environment (ARCHITECTURE.md §1, §8; M11-AC3).
+#
+#   cp .env.example .env      # once; then replace the placeholder secrets
+#   docker compose up --build
+#
+# Open http://localhost:3000. The browser talks only to Next.js, which proxies
+# /api/, the admin path and Django's static prefix to Django (TD-09).
+#
+# Services:
+#   db        PostgreSQL 17 + pgvector (Vishal). Bound to 127.0.0.1 for native development.
+#   backend   Django + DRF under gunicorn (Abhishek). Internal only.
+#   matching  FastAPI AI matching engine (Alok). Internal only; runtime arrangement pending D-15.
+#   frontend  Next.js standalone server (Priyanka). The only public entry point.
+#
+# Each service receives only the variables it needs; nothing is passed wholesale
+# from .env. Required secrets fail fast with a clear message if missing.
+# Synthetic data only. Non-production pilot environment.
+
+name: inchi-pilot-gateway
+
+x-restart: &restart
+  restart: unless-stopped
+
+services:
+  db:
+    <<: *restart
+    image: pgvector/pgvector:0.8.6-pg17-bookworm
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-inchi_pilot}
+      POSTGRES_USER: ${POSTGRES_USER:-inchi_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env (cp .env.example .env)}
+    ports:
+      - "127.0.0.1:${DB_HOST_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  matching:
+    <<: *restart
+    build:
+      context: ./backend
+      target: matching
+    environment:
+      MATCHING_ENGINE_HOST: 0.0.0.0
+      MATCHING_ENGINE_PORT: "8001"
+      # D-11: provider/model stay unset until the embedding decision is recorded.
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-none}
+      EMBEDDING_MODEL_NAME: ${EMBEDDING_MODEL_NAME:-}
+      HF_HUB_DISABLE_TELEMETRY: "1"
+      TRANSFORMERS_OFFLINE: "1"
+      TOKENIZERS_PARALLELISM: "false"
+    expose:
+      - "8001"
+
+  backend:
+    <<: *restart
+    build:
+      context: ./backend
+      target: django
+    depends_on:
+      db:
+        condition: service_healthy
+      matching:
+        condition: service_healthy
+    environment:
+      DJANGO_SETTINGS_MODULE: config.settings
+      # Names on the left are what backend/config/settings.py reads; values come
+      # from the canonical root .env (DJANGO_* names, .env.example).
+      SECRET_KEY: ${DJANGO_SECRET_KEY:?Set DJANGO_SECRET_KEY in .env (cp .env.example .env)}
+      DEBUG: ${DJANGO_DEBUG:-False}
+      ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1,backend}
+      CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}
+      CORS_ALLOWED_ORIGINS: ""
+      SESSION_COOKIE_SECURE: ${DJANGO_SESSION_COOKIE_SECURE:-False}
+      CSRF_COOKIE_SECURE: ${DJANGO_CSRF_COOKIE_SECURE:-False}
+      SESSION_COOKIE_AGE: ${DJANGO_SESSION_COOKIE_AGE:-28800}
+      ADMIN_URL_PATH: ${ADMIN_URL_PATH:-admin}
+      # Password must be URL-safe (letters, digits, '-', '_'); see .env.example.
+      DATABASE_URL: postgres://${POSTGRES_USER:-inchi_user}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-inchi_pilot}
+      FASTAPI_MATCHING_URL: http://matching:8001
+      MATCHING_ENGINE_TIMEOUT_SECONDS: ${MATCHING_ENGINE_TIMEOUT_SECONDS:-30}
+      # Optional first platform administrator (TD-08). Skipped when either is empty.
+      INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL:-}
+      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD:-}
+      GUNICORN_WORKERS: ${GUNICORN_WORKERS:-3}
+    expose:
+      - "8000"
+
+  frontend:
+    <<: *restart
+    build:
+      context: ./frontend
+      args:
+        # Baked into the Next.js build (rewrites are build-time; ARCHITECTURE.md §7).
+        BACKEND_ORIGIN: http://backend:8000
+        ADMIN_URL_PATH: ${ADMIN_URL_PATH:-admin}
+        DJANGO_STATIC_PREFIX: ${DJANGO_STATIC_PREFIX:-static}
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+    ports:
+      # Loopback by default; set FRONTEND_BIND=0.0.0.0 in .env to expose on the LAN for a demo.
+      - "${FRONTEND_BIND:-127.0.0.1}:${FRONTEND_HOST_PORT:-3000}:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:3000/login || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+volumes:
+  postgres_data:

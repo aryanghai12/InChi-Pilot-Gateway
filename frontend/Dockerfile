@@ -15,6 +15,16 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# next.config.ts rewrites are resolved at build time and baked into the
+# standalone server (ARCHITECTURE.md §7, TD-09), so the proxy target must be
+# supplied as build arguments. docker-compose.yml sets them for the stack.
+ARG BACKEND_ORIGIN=http://backend:8000
+ARG ADMIN_URL_PATH=admin
+ARG DJANGO_STATIC_PREFIX=static
+ENV BACKEND_ORIGIN=${BACKEND_ORIGIN} \
+    ADMIN_URL_PATH=${ADMIN_URL_PATH} \
+    DJANGO_STATIC_PREFIX=${DJANGO_STATIC_PREFIX}
+
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 

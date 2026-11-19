@@ -1,0 +1,24 @@
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    container_name: inchi_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-inchi_db}
+      POSTGRES_USER: ${DB_USER:-inchi_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-change_me}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - inchi_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-inchi_user} -d ${DB_NAME:-inchi_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  inchi_postgres_data:
+    name: inchi_postgres_data
+

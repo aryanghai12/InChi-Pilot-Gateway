@@ -1,0 +1,17 @@
+# Isolated override of the database reference setup: no shared name, port or volume.
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_DB: qa_backend
+      POSTGRES_USER: qa_runner
+      POSTGRES_PASSWORD: ${QA_DB_PASSWORD:?Generate an ephemeral QA database password}
+    ports:
+      - "127.0.0.1:55439:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U qa_runner -d qa_backend"]
+      interval: 2s
+      timeout: 5s
+      retries: 30

@@ -1,0 +1,19 @@
+{
+  "name": "e2e",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "test": "node scripts/preflight.mjs && playwright test",
+    "preflight": "node scripts/preflight.mjs",
+    "test:config": "node --test support/environment.test.mjs",
+    "test:list": "playwright test --list",
+    "test:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@types/node": "^20"
+  }
+}

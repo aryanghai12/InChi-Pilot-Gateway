@@ -1,0 +1,171 @@
+import uuid
+from rest_framework.views import exception_handler
+from rest_framework.exceptions import (
+    APIException,
+    AuthenticationFailed,
+    NotAuthenticated,
+    PermissionDenied,
+    ValidationError,
+    NotFound,
+    MethodNotAllowed,
+)
+from rest_framework.response import Response
+from rest_framework import status
+from django.http import JsonResponse
+
+
+class ConflictError(APIException):
+    status_code = status.HTTP_409_CONFLICT
+    default_detail = "This record has been modified by another process. Please refresh and try again."
+    default_code = "conflict"
+
+
+def csrf_failure(request, reason=""):
+    """
+    QA-005 / M1-AC3 / TD-05: Standardized JSON CSRF failure view.
+    Invoked by Django's CsrfViewMiddleware when CSRF cookie/token validation fails.
+    Returns HTTP 403 with Content-Type: application/json and code 'csrf_failed'.
+    """
+    correlation_id = getattr(request, "correlation_id", str(uuid.uuid4()))
+    return JsonResponse(
+        {
+            "code": "csrf_failed",
+            "message": "CSRF verification failed. Request rejected.",
+            "field_errors": {},
+            "correlation_id": correlation_id,
+        },
+        status=status.HTTP_403_FORBIDDEN,
+        content_type="application/json",
+    )
+
+
+def custom_404_handler(request, exception=None):
+    """
+    QA-006 / TD-09: API-aware 404 handler.
+    Returns structured JSON 404 response for any /api/ request.
+    Non-API requests retain standard HTML error page.
+    """
+    correlation_id = getattr(request, "correlation_id", str(uuid.uuid4()))
+    if request.path.startswith("/api/") or "application/json" in request.headers.get("Accept", ""):
+        return JsonResponse(
+            {
+                "code": "not_found",
+                "message": "The requested API endpoint was not found.",
+                "field_errors": {},
+                "correlation_id": correlation_id,
+            },
+            status=status.HTTP_404_NOT_FOUND,
+            content_type="application/json",
+        )
+    from django.views.defaults import page_not_found
+    return page_not_found(request, exception)
+
+
+def api_catchall_404(request, *args, **kwargs):
+    """
+    Catch-all view mounted at the end of /api/ patterns.
+    Ensures unmatched API endpoints return JSON 404 in both DEBUG=True and DEBUG=False.
+    """
+    return custom_404_handler(request)
+
+
+def custom_exception_handler(exc, context):
+    """
+    Standardized DRF Exception Handler.
+    Enforces the response shape:
+    {
+        "code": "string",
+        "message": "string",
+        "field_errors": { "field_name": ["error"] },
+        "correlation_id": "uuid"
+    }
+
+    Specific error code mappings:
+    - NotAuthenticated -> 401 with code "not_authenticated"
+    - PermissionDenied -> 403 with code "permission_denied"
+    - ValidationError  -> 400 with code "validation_error"
+    """
+    # Call DRF's default exception handler first to get the standard response
+    response = exception_handler(exc, context)
+
+    # Get correlation_id from request if available
+    request = context.get("request")
+    correlation_id = getattr(request, "correlation_id", str(uuid.uuid4()))
+
+    if response is None:
+        # Unhandled 500 server error
+        return Response(
+            {
+                "code": "internal_error",
+                "message": "An unexpected server error occurred. Please contact support.",
+                "field_errors": {},
+                "correlation_id": correlation_id,
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    # Determine standard code and message
+    error_code = "error"
+    message = "An error occurred."
+    field_errors = {}
+
+    if isinstance(exc, (NotAuthenticated, AuthenticationFailed)):
+        error_code = "not_authenticated"
+        message = "Authentication credentials were not provided or are invalid."
+        response.status_code = status.HTTP_401_UNAUTHORIZED
+
+    elif isinstance(exc, PermissionDenied):
+        error_code = "permission_denied"
+        message = getattr(exc, "detail", "You do not have permission to perform this action.")
+        response.status_code = status.HTTP_403_FORBIDDEN
+
+    elif isinstance(exc, ConflictError) or getattr(response, "status_code", None) == 409:
+        error_code = "conflict"
+        message = getattr(exc, "detail", "This record has been modified by another process. Please refresh and try again.")
+        response.status_code = status.HTTP_409_CONFLICT
+
+    elif isinstance(exc, ValidationError):
+        error_code = "validation_error"
+        message = "Input validation failed. Please check field errors."
+        response.status_code = status.HTTP_400_BAD_REQUEST
+
+        if isinstance(response.data, dict):
+            for key, val in response.data.items():
+                if isinstance(val, list):
+                    field_errors[key] = [str(item) for item in val]
+                else:
+                    field_errors[key] = [str(val)]
+        elif isinstance(response.data, list):
+            field_errors["non_field_errors"] = [str(item) for item in response.data]
+
+        # Preserve non_field_errors or detail as primary descriptive message
+        if "non_field_errors" in field_errors and field_errors["non_field_errors"]:
+            message = field_errors["non_field_errors"][0]
+        elif "detail" in field_errors and field_errors["detail"]:
+            message = field_errors["detail"][0]
+
+    elif isinstance(exc, NotFound):
+        error_code = "not_found"
+        message = getattr(exc, "detail", "The requested resource was not found.")
+        response.status_code = status.HTTP_404_NOT_FOUND
+
+    elif isinstance(exc, MethodNotAllowed):
+        error_code = "method_not_allowed"
+        message = getattr(exc, "detail", f"Method '{request.method}' not allowed.")
+        response.status_code = status.HTTP_405_METHOD_NOT_ALLOWED
+
+    else:
+        # Default fallback
+        if isinstance(response.data, dict) and "detail" in response.data:
+            message = str(response.data["detail"])
+        elif isinstance(response.data, str):
+            message = response.data
+
+    response.data = {
+        "code": error_code,
+        "message": str(message),
+        "field_errors": field_errors,
+        "correlation_id": correlation_id,
+    }
+
+    return response
