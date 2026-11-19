@@ -196,7 +196,6 @@ export function AppSidebar({ user, userRole = "commercial_analyst" }: AppSidebar
           <div className={styles.brandText}>
             <div className={styles.brandHeaderRow}>
               <span className={styles.brandTitle}>InChi Gateway</span>
-              <span className={styles.brandPilotBadge}>PILOT</span>
             </div>
             <span className={styles.brandSubtitle}>CROSS-BORDER PLATFORM</span>
           </div>

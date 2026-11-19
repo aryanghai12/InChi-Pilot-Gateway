@@ -22,6 +22,9 @@ export function AppHeader({ user }: AppHeaderProps) {
     } catch (err) {
       console.warn("Logout error:", err);
     } finally {
+      if (typeof document !== "undefined") {
+        document.cookie = "sessionid=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      }
       queryClient.clear();
       router.push("/login");
     }

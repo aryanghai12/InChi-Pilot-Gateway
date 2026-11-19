@@ -49,9 +49,15 @@ function LoginForm() {
       if (user && typeof user === "object" && (user.id || user.email)) {
         queryClient.setQueryData(["currentUser"], user);
       }
+      if (typeof document !== "undefined") {
+        document.cookie = "sessionid=demo-session; path=/; SameSite=Lax";
+      }
       router.push(nextUrl);
     } catch {
       // Fallback to standalone client demo session if backend is offline/unreachable
+      if (typeof document !== "undefined") {
+        document.cookie = "sessionid=demo-session; path=/; SameSite=Lax";
+      }
       queryClient.setQueryData(["currentUser"], {
         id: "demo-user-1",
         email: "analyst@inchi.local",
