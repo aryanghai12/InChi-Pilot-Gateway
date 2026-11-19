@@ -24,16 +24,11 @@ import { EmptyState } from "@/components/feedback/EmptyState";
 import { AlertBanner } from "@/components/feedback/AlertBanner";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 
-// 7 Top-Level Working Categories defined in Buyer Requirement Field Dictionary v1.2
-const PRODUCT_CATEGORIES: ProductCategory[] = [
-  "Agriculture and Food",
-  "Textiles",
-  "Engineering Goods",
-  "Electronic Goods",
-  "Chemicals",
-  "Minerals & Metals",
-  "Marine Products",
-];
+import {
+  PRODUCT_CATEGORIES,
+  evaluateRequirementCompleteness,
+  validatePriceBounds,
+} from "@/lib/requirements/completeness";
 
 export default function RequirementsPage() {
   const queryClient = useQueryClient();
@@ -271,10 +266,9 @@ export default function RequirementsPage() {
     if (formData.quantity_value && Number(formData.quantity_value) <= 0) {
       errors.quantity_value = ["Quantity must be greater than zero."];
     }
-    if (formData.target_price_min && formData.target_price_max) {
-      if (Number(formData.target_price_min) > Number(formData.target_price_max)) {
-        errors.target_price_max = ["Maximum price must be greater than or equal to minimum price."];
-      }
+    const priceCheck = validatePriceBounds(formData.target_price_min, formData.target_price_max);
+    if (!priceCheck.isValid && priceCheck.errorMessage) {
+      errors.target_price_max = [priceCheck.errorMessage];
     }
 
     if (Object.keys(errors).length > 0) {
@@ -282,20 +276,11 @@ export default function RequirementsPage() {
       return;
     }
 
-    // Determine matching readiness gate (BUY-032)
-    const blockingReasons: string[] = [];
-    if (!formData.quantity_value || !formData.quantity_unit) {
-      blockingReasons.push("Quantity value and approved unit are required for matching.");
-    }
-    if (!formData.delivery_location.trim()) {
-      blockingReasons.push("Delivery destination must be specified.");
-    }
-    if (mandatoryList.length === 0) {
-      blockingReasons.push("At least one mandatory eligibility condition is required.");
-    }
-
-    const isReady = blockingReasons.length === 0 && targetStatus !== "Draft";
-    const completeness = blockingReasons.length === 0 ? "Complete" : "Incomplete";
+    // Determine matching readiness gate (BUY-032 / M5-AC2)
+    const evalResult = evaluateRequirementCompleteness(formData, mandatoryList.length);
+    const isReady = evalResult.isReady && targetStatus !== "Draft";
+    const completeness = evalResult.completenessStatus;
+    const blockingReasons = evalResult.blockingReasons;
 
     const newReq: BuyerRequirement = {
       requirement_id: `REQ-${new Date().getFullYear()}-${String(requirements.length + 1).padStart(3, "0")}`,

@@ -28,83 +28,13 @@ import { EmptyState } from "@/components/feedback/EmptyState";
 import { AlertBanner } from "@/components/feedback/AlertBanner";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 
-// ============================================================================
-// Fixed, Versioned Question Set (v1.0-pilot-baseline per Build Manual §7 / D-03)
-// ============================================================================
-const QUESTION_SET_VERSION = "v1.0-pilot";
-
-const READINESS_QUESTIONS: ReadinessQuestion[] = [
-  // 1. Regulatory & Customs (GACC)
-  {
-    id: "Q-GACC-01",
-    category: "Regulatory & Customs (GACC)",
-    question_text: "Does the enterprise hold valid registration with China's General Administration of Customs (GACC / Decree 248/249) where applicable?",
-    guidance: "Mandatory for food, agricultural, and regulated commodities entering mainland China.",
-    is_mandatory: true,
-    required_evidence_type: "GACC Registration Certificate",
-  },
-  {
-    id: "Q-GACC-02",
-    category: "Regulatory & Customs (GACC)",
-    question_text: "Does the facility hold valid export phytosanitary or sanitary clearance from an authorized Indian agency (e.g. APEDA, EIA, FSSAI)?",
-    guidance: "Must be active and accompanied by official laboratory inspection certificate.",
-    is_mandatory: true,
-    required_evidence_type: "Sanitary / Phytosanitary Certificate",
-  },
-
-  // 2. Standards & Chinese Labeling (GB Standards)
-  {
-    id: "Q-GB-01",
-    category: "Standards & Packaging (GB)",
-    question_text: "Are product technical specifications, formulation, and laboratory assays verified compliant with relevant National Standards of China (GB Standards)?",
-    guidance: "Requires third-party or authorized lab test report referencing the relevant GB standard number.",
-    is_mandatory: true,
-    required_evidence_type: "GB Compliance Test Report",
-  },
-  {
-    id: "Q-GB-02",
-    category: "Standards & Packaging (GB)",
-    question_text: "Are packaging formats and bilingual/Mandarin labels prepared in compliance with GB 7718 and China customs labelling rules?",
-    guidance: "Outer carton and consumer packaging must include Chinese artwork spec with importer/distributor details.",
-    is_mandatory: true,
-    required_evidence_type: "Chinese Label Artwork Spec",
-  },
-
-  // 3. Mandarin Commercial Capability
-  {
-    id: "Q-MAND-01",
-    category: "Mandarin Commercial Capability",
-    question_text: "Does the supplier possess commercial product catalogs and technical specification sheets translated into Simplified Chinese?",
-    guidance: "Improves buyer qualification speed and reduces trade negotiation friction.",
-    is_mandatory: false,
-    required_evidence_type: "Mandarin Product Catalog",
-  },
-  {
-    id: "Q-MAND-02",
-    category: "Mandarin Commercial Capability",
-    question_text: "Does the enterprise have dedicated personnel, trade agents, or channels capable of real-time commercial communication in Beijing time zone?",
-    guidance: "Evaluated during buyer matching to ensure responsive commercial follow-ups.",
-    is_mandatory: false,
-  },
-
-  // 4. Financial Settlement & Logistics
-  {
-    id: "Q-FIN-01",
-    category: "Financial Settlement & Logistics",
-    question_text: "Does the supplier maintain active cross-border commercial banking channels supporting RMB (CIPS/CNY) or standard USD/EUR documentary letter of credit (L/C)?",
-    guidance: "Bank must be able to receive cross-border remittances and comply with FEMA/RBI export settlement rules.",
-    is_mandatory: true,
-    required_evidence_type: "Bank Compliance Letter / Swift Confirmation",
-  },
-  {
-    id: "Q-FIN-02",
-    category: "Financial Settlement & Logistics",
-    question_text: "Can the supplier provide verifiable Certificates of Origin (COO) for customs clearance at Chinese destination ports?",
-    guidance: "Official COO issued by authorized agency (e.g. Export Promotion Council or Chamber of Commerce).",
-    is_mandatory: true,
-    required_evidence_type: "Certificate of Origin (COO) Template",
-  },
-];
+import {
+  QUESTION_SET_VERSION,
+  READINESS_QUESTIONS,
+  calculateReadinessCompleteness as calculateCompleteness,
+  canSubmitAssessment,
+  validateReviewDecision,
+} from "@/lib/readiness/evaluation";
 
 export default function ReadinessPage() {
   const queryClient = useQueryClient();
@@ -184,28 +114,7 @@ export default function ReadinessPage() {
     return assessments.find((a) => a.assessment_id === activeAssessmentId) || null;
   }, [assessments, activeAssessmentId]);
 
-  // ==========================================================================
-  // Helper: Live Completeness Evaluation (M4-AC1)
-  // ==========================================================================
-  const calculateCompleteness = (answers: AssessmentAnswer[]): {
-    completeness: CompletenessStatus;
-    missingItems: string[];
-  } => {
-    const missing: string[] = [];
 
-    READINESS_QUESTIONS.forEach((q) => {
-      if (!q.is_mandatory) return;
-      const ans = answers.find((a) => a.question_id === q.id);
-      if (!ans || !ans.response || ans.response.trim() === "") {
-        missing.push(`${q.category}: "${q.question_text}" is unanswered.`);
-      }
-    });
-
-    return {
-      completeness: missing.length === 0 ? "Complete" : "Incomplete",
-      missingItems: missing,
-    };
-  };
 
   // Grouped questions by Category
   const questionsByCategory = useMemo(() => {
@@ -381,12 +290,12 @@ export default function ReadinessPage() {
   const handleSubmitAssessment = async () => {
     if (!activeAssessment) return;
 
-    const comp = calculateCompleteness(activeAssessment.answers);
-    if (comp.completeness === "Incomplete") {
+    const submissionCheck = canSubmitAssessment(activeAssessment.answers);
+    if (!submissionCheck.canSubmit) {
       setNotification({
         type: "error",
         title: "Submission Blocked (M4-AC1)",
-        message: `Assessment cannot be submitted while mandatory questions remain unanswered (${comp.missingItems.length} missing).`,
+        message: submissionCheck.message || "Assessment cannot be submitted while mandatory questions remain unanswered.",
       });
       return;
     }
@@ -436,11 +345,12 @@ export default function ReadinessPage() {
   const handleRecordReview = () => {
     if (!activeAssessment) return;
 
-    if (!decisionReason.trim()) {
+    const validation = validateReviewDecision(decisionActionType, decisionReason, decisionOutcome);
+    if (!validation.isValid) {
       setNotification({
         type: "error",
         title: "Review Reason Required (M4-AC3)",
-        message: "You must record an explicit reason or audit note when setting an outcome or requesting clarification.",
+        message: validation.error || "You must record an explicit reason or audit note when setting an outcome or requesting clarification.",
       });
       return;
     }
