@@ -3,6 +3,22 @@
 # Progress Log — Priyanka Singh (Frontend)
 
 ---
+### Week 4 Progress Report
+
+- **Completed work with evidence:**
+  - **China-Readiness Baseline v2.2 (`/readiness`):** Implemented all 18 criteria (`CR-01`–`CR-18`), 9 categorical evidence conditions, Section 6.1 submission gate, Section 6.2 categorical outcomes (zero numeric scoring), Worked Examples A–C, and reviewer decision desk.
+  - **QA-001 Route Guard Resolution:** Implemented Next.js route middleware (`middleware.ts`) enforcing HTTP 307 login redirects for unauthenticated requests, passing all 8 Playwright smoke tests in `e2e/tests/auth.spec.ts`.
+  - **Offline Demo Session Support:** Added resilient fallback in `layout.tsx` so the entire workspace can be explored locally without requiring a running Django backend.
+  - **API Contract & Security Baseline:** Synchronized OpenAPI 3.0.3 TypeScript definitions, upgraded Next.js to 16.4.6, resolved Gitleaks false positives in `.gitleaks.toml`, and polished enterprise UI copy.
+- **Tests run:**
+  - `npm --prefix frontend test` (`vitest run`) → 42/42 unit tests passing (5 suites).
+  - `npm --prefix frontend run typecheck` (`tsc --noEmit`) → 0 errors.
+  - `npm --prefix frontend run lint` (`eslint .`) → 0 errors, 0 warnings.
+  - `npm --prefix frontend run build` (`next build`) → Clean production build (all 15 routes prerendered).
+  - GitHub Actions CI (PR #17) → 100% green across all jobs (`frontend`, `backend`, `e2e`, `qa-tooling`).
+- **Blockers:** None.
+- **Next steps:** Week 5 — Module M6 AI Matching Desk (`/matching`), scoring breakdown visualization, and match disposition workflow.
+  
 ### Week 3 Progress Report
 
 - **Completed work with evidence:**
