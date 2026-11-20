@@ -35,6 +35,7 @@ urlpatterns = [
     # Module APIs
     path("api/v1/auth/", include("apps.accounts.urls")),
     path("api/v1/", include("apps.registry.urls")),
+    path("api/v1/", include("apps.readiness.urls")),
     path("api/v1/", include("apps.demand.urls")),
 
     # Catch-all for unmatched API routes (QA-006 / TD-09)
