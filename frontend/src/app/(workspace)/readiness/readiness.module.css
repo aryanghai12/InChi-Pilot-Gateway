@@ -755,3 +755,99 @@
   border-radius: var(--radius-md);
   margin-top: 0.25rem;
 }
+
+/* ========================================================================== */
+/* Baseline v2.2 Custom Styles (SCR-03 Context, Evidence Conditions, Gates)  */
+/* ========================================================================== */
+.contextBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.875rem 1.25rem;
+  background-color: var(--color-bg-subtle, #f2eee7);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+}
+
+.contextItem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.contextLabel {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+}
+
+.contextValue {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-text-main);
+}
+
+.evidenceConditionSelect {
+  width: 100%;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background-color: #FFFFFF;
+  font-size: 0.8125rem;
+  color: var(--color-text-main);
+}
+
+.declarationBox {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem;
+  background-color: var(--color-bg-subtle, #f8f6f2);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.declarationLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-main);
+  cursor: pointer;
+}
+
+.declarationCheckbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--color-primary);
+}
+
+.blockingAlertBox {
+  background-color: #fdf2f2;
+  border: 1px solid #f8b4b4;
+  border-radius: var(--radius-md);
+  padding: 0.875rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.blockingAlertTitle {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #9b1c1c;
+}
+
+.blockingAlertList {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.75rem;
+  color: #771d1d;
+  line-height: 1.5;
+}

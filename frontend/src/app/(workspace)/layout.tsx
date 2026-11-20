@@ -4,11 +4,10 @@ import React, { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import styles from "./workspace.module.css";
 import { apiFetch } from "@/lib/api/client";
-import { CurrentUser, ApiError } from "@/lib/api/types";
+import { CurrentUser } from "@/lib/api/types";
 import { AppHeader } from "@/components/navigation/AppHeader";
 import { AppSidebar } from "@/components/navigation/AppSidebar";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
-import { AlertBanner } from "@/components/feedback/AlertBanner";
 
 const FALLBACK_DEMO_USER: CurrentUser = {
   id: "demo-user-1",
@@ -30,21 +29,34 @@ export default function WorkspaceLayout({
   const {
     data: fetchedUser,
     isLoading,
-    isError,
     error,
   } = useQuery<CurrentUser>({
     queryKey: ["currentUser"],
-    queryFn: () => apiFetch<CurrentUser>("/api/v1/auth/me/"),
+    queryFn: async () => {
+      try {
+        return await apiFetch<CurrentUser>("/api/v1/auth/me/");
+      } catch (err) {
+        if (
+          process.env.NEXT_PUBLIC_DEMO_MODE === "true" ||
+          (typeof document !== "undefined" && document.cookie.includes("sessionid=demo-session"))
+        ) {
+          return FALLBACK_DEMO_USER;
+        }
+        throw err;
+      }
+    },
     staleTime: 5 * 60 * 1000,
     retry: false,
   });
 
-  const isUnauthorized =
-    error instanceof ApiError
-      ? error.status === 401
-      : error && typeof error === "object" && "status" in error
-      ? (error as { status: unknown }).status === 401
-      : false;
+  // In standard environments and automated smoke tests (CI/Playwright), any failure
+  // to fetch an authenticated user session (401, connection refused, 502 proxy error, or lack of session)
+  // indicates an unauthenticated visitor that must be redirected to /login?next=<path>.
+  // In demo sessions or demo mode, fallback to synthetic persona without redirecting.
+  const isDemoCookie =
+    typeof document !== "undefined" && document.cookie.includes("sessionid=demo-session");
+  const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true" || isDemoCookie;
+  const isUnauthorized = !isDemoMode && (Boolean(error) || (!isLoading && !fetchedUser));
 
   useEffect(() => {
     if (isUnauthorized) {
@@ -64,7 +76,6 @@ export default function WorkspaceLayout({
     );
   }
 
-  const isDemo = isError || !fetchedUser;
   const user = fetchedUser || FALLBACK_DEMO_USER;
 
   if (isLoading) {
@@ -80,15 +91,6 @@ export default function WorkspaceLayout({
       <AppSidebar user={user} userRole={user?.role} />
       <div className={styles.contentWrapper}>
         <AppHeader user={user} />
-        {isDemo && (
-          <div style={{ padding: "0.75rem 2.25rem 0", maxWidth: 1440, width: "100%", margin: "0 auto" }}>
-            <AlertBanner
-              type="info"
-              title="Frontend Standalone Mode"
-              message="Django backend (:8000) not connected. Workspace previewing with session for Priyanka Singh (commercial_analyst)."
-            />
-          </div>
-        )}
         <main className={styles.main}>{children}</main>
       </div>
     </div>

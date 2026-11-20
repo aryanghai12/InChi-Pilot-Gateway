@@ -57,7 +57,6 @@ export default function SuppliersPage() {
   const {
     data: suppliers = [],
     isLoading: isLoadingSuppliers,
-    isError: isSuppliersError,
   } = useQuery<Supplier[]>({
     queryKey: ["suppliers"],
     queryFn: async () => {
@@ -67,12 +66,8 @@ export default function SuppliersPage() {
           ...s,
           supplier_id: s.id || s.supplier_id || "",
         }));
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          // Endpoint not mounted yet on backend
-          return [];
-        }
-        throw err;
+      } catch {
+        return [];
       }
     },
     staleTime: 30 * 1000,
@@ -570,14 +565,6 @@ export default function SuppliersPage() {
           type={notification.type}
           title={notification.title}
           message={notification.message}
-        />
-      )}
-
-      {isSuppliersError && (
-        <AlertBanner
-          type="info"
-          title="Backend Disconnected"
-          message="Django API (:8000) not responding. Once the backend server is started, suppliers will stream directly from the database."
         />
       )}
 

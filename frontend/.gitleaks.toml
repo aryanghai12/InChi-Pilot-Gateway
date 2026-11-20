@@ -1,0 +1,34 @@
+# Gitleaks Configuration for InChi Pilot Gateway
+# Maintained by: Ajendra Nath Tripathi (Cybersecurity and DevSecOps Engineer) & Security Policy
+# Used in CI (.github/workflows/security.yml) and local security scans
+
+title = "InChi Pilot Gateway Secret Scanning Policy"
+
+[extend]
+# Inherit default Gitleaks detection rules
+useDefault = true
+
+[allowlist]
+description = "Global allowlists for safe non-production placeholders, mock tokens, and historical documentation"
+paths = [
+  '''^\.env\.example$''',
+  '''^docs/.*\.md$''',
+  '''^ENDPOINT_DATA_AND_BEHAVIOR\.md$''',
+  '''^BACKEND_HANDOVER_AND_PRESENTATION\.md$''',
+  '''^frontend/package-lock\.json$''',
+  '''^frontend/src/lib/api/schema\.d\.ts$'''
+]
+
+commits = [
+  "9e61ed28734bfe2fb46af6c90eb3bcdb0a1c0cb7"
+]
+
+regexes = [
+  '''(?i)placeholder''',
+  '''(?i)fake-secret''',
+  '''(?i)test-token''',
+  '''(?i)sample-key''',
+  '''(?i)UNAPPROVED''',
+  '''(?i)dummy''',
+  '''f2905b63-8a32-4752-9ef8-e160e90c6792'''
+]

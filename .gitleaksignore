@@ -1,0 +1,4 @@
+# Gitleaks ignore list for false-positive mock API tokens in historical documentation commits
+# Format: <commit>:<path>:<rule-id>:<line-number>
+9e61ed28734bfe2fb46af6c90eb3bcdb0a1c0cb7:ENDPOINT_DATA_AND_BEHAVIOR.md:generic-api-key:177
+9e61ed28734bfe2fb46af6c90eb3bcdb0a1c0cb7:ENDPOINT_DATA_AND_BEHAVIOR.md:generic-api-key:193

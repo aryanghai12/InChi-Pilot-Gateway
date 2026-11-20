@@ -5,11 +5,10 @@ import { useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api/client";
 import { unwrapPaginated, ApiError, PaginatedResponse } from "@/lib/api/types";
 import { EmptyState } from "@/components/feedback/EmptyState";
-import { AlertBanner } from "@/components/feedback/AlertBanner";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 
 export default function OpportunitiesPage() {
-  const { data: opportunities, isLoading, error } = useQuery<unknown[] | null>({
+  const { isLoading } = useQuery<unknown[] | null>({
     queryKey: ["opportunities"],
     queryFn: async () => {
       try {
@@ -26,8 +25,6 @@ export default function OpportunitiesPage() {
     retry: false,
   });
 
-  const isUnderConstruction = opportunities === null || (error instanceof ApiError && error.status === 404);
-
   return (
     <div>
       <div style={{ marginBottom: "1.5rem" }}>
@@ -38,16 +35,6 @@ export default function OpportunitiesPage() {
           Track progression of accepted matches through commercial stages with activity history.
         </p>
       </div>
-
-      {isUnderConstruction && (
-        <div style={{ marginBottom: "1.5rem" }}>
-          <AlertBanner
-            type="info"
-            title="Feature Under Backend Construction"
-            message="The Commercial Opportunities service (/api/v1/opportunities/) is currently under backend development. Opportunities generated from accepted candidate matches will automatically synchronize here once deployed."
-          />
-        </div>
-      )}
 
       {isLoading ? (
         <div style={{ padding: "3rem", display: "flex", justifyContent: "center" }}>

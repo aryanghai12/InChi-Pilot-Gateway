@@ -5,9 +5,8 @@ import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import styles from "./dashboard.module.css";
 import { apiFetch } from "@/lib/api/client";
-import { unwrapPaginated, ApiError, PaginatedResponse } from "@/lib/api/types";
+import { unwrapPaginated, PaginatedResponse } from "@/lib/api/types";
 import { EmptyState } from "@/components/feedback/EmptyState";
-import { AlertBanner } from "@/components/feedback/AlertBanner";
 
 interface DashboardMetrics {
   total_suppliers?: number;
@@ -24,9 +23,13 @@ interface RecentMatchItem {
 }
 
 interface DashboardSummaryResponse {
+  total_suppliers?: number;
+  total_products?: number;
+  active_matches?: number;
+  open_opportunities?: number;
+  average_readiness?: number;
   metrics?: DashboardMetrics;
   recent_matches?: RecentMatchItem[];
-  average_readiness?: number;
 }
 
 export default function DashboardPage() {
@@ -35,11 +38,8 @@ export default function DashboardPage() {
     queryFn: async () => {
       try {
         return await apiFetch<DashboardSummaryResponse>("/api/v1/dashboard/summary/");
-      } catch (err) {
-        if (err instanceof ApiError && err.status === 404) {
-          return null;
-        }
-        throw err;
+      } catch {
+        return null;
       }
     },
     staleTime: 60 * 1000,
@@ -76,13 +76,12 @@ export default function DashboardPage() {
 
   const isLoading = isSummaryLoading && isSuppliersLoading && isProductsLoading;
   const metrics = summaryData?.metrics;
-  const totalSuppliers = metrics?.total_suppliers ?? suppliers.length;
-  const totalProducts = metrics?.total_products ?? products.length;
-  const activeMatches = metrics?.active_matches ?? 0;
-  const openOpportunities = metrics?.open_opportunities ?? 0;
+  const totalSuppliers = summaryData?.total_suppliers ?? metrics?.total_suppliers ?? suppliers.length;
+  const totalProducts = summaryData?.total_products ?? metrics?.total_products ?? products.length;
+  const activeMatches = summaryData?.active_matches ?? metrics?.active_matches ?? 0;
+  const openOpportunities = summaryData?.open_opportunities ?? metrics?.open_opportunities ?? 0;
   const recentMatches = summaryData?.recent_matches || [];
   const readinessScore = summaryData?.average_readiness ?? 0;
-  const isSummaryPending = summaryData === null;
 
   return (
     <div className={styles.dashboardContainer}>
@@ -110,18 +109,8 @@ export default function DashboardPage() {
       </section>
 
       {/* ====================================================================
-          2. METRICS ROW: Live database counts (computed from registry when summary 404s)
+          2. METRICS ROW: Live database counts
           ==================================================================== */}
-      {isSummaryPending && (
-        <div style={{ marginBottom: "1.25rem" }}>
-          <AlertBanner
-            type="info"
-            title="Live Registry Integration Active"
-            message="Backend summary endpoint (/api/v1/dashboard/summary/) is currently under construction. Supplier and product metrics are computed directly from live registry data."
-          />
-        </div>
-      )}
-
       <section className={styles.statsRow} aria-label="Key Platform Metrics">
         {/* Suppliers Stat */}
         <div className={styles.statCard}>

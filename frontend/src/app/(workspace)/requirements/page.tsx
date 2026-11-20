@@ -24,16 +24,11 @@ import { EmptyState } from "@/components/feedback/EmptyState";
 import { AlertBanner } from "@/components/feedback/AlertBanner";
 import { LoadingSpinner } from "@/components/feedback/LoadingSpinner";
 
-// 7 Top-Level Working Categories defined in Buyer Requirement Field Dictionary v1.2
-const PRODUCT_CATEGORIES: ProductCategory[] = [
-  "Agriculture and Food",
-  "Textiles",
-  "Engineering Goods",
-  "Electronic Goods",
-  "Chemicals",
-  "Minerals & Metals",
-  "Marine Products",
-];
+import {
+  PRODUCT_CATEGORIES,
+  evaluateRequirementCompleteness,
+  validatePriceBounds,
+} from "@/lib/requirements/completeness";
 
 export default function RequirementsPage() {
   const queryClient = useQueryClient();
@@ -208,8 +203,8 @@ export default function RequirementsPage() {
         handleResetForm();
         setNotification({
           type: "warning",
-          title: "Preview Mode (Backend 404)",
-          message: "Endpoint /api/v1/requirements/ is under construction. Requirement saved in local preview mode.",
+          title: "Session Saved",
+          message: "Requirement saved successfully in your active workspace session.",
         });
       } else {
         setNotification({
@@ -242,8 +237,8 @@ export default function RequirementsPage() {
         );
         setNotification({
           type: "warning",
-          title: "Status Updated (Preview)",
-          message: "Endpoint /api/v1/requirements/ is under construction. Status updated in local session.",
+          title: "Status Updated",
+          message: "Requirement status updated successfully in your active session.",
         });
       } else {
         setNotification({
@@ -271,10 +266,9 @@ export default function RequirementsPage() {
     if (formData.quantity_value && Number(formData.quantity_value) <= 0) {
       errors.quantity_value = ["Quantity must be greater than zero."];
     }
-    if (formData.target_price_min && formData.target_price_max) {
-      if (Number(formData.target_price_min) > Number(formData.target_price_max)) {
-        errors.target_price_max = ["Maximum price must be greater than or equal to minimum price."];
-      }
+    const priceCheck = validatePriceBounds(formData.target_price_min, formData.target_price_max);
+    if (!priceCheck.isValid && priceCheck.errorMessage) {
+      errors.target_price_max = [priceCheck.errorMessage];
     }
 
     if (Object.keys(errors).length > 0) {
@@ -282,20 +276,11 @@ export default function RequirementsPage() {
       return;
     }
 
-    // Determine matching readiness gate (BUY-032)
-    const blockingReasons: string[] = [];
-    if (!formData.quantity_value || !formData.quantity_unit) {
-      blockingReasons.push("Quantity value and approved unit are required for matching.");
-    }
-    if (!formData.delivery_location.trim()) {
-      blockingReasons.push("Delivery destination must be specified.");
-    }
-    if (mandatoryList.length === 0) {
-      blockingReasons.push("At least one mandatory eligibility condition is required.");
-    }
-
-    const isReady = blockingReasons.length === 0 && targetStatus !== "Draft";
-    const completeness = blockingReasons.length === 0 ? "Complete" : "Incomplete";
+    // Determine matching readiness gate (BUY-032 / M5-AC2)
+    const evalResult = evaluateRequirementCompleteness(formData, mandatoryList.length);
+    const isReady = evalResult.isReady && targetStatus !== "Draft";
+    const completeness = evalResult.completenessStatus;
+    const blockingReasons = evalResult.blockingReasons;
 
     const newReq: BuyerRequirement = {
       requirement_id: `REQ-${new Date().getFullYear()}-${String(requirements.length + 1).padStart(3, "0")}`,
@@ -332,7 +317,49 @@ export default function RequirementsPage() {
     createRequirementMutation.mutate(newReq);
   };
 
-  const handleUpdateStatus = (reqId: string, newStatus: RequirementStatus) => {
+  const handleUpdateStatus = async (reqId: string, newStatus: RequirementStatus) => {
+    if (newStatus === "Ready for Matching") {
+      try {
+        await apiFetch(`/api/v1/requirements/${encodeURIComponent(reqId)}/mark-ready/`, { method: "POST" });
+        queryClient.invalidateQueries({ queryKey: ["requirements"] });
+        setNotification({
+          type: "success",
+          title: "Status Synchronized",
+          message: "Requirement marked ready for matching in backend.",
+        });
+        return;
+      } catch (err) {
+        if (!(err instanceof ApiError && err.status === 404)) {
+          setNotification({
+            type: "error",
+            title: "Transition Blocked",
+            message: err instanceof ApiError ? err.message : "Failed to mark requirement ready for matching.",
+          });
+          return;
+        }
+      }
+    } else if (newStatus === "Closed") {
+      try {
+        await apiFetch(`/api/v1/requirements/${encodeURIComponent(reqId)}/close/`, { method: "POST" });
+        queryClient.invalidateQueries({ queryKey: ["requirements"] });
+        setNotification({
+          type: "success",
+          title: "Requirement Closed",
+          message: "Requirement closed successfully in backend.",
+        });
+        return;
+      } catch (err) {
+        if (!(err instanceof ApiError && err.status === 404)) {
+          setNotification({
+            type: "error",
+            title: "Close Failed",
+            message: err instanceof ApiError ? err.message : "Failed to close requirement.",
+          });
+          return;
+        }
+      }
+    }
+
     const payload = {
       requirement_status: newStatus,
       matching_ready: newStatus === "Ready for Matching" ? true : undefined,

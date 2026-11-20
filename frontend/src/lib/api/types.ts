@@ -268,42 +268,80 @@ export type PaginatedEvidenceItemList = PaginatedResponse<EvidenceItem>;
 
 /**
  * ============================================================================
- * M4: China-Readiness Assessment Types (Stage 3 & Component 1)
- * Workflow States: Draft | Submitted | More information required | Reviewed
- * Outcomes: Pending review | China-ready | Conditionally ready | Not ready
+ * M4: China-Readiness Assessment Types (Baseline Version 2.2 - 16 Nov 2026)
+ * Workflow States: Draft | Submitted | Under Review | Information Required | Review Complete | Archived
+ * Outcomes: Ready for Matching | Information Required | Not Currently Eligible | Pending review
+ * Evidence Conditions: NOT_PROVIDED | SELF_DECLARED | DOCUMENT_RECEIVED_UNVERIFIED |
+ *                      OFFICIAL_SOURCE_CHECKED | THIRD_PARTY_REPORT_RECEIVED_UNVERIFIED |
+ *                      THIRD_PARTY_REPORT_SOURCE_CHECKED | EXPIRED | DISCREPANCY | NOT_APPLICABLE
  * ============================================================================
  */
 export type AssessmentStatus =
   | "Draft"
   | "Submitted"
+  | "Under Review"
+  | "Information Required"
+  | "Review Complete"
+  | "Archived"
   | "More information required"
   | "Reviewed";
 
 export type AssessmentOutcome =
+  | "Ready for Matching"
+  | "Information Required"
+  | "Not Currently Eligible"
   | "Pending review"
   | "China-ready"
   | "Conditionally ready"
   | "Not ready";
 
+export type EvidenceCondition =
+  | "NOT_PROVIDED"
+  | "SELF_DECLARED"
+  | "DOCUMENT_RECEIVED_UNVERIFIED"
+  | "OFFICIAL_SOURCE_CHECKED"
+  | "THIRD_PARTY_REPORT_RECEIVED_UNVERIFIED"
+  | "THIRD_PARTY_REPORT_SOURCE_CHECKED"
+  | "EXPIRED"
+  | "DISCREPANCY"
+  | "NOT_APPLICABLE";
+
 export interface ReadinessQuestion {
-  id: string;
+  id: string; // e.g. "CR-01" to "CR-18"
   category: string;
   question_text: string;
   guidance: string;
   is_mandatory: boolean;
+  response_type?:
+    | "text"
+    | "enum_text"
+    | "text_or_na"
+    | "text_or_unknown"
+    | "linked_product"
+    | "choice"
+    | "number_unit_period"
+    | "number_unit_days"
+    | "amount_text_unknown"
+    | "multi_select"
+    | "status_pair"
+    | "declaration_checkbox";
+  options?: string[];
+  evidence_rule?: string;
   required_evidence_type?: string;
 }
 
 export interface AssessmentAnswer {
   question_id: string;
-  response: "Yes" | "No" | "In Progress" | "N/A" | "";
-  notes?: string;
+  response: string;
+  evidence_condition?: EvidenceCondition;
   evidence_reference?: string;
+  notes?: string;
+  is_limitation_declared?: boolean;
 }
 
 export interface AssessmentHistoryEntry {
   id: string;
-  action: "Created" | "Submitted" | "Returned for info" | "Outcome recorded" | "Resubmitted";
+  action: "Created" | "Submitted" | "Returned for info" | "Outcome recorded" | "Resubmitted" | "Assignment accepted";
   actor: string;
   timestamp: string;
   notes?: string;
@@ -314,12 +352,16 @@ export interface SupplierAssessment {
   assessment_id: string;
   supplier_id: string;
   supplier_name: string;
-  question_set_version: string;
+  product_ids?: string[];
+  product_name?: string;
+  questionnaire_version: string; // "Version 2.2"
   status: AssessmentStatus;
+  workflow_state?: AssessmentStatus;
   completeness: CompletenessStatus;
   outcome: AssessmentOutcome;
   outcome_reason?: string;
   missing_items?: string[];
+  blocking_items?: string[];
   submitted_by?: string;
   submitted_at?: string;
   reviewed_by?: string;
@@ -398,3 +440,14 @@ export interface BuyerRequirement {
   created_by?: string; // BUY-031
   updated_by?: string; // BUY-031
 }
+
+/**
+ * ============================================================================
+ * OpenAPI 3.0.3 Generated Type Aliases
+ * ============================================================================
+ */
+export type { paths as ApiPaths, components as ApiComponents } from "./schema";
+export type BackendBuyerRequirement = import("./schema").components["schemas"]["BuyerRequirement"];
+export type BackendBuyerRequirementRequest = import("./schema").components["schemas"]["BuyerRequirementRequest"];
+export type BackendDashboardSummary = import("./schema").components["schemas"]["DashboardSummary"];
+

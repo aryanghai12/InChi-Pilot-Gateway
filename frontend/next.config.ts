@@ -8,6 +8,9 @@ const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
   skipTrailingSlashRedirect: true,
+  experimental: {
+    agentUpgrade: "security",
+  },
 
   // Single-origin proxy rewrites to Django backend (ARCHITECTURE.md TD-09, §5, §7)
   async rewrites() {
