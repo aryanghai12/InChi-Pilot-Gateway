@@ -2,19 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import styles from "./landing.module.css";
 
 export default function LandingPage() {
-  const router = useRouter();
-
-  const handleExploreDemo = () => {
-    if (typeof document !== "undefined") {
-      document.cookie = "sessionid=demo-session; path=/; SameSite=Lax";
-    }
-    router.push("/dashboard");
-  };
-
   return (
     <div className={styles.landingWrapper}>
       {/* -------------------------------------------------------------------- */}
@@ -57,14 +47,6 @@ export default function LandingPage() {
           <Link href="/login" className={styles.signInBtn}>
             Sign In
           </Link>
-          <button
-            type="button"
-            onClick={handleExploreDemo}
-            className={styles.demoBtn}
-            title="Instant walkthrough with synthetic demonstration data"
-          >
-            Explore Demo
-          </button>
         </div>
       </header>
 
@@ -101,22 +83,7 @@ export default function LandingPage() {
                   <polyline points="12 5 19 12 12 19" />
                 </svg>
               </Link>
-              <span className={styles.ctaHint}>Authorized BNCS personnel</span>
-            </div>
-
-            <div className={styles.ctaWrapper}>
-              <button
-                type="button"
-                onClick={handleExploreDemo}
-                className={styles.secondaryCta}
-              >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <polygon points="10 8 16 12 10 16 10 8" />
-                </svg>
-                <span>Explore Demo Session</span>
-              </button>
-              <span className={styles.ctaHint}>Instant preview with synthetic data · No login required</span>
+              <span className={styles.ctaHint}>Authorized BNCS personnel only</span>
             </div>
           </div>
 
