@@ -61,6 +61,7 @@ export default function LandingPage() {
             type="button"
             onClick={handleExploreDemo}
             className={styles.demoBtn}
+            title="Instant walkthrough with synthetic demonstration data"
           >
             Explore Demo
           </button>
@@ -77,7 +78,7 @@ export default function LandingPage() {
               <circle cx="12" cy="12" r="10" />
               <path d="M12 6v6l4 2" />
             </svg>
-            BNCS Cross-Border Gateway · India to China Trade Corridor
+            BNCS Internal Pilot Gateway · Supervised Evaluation Prototype · Synthetic Data
           </span>
 
           <h1 className={styles.heroTitle}>
@@ -86,31 +87,37 @@ export default function LandingPage() {
           </h1>
 
           <p className={styles.heroSubtitle}>
-            A supervised, explainable B2B gateway connecting verified Indian manufacturers
-            and exporters with qualified Chinese commercial demand through deterministic eligibility
-            and AI-assisted match intelligence.
+            A supervised, explainable decision-support gateway helping BNCS analysts evaluate Indian supplier
+            readiness and match them with Chinese commercial demand through deterministic eligibility screening
+            and assisted intelligence.
           </p>
 
           <div className={styles.heroCtaGroup}>
-            <Link href="/login" className={styles.primaryCta}>
-              <span>Enter Workspace</span>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="12 5 19 12 12 19" />
-              </svg>
-            </Link>
+            <div className={styles.ctaWrapper}>
+              <Link href="/login" className={styles.primaryCta}>
+                <span>Enter Workspace</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </Link>
+              <span className={styles.ctaHint}>Authorized BNCS personnel</span>
+            </div>
 
-            <button
-              type="button"
-              onClick={handleExploreDemo}
-              className={styles.secondaryCta}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10" />
-                <polygon points="10 8 16 12 10 16 10 8" />
-              </svg>
-              <span>Explore Demo Session</span>
-            </button>
+            <div className={styles.ctaWrapper}>
+              <button
+                type="button"
+                onClick={handleExploreDemo}
+                className={styles.secondaryCta}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" />
+                  <polygon points="10 8 16 12 10 16 10 8" />
+                </svg>
+                <span>Explore Demo Session</span>
+              </button>
+              <span className={styles.ctaHint}>Instant preview with synthetic data · No login required</span>
+            </div>
           </div>
 
           <div className={styles.trustBadges}>
@@ -118,13 +125,13 @@ export default function LandingPage() {
               <svg className={styles.badgeIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              <span>18-Point Compliance Verification</span>
+              <span>18-Point Readiness Evaluation</span>
             </div>
             <div className={styles.badgeItem}>
               <svg className={styles.badgeIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              <span>Deterministic Eligibility Gates</span>
+              <span>Deterministic Eligibility Filters</span>
             </div>
             <div className={styles.badgeItem}>
               <svg className={styles.badgeIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -136,7 +143,7 @@ export default function LandingPage() {
               <svg className={styles.badgeIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              <span>Immutable Audit Trail</span>
+              <span>Full Activity &amp; Decision Traceability</span>
             </div>
           </div>
         </section>
@@ -163,8 +170,8 @@ export default function LandingPage() {
               <span className={styles.cardTag}>Standardized Verification</span>
               <h3 className={styles.cardTitle}>China-Readiness Assessment</h3>
               <p className={styles.cardDescription}>
-                Standardized 18-point qualification assessing corporate registration, production capacity,
-                standards compliance, export history, and categorical evidence conditions.
+                Standardized 18-criteria evaluation assessing corporate background, production capacity,
+                standards certifications, export experience, and categorical evidence conditions against China market feasibility.
               </p>
             </div>
 
@@ -179,8 +186,9 @@ export default function LandingPage() {
               <span className={styles.cardTag}>Decision Support</span>
               <h3 className={styles.cardTitle}>Explainable Matching Engine</h3>
               <p className={styles.cardDescription}>
-                Strict mandatory criteria filters execute first to exclude non-compliant candidates,
-                followed by weighted preference scoring and bounded semantic similarity signals.
+                Strict mandatory eligibility filters execute first to screen out ineligible candidates,
+                followed by weighted preference scoring and bounded semantic similarity signals. AI advises and flags data gaps;
+                humans retain full decision authority.
               </p>
             </div>
 
@@ -194,8 +202,8 @@ export default function LandingPage() {
               <span className={styles.cardTag}>Commercial Tracking</span>
               <h3 className={styles.cardTitle}>Opportunity Pipeline</h3>
               <p className={styles.cardDescription}>
-                Convert accepted match dispositions into tracked commercial opportunities. Monitor stage progression,
-                assignment owners, due dates, and closure rationale.
+                Advance accepted match decisions into a structured opportunity tracker. Monitor milestone progression,
+                assigned analysts, target due dates, and closure rationale.
               </p>
             </div>
 
@@ -207,10 +215,10 @@ export default function LandingPage() {
                 </svg>
               </div>
               <span className={styles.cardTag}>Access &amp; Traceability</span>
-              <h3 className={styles.cardTitle}>Least-Privilege Audit Log</h3>
+              <h3 className={styles.cardTitle}>Least-Privilege Activity Log</h3>
               <p className={styles.cardDescription}>
                 Role-based access control enforces least privilege across Platform Admin, Commercial Analyst,
-                and Reviewer roles. Every material action writes an immutable audit record.
+                and Reviewer roles. Every assessment outcome, status change, and match decision writes a permanent record with reviewer rationale.
               </p>
             </div>
           </div>
@@ -241,7 +249,7 @@ export default function LandingPage() {
                 <span className={styles.stepNumber}>2</span>
                 <h3 className={styles.stepTitle}>Readiness Review</h3>
                 <p className={styles.stepDescription}>
-                  Evaluate suppliers against 18 compliance gates. Reviewers record official readiness outcomes.
+                  Evaluate suppliers against the 18 baseline readiness criteria. Reviewers inspect supporting evidence and record official readiness outcomes.
                 </p>
               </div>
 
@@ -257,7 +265,7 @@ export default function LandingPage() {
                 <span className={styles.stepNumber}>4</span>
                 <h3 className={styles.stepTitle}>Rank &amp; Decide</h3>
                 <p className={styles.stepDescription}>
-                  Run explainable matching. Reviewers inspect per-criterion breakdowns and record signed dispositions.
+                  Run explainable matching. Reviewers inspect per-criterion breakdowns, note data warnings, and record review decisions (Accept / Reject / Defer) with mandatory business rationale.
                 </p>
               </div>
 
@@ -287,10 +295,10 @@ export default function LandingPage() {
             <div className={styles.disclaimerText}>
               <h3>Supervised Internal Platform Policy</h3>
               <p>
-                InChi Pilot Gateway is an internal B2B enterprise system developed for authorized BNCS personnel.
-                Matching outputs represent decision-support recommendations and do not constitute autonomous commercial commitments,
-                legal certification, or regulatory approvals. All evaluations utilize synthetic datasets in accordance
-                with pilot governance standards.
+                InChi Pilot Gateway is a private internal evaluation system built exclusively for authorized BNCS personnel.
+                Matching outputs represent explainable decision-support recommendations and do not constitute autonomous commercial contracts,
+                customs clearances, or legal/regulatory compliance certifications. All records and assessments utilize synthetic demonstration datasets
+                in accordance with the pilot governance baseline.
               </p>
             </div>
           </div>
