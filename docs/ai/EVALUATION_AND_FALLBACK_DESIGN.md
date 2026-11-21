@@ -56,4 +56,11 @@ The synthetic evaluation set is built with Harish. Expected outcomes are written
 
 Results record the engine contract version, criteria version, embedding model ID and template version. No accuracy claim goes beyond the set.
 
-**Already covered by tests:** contract validation and manipulated-input rejection (422, no echoed values), service failure (timeout, unreachable, error envelope, invalid JSON), and explicit failure at the unapproved eligibility stage.
+**Already covered by automated tests** (synthetic data, synthetic test weights). These are behaviour checks, not an accuracy evaluation:
+- **False match:** a candidate with near-identical text that fails a mandatory criterion is excluded, never ranked (`test_mandatory_failure_never_ranked_despite_perfect_similarity`).
+- **Missing data:** an unknown mandatory value gives `insufficient_data`; a unit or currency mismatch gives `insufficient_data`; a free-text criterion gives `insufficient_data`.
+- **Manipulated input:** contract violations, oversized text, unknown fields, invalid criteria and non-positive numbers are all rejected with 422 and no echoed values.
+- **Service failure:** embedding failure, provider not configured, unapproved or incomplete configuration, engine timeout or unreachable, error envelope, invalid JSON. Each one fails the run with no results.
+- **Expected-match smoke run** with the real model (19 Nov 2026): a related synthetic product ranked above an unrelated one. This was a single observation, not evidence of accuracy.
+
+**Still to do with Harish:** the labelled evaluation set and expected outcomes (M6-AC7), run against BNCS-approved criteria and weights.

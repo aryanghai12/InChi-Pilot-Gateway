@@ -1,0 +1,9 @@
+# FastAPI AI Matching Engine (C7) — OPTIONAL semantic dependencies (ARCHITECTURE.md §1, D-11).
+# Install on top of requirements.txt to enable EMBEDDING_PROVIDER=sentence_transformers.
+# CPU-only PyTorch: install torch from the CPU index first, e.g.
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+#   pip install -r ai_matching/requirements-semantic.txt
+# Licences: sentence-transformers Apache-2.0; PyTorch BSD-3 (Ajendra to review size/licences, AGENTS.md C2 week 5).
+-r requirements.txt
+sentence-transformers==6.3.0   # Apache-2.0; pulls transformers, tokenizers, huggingface-hub
+# Verified with torch==2.15.0+cpu (CPU index) on 2026-11-19.

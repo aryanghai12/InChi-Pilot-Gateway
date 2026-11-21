@@ -27,7 +27,7 @@ from decimal import Decimal
 from typing import Any
 
 # Must equal ai_matching.core.constants.CONTRACT_VERSION (checked by test_contract.py).
-CONTRACT_VERSION = "0.1.0-proposed"
+CONTRACT_VERSION = "0.2.0-proposed"
 
 
 def _jsonable(value: Any) -> Any:
