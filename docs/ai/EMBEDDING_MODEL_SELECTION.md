@@ -3,11 +3,31 @@
 | | |
 |---|---|
 | **Decision** | D-11, embedding library and model |
-| **Status** | **Open. No model is selected.** This document is the Week 3 shortlist and evaluation plan. It is a proposal, not a decision. |
+| **Status** | **Selected by the C7 owner on 19 Nov 2026: `sentence-transformers/all-MiniLM-L6-v2`** (library `sentence-transformers`). **Not yet recorded** in ARCHITECTURE.md §9. AGENTS.md requires Aryan to record it there after Ajendra's review (licence, offline loading, telemetry, dependency size). Until then, treat the selection as pending. |
 | **Owner** | Alok Tiwari (C7), with Ajendra (security and licence review). Aryan records the outcome in ARCHITECTURE.md §9. |
 | **Needed by** | Before Week 5 hybrid work, ideally Gate 2 (20 Nov 2026) |
 
-Until D-11 is recorded, the code ships only the `none` provider. `sentence_transformers` and `fastembed` are refused by configuration, and no model name exists in code or configuration defaults.
+## 0. Integration (implemented 19 Nov 2026)
+
+| Aspect | Implementation |
+|---|---|
+| Where the name lives | Only in the environment variable `EMBEDDING_MODEL_NAME` (`.env.example`), read by `ai_matching/core/config.py`. No model name appears in code defaults. |
+| Provider | `SentenceTransformerEmbeddingProvider` in `ai_matching/providers/embedding_provider.py`, selected with `EMBEDDING_PROVIDER=sentence_transformers` |
+| Loading | Lazy: nothing is imported or loaded at application import or on `/health`. The model loads on the first `/match`, then is cached once per process behind a lock and reused. |
+| Security | `trust_remote_code=False`, `device="cpu"`. `EMBEDDING_LOCAL_FILES_ONLY=true` (default) means the model is never downloaded at request time. Telemetry is off (`HF_HUB_DISABLE_TELEMETRY=1`) and the hub is offline (`HF_HUB_OFFLINE=1`, `TRANSFORMERS_OFFLINE=1`). |
+| Weights download | Deliberate, one-off: `python -m ai_matching.providers.download_model`, run with the offline flags off. Only weights are fetched; no pilot data is sent. |
+| Output | `encode(normalize_embeddings=True)`, then the vectors are validated (count, equal dimension, finite). Dimension 384, observed. |
+| Failures | Library missing, model not cached, or inference error all raise `EmbeddingGenerationError`. **The run fails explicitly; there is no fallback** (M6-AC5). |
+| Dependency | `ai_matching/requirements-semantic.txt`: `sentence-transformers==6.3.0`, verified with CPU `torch==2.15.0+cpu`. It's an optional install; the base engine image does not include it. |
+| Replacement | Change `EMBEDDING_MODEL_NAME` (and Vishal's vector dimension if it differs). No code change is needed for another sentence-transformers model. |
+
+**Verified 19 Nov 2026** in an isolated venv:
+- A load with local files only failed explicitly before the download.
+- The download command fetched the model (dimension 384).
+- The opt-in real-model tests passed fully offline (`RUN_REAL_MODEL_TESTS=1`).
+- In a live engine run, the model loaded once (≈19 s) and was reused on the next run (≈0.05 s).
+
+No accuracy evaluation has been run yet (§3).
 
 ## 1. Selection criteria
 

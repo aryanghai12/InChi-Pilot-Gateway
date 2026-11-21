@@ -19,7 +19,9 @@ from enum import Enum
 
 # Django <-> engine contract version. Bump on any breaking change and record it
 # in docs/ai/MATCHING_CONTRACT.md. "-proposed" until Abhishek (C5) agrees it.
-CONTRACT_VERSION = "0.1.0-proposed"
+# 0.2.0: nullable rule_score, semantic_cosine, configuration_status, richer
+# contributions (docs/ai/MATCHING_CONTRACT.md §8 change log).
+CONTRACT_VERSION = "0.2.0-proposed"
 
 # Version of the deterministic text template used to build embedding-ready
 # records (docs/ai/PREPROCESSING.md). Stored with every embedding hash.
@@ -49,6 +51,28 @@ class CriterionOutcome(str, Enum):
     PASS = "pass"
     FAIL = "fail"
     INSUFFICIENT_DATA = "insufficient_data"
+
+
+class PreferenceOutcome(str, Enum):
+    """Per-preference outcome. Unknown earns no credit and is flagged."""
+
+    SATISFIED = "satisfied"
+    NOT_SATISFIED = "not_satisfied"
+    INSUFFICIENT_DATA = "insufficient_data"
+    NOT_SCORED = "not_scored"
+
+
+class ConfigurationStatus(str, Enum):
+    """Approval status of the scoring configuration used by a run (D-04, D-05)."""
+
+    APPROVED = "approved"
+    UNAPPROVED = "unapproved"
+
+
+# Operator emitted for free-text criteria that no engine can evaluate safely.
+# Such a criterion never passes: the candidate is "insufficient data" and a
+# reviewer must check it by hand (M6-AC2).
+MANUAL_REVIEW_OPERATOR = "manual_review"
 
 
 class MatchingMode(str, Enum):
@@ -91,3 +115,7 @@ MAX_LONG_TEXT_LENGTH = 5000
 MAX_CODE_LENGTH = 100
 MAX_CRITERIA_PER_REQUIREMENT = 50
 MAX_EVIDENCE_ITEMS_PER_CANDIDATE = 50
+# Criterion / preference `value` objects (free JSON in the demand schema): bounded
+# by serialised size and nesting depth (ISSUES.md ISSUE-034).
+MAX_CRITERION_VALUE_CHARS = 4000
+MAX_CRITERION_VALUE_DEPTH = 4

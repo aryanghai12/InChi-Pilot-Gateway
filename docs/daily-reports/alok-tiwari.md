@@ -14,33 +14,35 @@ Only Alok Tiwari writes in this file. Newest entry first.
 
 ## Week 4 - 16-20 November 2026
 
-_Draft prepared with an AI coding agent on 2026-11-16; to be checked and completed after the Friday sprint review._
+_Draft prepared with an AI coding agent on 2026-11-16, updated 2026-11-19; to be checked and completed after the Friday sprint review._
 
 **Completed**
-- C7 Week 1–3 backlog: engine contract schemas, FastAPI app (`/health`, `/match`), config, exceptions, Stage 1 preprocessing/normalisation, quality flags, embedding-ready records, provider interface (`none` only), cosine similarity - drafted (uncommitted) - [backend/ai_matching/](../../backend/ai_matching/)
-- Django integration layer: request/response schemas, request builder, candidate mapping, HTTP client, typed exceptions - drafted (uncommitted) - [backend/apps/matching/](../../backend/apps/matching/)
-- Contract v0.1.0-proposed, preprocessing rules, D-11 shortlist, evaluation and fallback design; corrected decision IDs in docs/ai - drafted (uncommitted) - [docs/ai/](../ai/)
+- C7 Week 1–3 foundation (contract, FastAPI app, preprocessing, Django client) - merged 2026-11-17 - PR #67
+- Full engine pipeline: eligibility, hybrid scoring from versioned config, ranking, Python explainability; contract 0.2.0-proposed - drafted (uncommitted) - [backend/ai_matching/](../../backend/ai_matching/)
+- Embedding provider for `sentence-transformers/all-MiniLM-L6-v2` (env-configured, lazy single load, offline-only by default) - drafted (uncommitted)
+- Django `run_matching` service, result records + atomic persist/audit hand-off, weekly matching summary, BuyerRequirement adapter - drafted (uncommitted) - [backend/apps/matching/](../../backend/apps/matching/)
 
 **Meetings, reviews and coordination**
 - None.
 
 **In progress**
-- Contract review with Abhishek (orchestration/API) and Vishal (data fields) - M6-AC6 - [MATCHING_CONTRACT.md](../ai/MATCHING_CONTRACT.md) not yet reviewed
+- Contract review with Abhishek and Vishal - M6-AC6 - [MATCHING_CONTRACT.md](../ai/MATCHING_CONTRACT.md) not yet reviewed
 
 **Tests and validation**
-- `python -m pytest ai_matching/tests` (from `backend/`) -> 63 passed
-- `python manage.py test apps` (from `backend/`) -> 60 tests, OK (22 existing + 38 new matching tests)
+- `python -m pytest ai_matching/tests` -> 144 passed, 2 skipped (opt-in real-model tests)
+- `RUN_REAL_MODEL_TESTS=1 … pytest ai_matching/tests/test_real_model.py` (offline, all-MiniLM-L6-v2) -> 2 passed
+- `python manage.py test apps` -> 81 tests, OK
 - `bandit -r ai_matching apps/matching -ll -ii` -> no issues reported
-- Manual smoke test: engine under uvicorn, called by the Django client -> `/health` ok; `/match` returned 503 `stage_not_available` (expected until D-04)
+- Live smoke test, real model + synthetic test-only config: excluded candidate never ranked; model loaded once (~19 s), reused (~0.05 s)
 
 **Blocked, dependencies and decisions needed**
-- D-04 eligibility criteria / D-05 weights - waiting on BNCS (Gate 2) - since 2026-10-26 - tracked in decision register
-- D-11 embedding model - waiting on Ajendra review and decision - since 2026-10-26 - shortlist in docs/ai
-- Rules-only fallback conflict (Build Manual vs M6-AC5) - waiting on Aryan → mentor/BNCS - since 2026-11-16 - [EVALUATION_AND_FALLBACK_DESIGN.md](../ai/EVALUATION_AND_FALLBACK_DESIGN.md)
-- MatchRun/MatchResult models and demand-schema merge into backend - waiting on Vishal - since 2026-11-16 - not yet raised in channel
+- D-04 criteria / D-05 weights - waiting on BNCS (Gate 2, 20 Nov) - since 2026-10-26 - decision register
+- D-11 model selected by me 2026-11-19 - needs Ajendra review and Aryan's ARCHITECTURE.md §9 record - since 2026-11-19
+- Rules-only fallback conflict - waiting on Aryan → mentor/BNCS - since 2026-11-16 - [EVALUATION_AND_FALLBACK_DESIGN.md](../ai/EVALUATION_AND_FALLBACK_DESIGN.md)
+- MatchRun/MatchResult models + persister - waiting on Vishal - since 2026-11-16 - not yet raised in channel
 
 **Next week**
-- Eligibility engine and weighted-score baseline once D-04/D-05 are approved - M6-AC1, M6-AC2
+- Evaluation set with Harish; DRF matching endpoints with Abhishek - M6-AC7
 
 
 
