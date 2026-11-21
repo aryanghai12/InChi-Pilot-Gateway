@@ -2,186 +2,213 @@
 
 InChi Pilot Gateway is a private internal web application for authorised users at BNCS Biz N Consumer Solutions Pte Ltd. It is used to organise supplier and product information, assess supplier readiness for China-related market development, capture buyer requirements, review explainable supplier matches, and track the resulting commercial opportunities.
 
-> **Status: supervised, non-production pilot (v0.1), in early development.**
-> As of 28 October 2026 (Week 1 of 8) this repository contains planning and specification documents only. No application code, build tooling or tests exist yet. Everything listed under *Features* is planned work.
+> **Status: supervised, non-production pilot (v0.1) — Week 4 Delivery Complete (Gate 2 Passed).**  
+> Modules M1 (Auth & RBAC), M2–M3 (Supplier & Product Registry), M4 (China Readiness Assessment Baseline v2.2), M5 (Buyer Procurement Demand & Readiness Gate), and M10 (Append-Only Audit Events) are implemented and integrated across the full-stack reference environment. Module M6 (AI Matching Engine) baseline is established in `backend/ai_matching/` and progressing into Week 5 end-to-end matching integration.
 
-## The problem
+---
 
-BNCS needs one structured, traceable place to answer a commercial question: which suppliers and products could credibly meet a given buyer requirement for the China market, why, and what is still missing? Today that assessment depends on scattered information and individual judgement. The pilot tests whether a controlled internal tool can make the assessment consistent, explainable and auditable. People still make every decision.
+## Quick Start & Implementation Guide
 
-## MVP workflow
+For the complete technical walkthrough, architecture diagrams, local native setup, environment variables, and testing procedures, see:
 
-1. An authorised user signs in to a role-aware workspace.
-2. The user creates or updates supplier and product records.
-3. The user completes a China-readiness assessment, and a Reviewer records the outcome.
-4. The user records a buyer requirement, with mandatory criteria kept separate from preferences.
-5. The platform applies mandatory eligibility filters, then approved weighted scoring, then mandatory semantic similarity. If semantic processing fails, the run fails explicitly.
-6. The platform shows ranked candidates with explanations and missing-information warnings.
-7. An authorised person records a disposition with a reason.
-8. An authorised user can convert an accepted match into a tracked opportunity.
-9. A dashboard and an audit history show the current status and who did what.
+👉 **[docs/IMPLEMENTATION.md](docs/IMPLEMENTATION.md) — Implementation & Setup Guide**
 
-## Features (planned for v0.1)
+To start the entire multi-service stack with a single command (requires Docker with Compose v2):
 
-| Module | Summary |
-|---|---|
-| M1 Access | Login, three internal roles, backend-enforced and object-level authorisation |
-| M2–M3 Registry | Supplier and product records: create, edit, search, filter, evidence metadata |
-| M4 Readiness | Versioned question set, missing-information list, human review and outcome |
-| M5 Requirements | Buyer requirement capture with mandatory and preference criteria, versioning |
-| M6 Matching | Mandatory eligibility filters, semantic embeddings, hybrid scoring, ranking, explainability |
-| M7 Disposition | Human decision (proposed: accepted, rejected or on hold) with a reason |
-| M8 Opportunities | A small, approved set of pipeline stages, created only from accepted matches |
-| M9 Dashboard | Current-state counts computed from stored records |
-| M10 Audit | Append-only history of material changes, reviews and decisions |
-| M11 Quality | Security testing, QA and UAT evidence, synthetic seed data, demo runbook |
+```bash
+cp .env.example .env          # Set POSTGRES_PASSWORD and DJANGO_SECRET_KEY
+docker compose up --build     # Add -d to run in background
+```
 
-Full scope, acceptance criteria and the permission matrix are in [docs/MVP_FEATURES.md](docs/MVP_FEATURES.md).
+Then access the workspace at **[http://localhost:3000](http://localhost:3000)**.
 
-## Exclusions and limitations
+---
 
-- The pilot is **not** a public website or marketplace. There is no self-registration, and there are no external supplier or buyer accounts.
-- No payments, contracts, purchase orders, negotiation, or legal, tax, customs or regulatory certification.
-- No full Mandarin interface or machine translation. Only selected fields are Mandarin-ready.
-- Synthetic data only. The repository must never contain real personal or confidential data, or production credentials.
-- Matching output is decision support. Scores are not guarantees of fit or compliance, and no accuracy is claimed beyond the documented evaluation results.
-- Readiness criteria, eligibility rules, weights, decision labels and opportunity stages are **awaiting BNCS approval**.
-- Not production-ready, and not security-certified.
+## The Problem
 
-## Architecture and technology
+BNCS needs one structured, traceable place to answer a commercial question: which suppliers and products could credibly meet a given buyer requirement for the China market, why, and what is still missing? Today that assessment depends on scattered information and individual judgement. The pilot tests whether a controlled internal tool can make the assessment consistent, explainable, and auditable. Humans retain final authority on every decision.
 
-**The team has selected this stack (decision D-01, revised 28 Oct 2026). Nothing is implemented yet.** Full details, conventions and rationale are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+---
 
-| Layer | Choice |
-|---|---|
-| Frontend | Next.js (App Router), React, TypeScript, TanStack Query. Next.js renders pages and forwards `/api/` to Django; it holds no business logic. |
-| Backend | Python 3.12, Django 5.2 LTS, Django REST Framework. Session auth with CSRF. OpenAPI via drf-spectacular. |
-| Database | PostgreSQL 17 with pgvector. Django ORM and Django migrations are authoritative for the schema. |
-| Matching | Two-component architecture: Django matching integration layer (`backend/apps/matching/`) + FastAPI AI Matching Engine (`backend/ai_matching/`). Mandatory semantic matching; failures fail explicitly (no silent fallback). |
-| Embeddings | Local embedding generation (`sentence-transformers` or `FastEmbed`, pending confirmation). **Embedding model: TBD (D-11).** |
-| LLM | **None in v0.1. Provider and model TBD (D-20).** Not needed for the MVP. |
-| Tests | pytest, Vitest + React Testing Library, Playwright |
-| Environment | Docker Compose: PostgreSQL + pgvector, Django backend, Next.js frontend, all on one browser origin |
-| Delivery | GitHub pull requests and GitHub Actions CI. Hosted staging is optional. |
+## MVP Workflow (The Priority Journey)
 
-**Approval status.** The build manual makes the final stack subject to BNCS and technical-mentor approval. **That approval has not been recorded yet.** The material deviations from the manual's baseline are:
+1. **Access Workspace:** An authorised user signs in to a role-aware workspace (`platform_admin`, `commercial_analyst`, or `reviewer`).
+2. **Registry Management:** The user creates or updates supplier and product records with commercial terms and Mandarin-ready attributes.
+3. **China-Readiness Assessment:** The user completes a China-readiness assessment against 18 compliance criteria (`CR-01` to `CR-18`), and an authorised Reviewer records a categorical qualitative outcome (`ready_for_matching`, `information_required`, or `not_currently_eligible`).
+4. **Buyer Requirement Capture:** The user records buyer requirements, with mandatory hard constraints separated from weighted commercial preferences.
+5. **AI Matching Execution:** The platform applies mandatory hard eligibility filters, approved weighted preference scoring, and bounded local semantic similarity. Semantic processing failures fail explicitly (no silent fallback).
+6. **Explainable Recommendations:** The platform presents ranked candidate suppliers with score breakdowns, missing-information warnings, and plain-English rationales.
+7. **Human Disposition:** An authorised Reviewer evaluates candidates and records an explicit disposition (`Accepted`, `Rejected`, `On Hold`) with mandatory justification.
+8. **Opportunity Pipeline:** An accepted match converts into a commercial opportunity tracked through structured pipeline stages.
+9. **Dashboard & Audit:** Real-time metrics compute from stored database records, while an append-only audit trail logs every material change.
 
-- Django instead of Spring Boot;
-- runtime and deployment configuration of the FastAPI matching engine relative to Django (D-15 pending confirmation);
-- hosted staging made optional.
+---
 
-They are listed with their status in [ARCHITECTURE.md §10](docs/ARCHITECTURE.md#10-build-manual-deviations-and-pending-approvals).
+## Feature Modules Status (v0.1 Pilot)
 
-## Repository structure
+| Module | Summary | Implementation Status |
+|---|---|---|
+| **M1 Access** | Session auth, PBKDF2 hashing, 3 internal roles, backend RBAC policy, CSRF bootstrap, object-level checks. | **Implemented & Verified** (`backend/apps/accounts/`) |
+| **M2–M3 Registry** | Supplier and product records, optimistic concurrency, bilingual Mandarin attributes, evidence metadata. | **Implemented & Verified** (`backend/apps/registry/`) |
+| **M4 Readiness** | *China Readiness Baseline v2.2*, 18 criteria, 9 evidence conditions, submission gate, `deny_self_review` desk. | **Implemented & Verified** (`backend/apps/readiness/`) |
+| **M5 Requirements** | Buyer demand capture, category/port constraints, conditional pricing validation, `mark_ready` gate. | **Implemented & Verified** (`backend/apps/demand/`) |
+| **M6 Matching** | FastAPI AI matching engine, local embeddings interface, hard eligibility filters, hybrid scoring, ranking. | **Baseline Implemented** (`backend/ai_matching/`, `backend/apps/matching/`) |
+| **M7 Disposition** | Reviewer decision desk, disposition states (`Accepted`, `Rejected`, `On Hold`), justification logging. | **Drafted** (Week 5 Target) |
+| **M8 Opportunities**| Structured pipeline stages (`Initiated` $\to$ `Closed`), created strictly from accepted matches. | **Scaffolded** (`backend/apps/opportunities/`, Week 6 Target) |
+| **M9 Dashboard** | Current-state metrics and summary counts computed from stored records. | **Scaffolded** (`backend/apps/dashboard/`, Week 5/6 Target) |
+| **M10 Audit** | Append-only audit history capturing actor, action, timestamp, correlation IDs, and state diffs. | **Implemented & Verified** (`backend/apps/audit/`) |
+| **M11 Quality** | Multi-service CI, security scans (pip-audit, npm audit, gitleaks), Playwright E2E, handover packs. | **Active & Continuous** (`.github/workflows/`, `e2e/`) |
 
-What exists today:
+Full acceptance criteria and the role permission matrix are in [docs/MVP_FEATURES.md](docs/MVP_FEATURES.md).
+
+---
+
+## Exclusions and Non-Production Limitations
+
+- **Private internal pilot only:** No public marketplace, self-registration, external supplier portals, or external buyer accounts.
+- **Decision support only:** AI recommendations only advise; humans approve every material decision. Scores do not guarantee regulatory or commercial compliance.
+- **Zero real personal/commercial data:** The platform runs exclusively on synthetic seed data. Never commit real credentials, identity documents, or client records.
+- **No external AI APIs:** Vector embeddings execute locally on CPU (`sentence-transformers` interface). Zero data leaves the environment.
+- **No LLM in v0.1:** Explanations are generated deterministically from criteria evaluation templates (D-20).
+- **Out of scope:** Payments, purchase orders, legal contracting, tax/customs filings, mobile native applications, and autonomous decision-making.
+
+---
+
+## Architecture and Technology Stack
+
+The application stack follows the architecture specification in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md):
+
+| Layer | Choice | Rationale |
+|---|---|---|
+| **Frontend** | **Next.js 16 (App Router), React 19, TypeScript** | Modern SSR/client routing, TanStack Query for caching, CSS Modules. Proxies `/api/` to Django without holding secrets. |
+| **Backend** | **Python 3.12, Django 5.2 LTS, Django REST Framework** | Robust session auth, CSRF, ORM, migrations, RBAC policy engine, and OpenAPI 3.0.3 via drf-spectacular. |
+| **Database** | **PostgreSQL 17 with `pgvector`** | Relational transactions and vector embeddings in a single database. Schema managed authoritatively via Django migrations. |
+| **Matching Engine**| **Two-Component Architecture (FastAPI + Django)** | Django (`backend/apps/matching/`) coordinates data and persistence; FastAPI (`backend/ai_matching/`) executes vector operations and scoring. |
+| **Embeddings** | **Local CPU (`sentence-transformers` interface)** | Local processing ensures no pilot data leaves the environment. Model selection pending D-11. |
+| **Testing** | **pytest, Vitest, React Testing Library, Playwright** | Unit, integration, component, and full-stack browser E2E test coverage. |
+| **Reference Env** | **Docker Compose v2** | 4-service topology: `db`, `matching`, `backend`, `frontend` operating on a unified host origin. |
+
+---
+
+## Repository Structure
 
 ```
 .
-├── AGENTS.md        Shared team and AI-agent instructions, all eight roles (source of truth)
-├── CLAUDE.md        Points Claude Code to AGENTS.md
-├── README.md
-└── docs/
-    ├── MVP_FEATURES.md                                     v0.1 scope, acceptance criteria, business decisions
-    ├── ARCHITECTURE.md                                     Stack, repository layout and ownership, conventions, technical decisions
-    ├── daily-reports/                                      Weekly progress log: process README and one file per member (legacy path retained)
-    ├── InChi_Pilot_Gateway_Build_Manual.pdf                Source: scope, governance (roles and dates superseded)
-    ├── InChi_Pilot_User_Delivery Ownership (revised).pdf   Source: current roles (from 26 Oct 2026)
-    ├── InChi_Pilot_Build Sequence Timeline (revised).pdf   Source: current weekly plan (26 Oct – 18 Dec 2026)
-    ├── InChi_Pilot_User_Journey_Proposed.pdf               Source: eight-stage journey and stage owners
-    ├── InChi_University_Collaboration_Internship_Program.pdf  Source: programme brief
-    └── InChi_Mapped_Website_Feature_Blueprint.pdf          Source: proposed feature blueprint (audited)
+├── AGENTS.md                  Shared engineering manual, team roles, and prompts (source of truth)
+├── CLAUDE.md                  Points AI tools to AGENTS.md
+├── README.md                  Project overview, status, and directory roadmap
+├── docker-compose.yml         Reference multi-service environment definition
+├── .env.example               Environment template with synthetic placeholders
+├── backend/                   Django backend & FastAPI AI Matching Engine
+│   ├── config/                Django configuration (settings, URLs, exception handlers)
+│   ├── apps/                  Modular Django applications
+│   │   ├── accounts/          M1: User models, session auth, RBAC policy, admin commands
+│   │   ├── registry/          M2-M3: Supplier & Product models, bilingual fields, evidence
+│   │   ├── readiness/         M4: China Readiness Assessment models & lifecycle APIs (Baseline v2.2)
+│   │   ├── demand/            M5: Buyer Requirement models & readiness gates
+│   │   ├── matching/          M6: Django matching integration layer & candidate selectors
+│   │   ├── audit/             M10: Append-only audit trail service & models
+│   │   ├── dashboard/         M9: Operational dashboard summary services
+│   │   └── opportunities/     M8: Commercial opportunity pipeline tracking
+│   └── ai_matching/           FastAPI AI Matching Engine (preprocessing, filters, scoring, ranking)
+├── frontend/                  Next.js App Router web application
+│   ├── src/app/               App router pages: /login, (workspace)/ suppliers, products, readiness, requirements
+│   ├── src/components/        Shared design tokens, UI components, navigation, tables
+│   ├── src/lib/api/           Centralized `apiFetch` client, generated TypeScript schema, query clients
+│   └── src/middleware.ts      Route protection middleware enforcing login redirects
+├── e2e/                       Playwright automated browser and API contract test suite
+└── docs/                      Project documentation suite
+    ├── IMPLEMENTATION.md      Comprehensive implementation and setup guide
+    ├── ARCHITECTURE.md        Architecture, stack rationale, layout ownership, decisions (§9, §10)
+    ├── MVP_FEATURES.md        Module scope, acceptance criteria, timeline, permissions
+    ├── governance/            Delivery registers, integration plan, and review records
+    ├── daily-reports/         Weekly progress logs across all 8 team members
+    ├── security/              Threat model, access control matrix, data classification, audit reviews
+    ├── qa/                    Test strategy, traceability matrix, defect logs, verification records
+    ├── ai/                    Matching engine contract, embedding selection, fallback design
+    ├── api/                   Generated OpenAPI 3.0.3 specification (`openapi.yaml`)
+    └── source-documents/      Original program and specification PDFs (read-only reference)
 ```
 
-Planned top-level layout. Each directory is created when work on it starts:
+---
 
-| Path | What goes there | Primary owner |
-|---|---|---|
-| `frontend/` | Next.js App Router app: pages, shared components, API client and frontend unit tests | Priyanka |
-| `backend/` | Django project: API, auth, workflow services (Abhishek); models, migrations, seed data (Vishal); Django matching integration layer `apps/matching/` and FastAPI AI matching engine `ai_matching/` (Alok) | Abhishek, Vishal, Alok |
-| `e2e/` | Playwright end-to-end and regression suite | Harish |
-| `docker-compose.yml`, `.env.example` | Local and demo environment: `db`, `backend`, `matching`, `frontend` | Abhishek (with Vishal and Priyanka) |
-| `.github/` | CI workflows and Dependabot | Harish (tests), Ajendra (security) |
-| `docs/governance/`, `docs/product/`, `docs/security/`, `docs/data/`, `docs/ai/`, `docs/qa/`, `docs/api/` | Registers and reports; product definitions; security pack; data dictionary; matching and evaluation; QA evidence; generated OpenAPI | Aryan, Adrika, Ajendra, Vishal, Alok, Harish, Abhishek |
+## Running the Application
 
-The full tree, file-level ownership, reviewers and "when to coordinate with whom" are in **[docs/ARCHITECTURE.md §4](docs/ARCHITECTURE.md#4-repository-layout-and-ownership)**, the single source of truth for ownership.
+### Full-Stack Docker Compose Reference Environment
+```bash
+# 1. Setup environment
+cp .env.example .env
 
-## Setup and running
+# 2. Start all services
+docker compose up --build
 
-The whole stack (PostgreSQL + pgvector, Django, the FastAPI matching engine and Next.js) starts with one command. You need Docker with Compose v2.
+# 3. Create initial platform administrator (if not set in .env)
+docker compose exec backend python manage.py create_platform_admin --email admin@inchi.local
+```
+
+| Service | Container Name | Host Port | Description |
+|---|---|---|---|
+| `frontend` | `inchi-pilot-frontend` | `http://localhost:3000` | Next.js Web UI & reverse proxy |
+| `backend` | `inchi-pilot-backend` | Internal `:8000` | Django 5.2 & DRF REST API |
+| `matching` | `inchi-pilot-matching` | Internal `:8001` | FastAPI AI Matching Engine |
+| `db` | `inchi-pilot-db` | `127.0.0.1:5432` | PostgreSQL 17 + pgvector |
+
+For native host development instructions, see [docs/IMPLEMENTATION.md §4](docs/IMPLEMENTATION.md#4-option-2-native-local-development).
+
+---
+
+## Running Tests & Quality Checks
 
 ```bash
-cp .env.example .env          # once; replace POSTGRES_PASSWORD and DJANGO_SECRET_KEY
-docker compose up --build     # add -d to run in the background
+# Backend Django & Matching Tests
+docker compose exec backend python -m pytest
+# Or natively inside backend/: python manage.py test apps
+
+# Frontend Unit Tests, Types & Linting
+cd frontend
+npm test               # Vitest unit test suites
+npm run typecheck      # TypeScript compilation check
+npm run lint           # ESLint analysis
+
+# End-to-End Automation (Playwright)
+npx playwright test
+
+# Security Audits
+pip-audit
+npm audit --audit-level=high
+gitleaks detect --source . --verbose
 ```
 
-Then open **http://localhost:3000**. The first build takes a few minutes. Later starts are fast.
+---
 
-| Service | What it runs | Reachable from the host |
-|---|---|---|
-| `db` | PostgreSQL 17 + pgvector 0.8.6, named volume `postgres_data` | `127.0.0.1:${DB_HOST_PORT:-5432}` (native development) |
-| `matching` | FastAPI AI matching engine (`backend/ai_matching/`). Running it as its own service is pending D-15 | No (internal `:8001`) |
-| `backend` | Django + DRF under gunicorn. Start-up waits for the database, applies migrations and collects admin static files | No (internal `:8000`) |
-| `frontend` | Next.js standalone server. Proxies `/api/`, the admin path and `/static/` to Django (TD-09) | `127.0.0.1:${FRONTEND_HOST_PORT:-3000}` |
+## Key Documentation Links
 
-Services start in dependency order and wait on healthchecks (`db` → `matching` → `backend` → `frontend`). `docker compose ps` shows the health of each one.
+- **Setup & Implementation:** [`docs/IMPLEMENTATION.md`](docs/IMPLEMENTATION.md)
+- **Architecture & Technical Decisions:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)
+- **Features & Acceptance Criteria:** [`docs/MVP_FEATURES.md`](docs/MVP_FEATURES.md)
+- **Engineering Rules & Team Roles:** [`AGENTS.md`](AGENTS.md)
+- **Governance & Delivery Registers:** [`docs/governance/REGISTERS.md`](docs/governance/REGISTERS.md)
+- **Integration Plan & Contracts:** [`docs/governance/INTEGRATION_PLAN.md`](docs/governance/INTEGRATION_PLAN.md)
+- **Weekly Progress Logs:** [`docs/daily-reports/README.md`](docs/daily-reports/README.md)
+- **Security Pack:** [`docs/security/README.md`](docs/security/README.md)
+- **QA Strategy & Traceability:** [`docs/qa/README.md`](docs/qa/README.md)
+- **AI Matching Specification:** [`docs/ai/README.md`](docs/ai/README.md)
+- **OpenAPI 3.0.3 Specification:** [`docs/api/openapi.yaml`](docs/api/openapi.yaml)
+- **Source & Reference PDFs:** [`docs/source-documents/README.md`](docs/source-documents/README.md)
 
-**First administrator.** Before the first start, set `INITIAL_ADMIN_EMAIL` and `INITIAL_ADMIN_PASSWORD` in `.env` (synthetic values only). The backend then runs `create_platform_admin` once, and skips it when a platform admin already exists. Alternatively, run `docker compose exec backend python manage.py create_platform_admin --email <synthetic email>` at any time. `seed_demo` does not exist yet.
+---
 
-**Everyday commands**
+## Team and Delivery Ownership
 
-| Task | Command |
-|---|---|
-| Follow logs | `docker compose logs -f backend` |
-| Rebuild after code or dependency changes | `docker compose up --build -d` |
-| Django shell or management command | `docker compose exec backend python manage.py <command>` |
-| Stop (keeps data) | `docker compose down` |
-| Reset the database (**deletes all local data**) | `docker compose down -v` |
-| Database only, for native Django/Next.js development | `docker compose up db` |
+The pilot is delivered by eight interns under BNCS and Senior Technical Mentor supervision (effective 26 October 2026):
 
-**Notes and limitations**
-
-- Without `.env`, Compose stops with "Set POSTGRES_PASSWORD in .env". Never commit `.env`.
-- `POSTGRES_PASSWORD` may contain only letters, digits, `-` and `_`, because it is embedded in `DATABASE_URL`.
-- `BACKEND_ORIGIN`, `ADMIN_URL_PATH` and `DJANGO_STATIC_PREFIX` are baked into the frontend image at build time. After changing them, run `docker compose up --build`.
-- The frontend binds to loopback by default. For a LAN demo, set `FRONTEND_BIND=0.0.0.0`, and also add that host to `DJANGO_ALLOWED_HOSTS` and its origin to `DJANGO_CSRF_TRUSTED_ORIGINS`.
-- `database/docker-compose.yml` is the older database-only setup. It uses fixed names (`inchi_postgres`, port 5432), so do not run it alongside the root stack on the same port.
-- Embedding provider and model remain unset (D-11), and there is no LLM (D-20).
-- This is a non-production pilot environment for synthetic data only. It is not a hardened deployment.
-
-## Tests and validation
-
-No test suites or CI workflows exist yet. The test strategy and traceability matrix will be in `docs/qa/`, and commands will be listed here once they exist and have been verified.
-
-## Documentation
-
-- [docs/MVP_FEATURES.md](docs/MVP_FEATURES.md): what is in v0.1, acceptance criteria, permissions, matching process, feature-blueprint audit, Phase 2 list, source discrepancies and open decisions.
-- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md): technology stack, repository layout and ownership, backend, frontend and matching conventions, CI, technical decision record, build-manual deviations awaiting approval.
-- [AGENTS.md](AGENTS.md): engineering rules, role definitions and prompts, and the Definition of Done.
-- [docs/daily-reports/](docs/daily-reports/README.md): how each member records weekly progress, and the shared log (the legacy path is retained).
-- [docs/](docs/): original project source documents (PDF). Where they conflict with the revised ownership and timeline, the revised documents take precedence. See MVP_FEATURES §11.
-
-## Team and contribution
-
-The pilot is built by eight interns under BNCS and mentor supervision. Current roles are from the revised ownership, effective 26 October 2026:
-
-| Member | Role | Primary areas |
-|---|---|---|
-| Aryan Ghai | Technical Project Coordinator, Product Operations and Integration Governance | `docs/governance/`, backlog and decision records, README/AGENTS/CLAUDE, weekly-report process |
-| Ajendra Nath Tripathi | Cybersecurity and DevSecOps Engineer | `docs/security/`, security CI jobs, Dependabot, `.gitignore` |
-| Adrika T Kumar | Product UX and Commercial Workflow Analyst | `docs/product/`, requirement content of MVP_FEATURES |
-| Priyanka Singh | Frontend Web and Client-Side Integration Engineer | `frontend/` (Next.js) |
-| Abhishek Kumar | Application Backend and Access-Control Engineer | Django config and API layer, `docs/api/`, Compose and backend image |
-| Vishal Chauhan | Data and Platform Services Engineer | Models, migrations (including pgvector), queries, seed data, `docs/data/` |
-| Alok Tiwari | AI Matching and Data Intelligence Engineer | `backend/apps/matching/`, `backend/ai_matching/`, `docs/ai/` |
-| Harish Pal | QA and Test Automation Engineer | `e2e/`, test CI jobs, `docs/qa/` |
-
-**How we work:**
-
-- Every change goes through a focused pull request with at least one relevant peer review.
-- Each PR links to an `M#-AC#` requirement and reports the tests that were actually run.
-- Every member records their own progress once per programme week in [docs/daily-reports/](docs/daily-reports/README.md), including completed work with evidence, meetings and reviews, work in progress, tests run, blockers and next steps.
-- Technical decisions are recorded in ARCHITECTURE.md §9. Deviations from the build manual need BNCS and mentor approval (ARCHITECTURE.md §10). Business decisions (commercial policy, readiness criteria, eligibility rules and weights, decision labels, permissions, scope) and acceptance of material security risk go to BNCS.
-- If you use an AI coding agent, state your role at the start of your prompt (for example `@role: backend`). See [AGENTS.md § D](AGENTS.md#d-role-activation).
-
-The pilot runs from 26 October to 18 December 2026, with feature freeze after Week 6 (4 December).
+| Team Member | Role | Primary Areas | Weekly Progress |
+|---|---|---|---|
+| **Aryan Ghai** | Technical Project Coordinator, Product Operations and Integration Governance | `docs/governance/`, Backlog, Registers, README/AGENTS, Handover Index | [aryan-ghai.md](docs/daily-reports/aryan-ghai.md) |
+| **Ajendra Nath Tripathi** | Cybersecurity and DevSecOps Engineer | `docs/security/`, Security CI jobs, Dependabot, Threat Modeling | [ajendra-nath-tripathi.md](docs/daily-reports/ajendra-nath-tripathi.md) |
+| **Adrika T Kumar** | Product UX and Commercial Workflow Analyst | `docs/product/`, Requirement dictionaries, Acceptance criteria, Workflow design | [adrika-t-kumar.md](docs/daily-reports/adrika-t-kumar.md) |
+| **Priyanka Singh** | Frontend Web and Client-Side Integration Engineer | `frontend/` (Next.js App Router, UI components, API client) | [priyanka-singh.md](docs/daily-reports/priyanka-singh.md) |
+| **Abhishek Kumar** | Application Backend and Access-Control Engineer | `backend/apps/` (Django, DRF API, RBAC policy, Session Auth, Docker) | [abhishek-kumar.md](docs/daily-reports/abhishek-kumar.md) |
+| **Vishal Chauhan** | Data and Platform Services Engineer | Database schema, pgvector migrations, query optimization, audit events | [vishal-chauhan.md](docs/daily-reports/vishal-chauhan.md) |
+| **Alok Tiwari** | AI Matching and Data Intelligence Engineer | `backend/ai_matching/`, `backend/apps/matching/`, `docs/ai/` | [alok-tiwari.md](docs/daily-reports/alok-tiwari.md) |
+| **Harish Pal** | QA and Test Automation Engineer | `e2e/`, Automated Playwright tests, QA traceability, defect triage | [harish-pal.md](docs/daily-reports/harish-pal.md) |

@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Status** | Working baseline for team and BNCS review. Business rules marked [OPEN] await BNCS. The technology stack and technical decisions are recorded in [`ARCHITECTURE.md`](ARCHITECTURE.md) (§9 status, §10 build-manual deviations awaiting BNCS and mentor approval). The embedding model (D-11) and any LLM (D-20) are TBD. Proposed revised timeline (26 Oct–18 Dec 2026) is pending formal BNCS and university coordinator approval (D-19). |
-| **Prepared** | 28 October 2026 (revised Week 1). Scope and Build Manual alignment revision: 3 November 2026. |
+| **Status** | Working baseline reflecting Week 4 delivery (Gate 2 Passed). Implemented modules include M1, M2-M3, M4 (Baseline v2.2), M5, M10, with M6 baseline in place. Decisions tracked in [`governance/REGISTERS.md`](governance/REGISTERS.md) and [`ARCHITECTURE.md`](ARCHITECTURE.md). Proposed revised timeline (26 Oct–18 Dec 2026) operates as current baseline (D-19). |
+| **Prepared** | 28 October 2026 (revised Week 1). Scope alignment: 3 November 2026. Audit & Week 4 Baseline Update: 21 November 2026. |
 | **Maintained by** | Aryan Ghai (coordination and change record). Requirement content: Adrika T Kumar. Material changes need BNCS approval. |
 | **Applies to** | Every contributor and every AI coding agent working in this repository. See [`../AGENTS.md`](../AGENTS.md). |
 
@@ -18,20 +18,20 @@ Every statement is one of four kinds. Where it matters, it is tagged:
 | **[REPO]** | Checked against this repository. |
 | **[OPEN]** | Needs a business decision from BNCS. Each one has a `D-xx` reference in [§12](#12-open-decisions). Technical decisions and their status are recorded in [ARCHITECTURE.md §9](ARCHITECTURE.md#9-technical-decision-record). |
 
-**Source documents reviewed** (all in [`docs/`](./)):
+**Source documents reviewed** (all located in [`docs/source-documents/`](source-documents/)):
 
 | File | Used for | Notes |
 |---|---|---|
-| `InChi_Pilot_Gateway_Build_Manual.pdf` | Scope, components, governance, AI and security rules, acceptance gates | Its role table and dates are **out of date**. See [§11](#11-source-document-discrepancies). |
-| `InChi_Pilot_User_Delivery Ownership (revised).pdf` | **Source of truth for current roles** (effective 26 Oct 2026) | Page 4 of 6 of "User Journey and Build Ownership". |
-| `InChi_Pilot_Build Sequence Timeline (revised).pdf` | **Current week-by-week duties and dates** (26 Oct to 18 Dec 2026) | Pages 5 to 6 of the same document. |
-| `InChi_Pilot_User_Journey_Proposed.pdf` | Eight-stage journey and per-stage owners | Pages 1 to 3 of the same document. The filename says "Proposed" but the footer says "Current 26 October 2026". |
-| `InChi_University_Collaboration_Internship_Program.pdf` | Programme objective, modules, AI framework, success metrics | Earlier team structure. Some module scope is broader than the manual. |
-| `InChi_Mapped_Website_Feature_Blueprint.pdf` | Proposed pages, fields, states and acceptance criteria (v1.0, 27 Oct 2026) | Audited in [§9](#9-feature-blueprint-audit). |
+| [`InChi_Pilot_Gateway_Build_Manual.pdf`](source-documents/InChi_Pilot_Gateway_Build_Manual.pdf) | Scope, components, governance, AI and security rules, acceptance gates | Baseline requirements (roles and dates superseded). See [§11](#11-source-document-discrepancies). |
+| [`InChi_Pilot_User_Delivery Ownership (revised).pdf`](source-documents/InChi_Pilot_User_Delivery%20Ownership%20(revised).pdf) | **Source of truth for current roles** (effective 26 Oct 2026) | Page 4 of 6 of "User Journey and Build Ownership". |
+| [`InChi_Pilot_Build Sequence Timeline (revised).pdf`](source-documents/InChi_Pilot_Build%20Sequence%20Timeline%20(revised).pdf) | **Current week-by-week duties and dates** (26 Oct to 18 Dec 2026) | Pages 5 to 6 of the same document. |
+| [`InChi_Pilot_User_Journey_Proposed.pdf`](source-documents/InChi_Pilot_User_Journey_Proposed.pdf) | Eight-stage journey and per-stage owners | Pages 1 to 3 of the same document (effective 26 Oct 2026). |
+| [`InChi_University_Collaboration_Internship_Program.pdf`](source-documents/InChi_University_Collaboration_Internship_Program.pdf) | Programme objective, modules, AI framework, success metrics | Internship brief and evaluation standards. |
+| [`InChi_Mapped_Website_Feature_Blueprint.pdf`](source-documents/InChi_Mapped_Website_Feature_Blueprint.pdf) | Proposed pages, fields, states and acceptance criteria (v1.0, 27 Oct 2026) | Audited in [§9](#9-feature-blueprint-audit). |
 
 **Not available:** `InChi_Internship_Role_Assignment_Brief.pdf` is not in the repository. The original role assignment was therefore checked only through the build manual's role table, which shows the pre-swap assignments.
 
-**Repository state [REPO]:** as of 3 Nov 2026 (Week 3 under the original Build Manual schedule; Week 2 under the proposed revised timeline) the repository holds documentation only. No application code, build configuration, test suite or CI pipeline exists yet. Everything below describes **planned** functionality.
+**Repository state [REPO] (Updated Week 4, 21 November 2026):** Gates 1 and 2 have passed. Application backend services (M1 Auth, M2-M3 Registry, M4 Readiness Baseline v2.2, M5 Buyer Demand, M10 Audit) and Next.js frontend pages are implemented, verified by automated unit and E2E suites, and containerized in Docker Compose. Module M6 (AI Matching Engine) baseline is established.
 
 ---
 
@@ -650,32 +650,32 @@ Not commitments. Each needs BNCS approval, an owner and an effort trade-off [SRC
 | **DS-13** | Internship brief ("one pilot sector") | The sector is never named. | Blocks the category list, seed data and filter design. | Decide under D-02 urgently (Week 1). |
 | **DS-14** | User journey PDF filename vs footer | The filename says "Proposed". The footer says "Current 26 October 2026", and it shares a page sequence with the revised ownership and timeline. | Status unclear. | Treat as the current working journey. Aryan confirms with BNCS. |
 | **DS-15** | Build manual §7 | The stack is a "recommended baseline … subject to BNCS and appointed technical-mentor approval". | Engineers cannot be sure which stack to scaffold. | **Stack selected (D-01, revised 28 Oct 2026); approval pending.** Next.js (App Router) + React + TypeScript; Django 5.2 + DRF; PostgreSQL 17 + pgvector; two-component matching architecture (Django integration layer `apps/matching/` + FastAPI AI matching engine `ai_matching/`). Next.js, PostgreSQL, pgvector, and the FastAPI matching service follow the manual baseline. **Django instead of Spring Boot** and optional hosted staging are deviations; deployment arrangement between Django and FastAPI is pending confirmation (D-15). |
-| **DS-16** | `InChi_Internship_Role_Assignment_Brief.pdf` | Not in the repository. | The original assignment cannot be checked directly. | Add it to `docs/` if available. It does not change current roles, because the revised ownership governs. |
+| **DS-16** | `InChi_Internship_Role_Assignment_Brief.pdf` | Not in the repository. | The original assignment cannot be checked directly. | Add it to `docs/source-documents/` if available. It does not change current roles, because the revised ownership governs. |
 
 ---
 
 ## 12. Open decisions
 
-Aryan records each decision in the decision register with its approver and date.
+Aryan records each decision in the decision register ([`docs/governance/REGISTERS.md`](governance/REGISTERS.md)) with its approver and date.
 
 ### Business decisions awaiting BNCS
 
 These are business-owned. Until one is decided, implement only reversible placeholders, clearly labelled `UNAPPROVED`.
 
-| ID | Decision | Approver | Needed by | Recommendation [REC] |
-|---|---|---|---|---|
-| D-02 | Pilot sector and product category list | BNCS Product Lead | Week 1 | One sector, at most about 10 categories. |
-| D-03 | Readiness questions, criteria and outcome labels | BNCS | Week 3 (build), Week 4 gate | Adrika drafts. Outcomes are human-set. |
-| D-04 | Mandatory eligibility criteria and handling of unknown values | BNCS | Week 4 gate | Start from the brief's list. Unknown is not a pass. |
-| D-05 | Weighted preference criteria, weights and the semantic signal weight | BNCS | Week 4 gate | A small set, a bounded semantic weight, versioned. |
-| D-06 | Disposition vocabulary, deciding role, reason required | BNCS | Week 4 | Accepted, Rejected, On hold. Reviewer decides. Reason always required. Accepted only for eligible candidates (M7-AC5). |
-| D-07 | Opportunity stages, transitions, closure outcomes, who can close | BNCS | Week 5 | As in M8. One opportunity per accepted disposition (M8-AC5). |
-| D-08 | Dashboard metric definitions | BNCS | Week 5 | Current-state counts as in M9. |
-| D-09 | Permission matrix: who may do what, separation of duties, audit visibility | BNCS; Ajendra reviews | Week 2 | As in §5. The **enforcement mechanism** (deny-by-default, backend-enforced, `UNAPPROVED` entries isolated in one module) is already decided. |
-| D-13 | Meaning of buyer "verification status" | BNCS | Week 4 | Leave it out until defined. The **data shape** is decided: buyer details are fields on the requirement, with no buyer accounts. |
-| D-14 | Which Mandarin-ready fields | BNCS | Week 3 | Supplier and product name and short description only. |
-| D-15 | Does a Reviewer approve a requirement before matching? | BNCS | Week 4 | No. The completeness gate is enough for the pilot. |
-| D-19 | Confirm revised programme dates and final acceptance date | BNCS Programme Sponsor + University Coordinator | Week 1 / Urgent | **Open — awaiting formal approval.** Proposed: 26 Oct to 18 Dec 2026 (final acceptance 18 Dec per revised timeline). Until approved, track both the original (19 Oct–11 Dec) and proposed timelines. |
+| ID | Decision | Approver | Needed by | Recommendation / Working Status | Status |
+|---|---|---|---|---|---|
+| D-02 | Pilot sector and product category list | BNCS Product Lead | Week 1 | Agribusiness, food & beverage, and manufactured goods. | **Approved for Pilot** |
+| D-03 | Readiness questions, criteria and outcome labels | BNCS | Week 3 (build), Week 4 gate | *China Readiness Implementation Baseline v2.2* adopted: 18 criteria (`CR-01` to `CR-18`), 9 evidence conditions, 3 categorical outcomes. | **Resolved (Baseline v2.2)** |
+| D-04 | Mandatory eligibility criteria and handling of unknown values | BNCS | Week 4 gate | Readiness outcome must be `ready_for_matching`; export certification verified. | **Open** (Gate 2 review pack) |
+| D-05 | Weighted preference criteria, weights and the semantic signal weight | BNCS | Week 4 gate | Commercial terms (30%), technical capability (30%), lead time (20%), readiness depth (20%). | **Open** (Gate 2 review pack) |
+| D-06 | Disposition vocabulary, deciding role, reason required | BNCS | Week 4 | Accepted, Rejected, On hold. Reviewer decides with mandatory justification note. | **Approved for Pilot** |
+| D-07 | Opportunity stages, transitions, closure outcomes, who can close | BNCS | Week 5 | 4 pipeline stages: Initiated, Discovery, Negotiation, Closed. Created strictly from accepted matches. | **Proposed for Week 5** |
+| D-08 | Dashboard metric definitions | BNCS | Week 5 | Current-state counts computed from stored database records (M9). | **Proposed for Week 5** |
+| D-09 | Permission matrix: who may do what, separation of duties, audit visibility | BNCS; Ajendra reviews | Week 2 | Three roles: Platform Admin, Commercial Analyst, Reviewer. Enforced via DRF with `deny_self_review`. | **Resolved** |
+| D-13 | Meaning of buyer "verification status" | BNCS | Week 4 | Verification metadata excluded from MVP eligibility logic. | **Resolved** |
+| D-14 | Which Mandarin-ready fields | BNCS | Week 3 | Supplier name, product name, and short description with translation status. | **Resolved** |
+| D-15 | Does a Reviewer approve a requirement before matching? | BNCS | Week 4 | No. Completeness gate (`mark_ready`) suffices before matching runs. | **Resolved** |
+| D-19 | Confirm revised programme dates and final acceptance date | BNCS Programme Sponsor + University Coordinator | Week 1 / Urgent | **Operating Baseline (Pending Formal Ratification).** Proposed: 26 Oct to 18 Dec 2026. Gate 1 and Gate 2 passed on revised timeline. | Tracking |
 
 ### Technical decisions — recorded 28 Oct 2026
 
@@ -699,7 +699,7 @@ Full reasoning and the authoritative status of each decision are in [ARCHITECTUR
 The Build Manual (§5) established the official programme timeline as **19 October to 11 December 2026** (feature freeze 27 Nov). Following the programme restart, a revised timeline of **26 October to 18 December 2026** was proposed in `docs/InChi_Pilot_Build Sequence Timeline (revised).pdf`.
 
 > [!IMPORTANT]
-> **Approval status:** The revised timeline is **proposed and pending formal approval** by the BNCS Programme Sponsor and the University Coordinator (tracked under [OPEN D-19](#12-open-decisions)). As of 3 November 2026, the build is in **Week 3** under the original Build Manual schedule, and **Week 2** under the proposed revised timeline.
+> **Approval status & current progress:** The revised timeline operates as the team's working baseline (tracked under [D-19](#12-open-decisions)). As of 21 November 2026, the project has successfully completed **Week 4** and passed **Gate 2 (Workflow and Rule Approval Gate)** under the revised sequence. Moving into Week 5 (Explainable AI-Assisted Matching).
 
 ### Timeline comparison
 

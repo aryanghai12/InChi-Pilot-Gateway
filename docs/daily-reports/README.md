@@ -2,7 +2,7 @@
 
 Every team member records one concise progress report for each programme week. The reports give the team one place to see completed work, work in progress, blockers, validation, meeting and review activity, and the next step. They supply evidence for the sprint review and Aryan's weekly BNCS report.
 
-The folder name remains `daily-reports` to preserve existing links, open branches and Git history. It now contains weekly reports only. The proposed revised timeline in `docs/MVP_FEATURES.md` section 13 defines Week 1 as 26-30 October 2026 and Week 2 as 2-6 November 2026; it remains pending D-19 approval.
+The folder name remains `daily-reports` to preserve existing links, open branches and Git history. It contains weekly reports only. The revised timeline in `docs/MVP_FEATURES.md §13` defines Week 1 (26–30 Oct), Week 2 (2–6 Nov, Gate 1), Week 3 (9–13 Nov), and Week 4 (16–20 Nov, Gate 2). As of 21 November 2026, the project has completed Week 4 delivery and passed Gate 2 (Workflow & Rule Approval).
 
 | | |
 |---|---|

@@ -3,9 +3,10 @@
 This is the shared instruction manual for every team member and every AI coding agent working in this repository. It covers project rules and all eight role definitions, and it is the single source of truth for both.
 
 - **What to build:** [`docs/MVP_FEATURES.md`](docs/MVP_FEATURES.md). It defines modules `M1` to `M11`, acceptance criteria, permissions, the matching process and open decisions `D-xx`.
-- **How to build it:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). It sets out the stack, the repository layout and **who owns each area** (§4), the backend, frontend and matching conventions, CI, the technical decision record (§9) and the deviations from the build manual still awaiting approval (§10).
-- **Current roles:** §C below, taken from `docs/InChi_Pilot_User_Delivery Ownership (revised).pdf`, effective 26 October 2026.
+- **How to build it:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [`docs/IMPLEMENTATION.md`](docs/IMPLEMENTATION.md). ARCHITECTURE.md sets out the stack, repository layout and **who owns each area** (§4), backend, frontend and matching conventions, CI, and decision records. IMPLEMENTATION.md provides the complete step-by-step setup and implementation guide.
+- **Current roles:** §C below, taken from [`docs/source-documents/InChi_Pilot_User_Delivery Ownership (revised).pdf`](docs/source-documents/InChi_Pilot_User_Delivery%20Ownership%20(revised).pdf), effective 26 October 2026.
 - **Weekly progress:** [`docs/daily-reports/`](docs/daily-reports/README.md). Every member records their own work once per programme week (§B rule 15). The legacy directory name is retained for existing links and history.
+- **Delivery Governance:** [`docs/governance/`](docs/governance/README.md). Risk, Issue, Dependency and Decision registers, plus integration plan.
 - `CLAUDE.md` only points here. Do not copy rules into other instruction files. Change them here.
 
 ---
@@ -34,7 +35,12 @@ This is the shared instruction manual for every team member and every AI coding 
 
 **How success is judged.** Success means the full priority journey can be demonstrated on synthetic data, with its limitations stated honestly, including one denied-access case and one fallback or failure case, plus clean handover packs. The cohort is judged on evidence, reliability, usability and reusability, not on how much code it writes.
 
-**Current repository state.** As of 28 Oct 2026 the repository contains documentation only. No application code, build tooling, tests or CI exist yet. Do not describe planned features as implemented.
+**Current repository state (Week 4, 21 November 2026).** The repository is actively executing the revised 8-week build sequence (Gate 2 passed). Application code exists and is continuously integrated across the full stack:
+- **Backend (`backend/`):** Django 5.2 LTS with DRF, PostgreSQL 17 + pgvector migrations. Implemented apps include `accounts` (session auth, RBAC policy, `create_platform_admin`), `registry` (supplier and product lifecycle, bilingual fields, optimistic locking), `readiness` (China Readiness Baseline v2.2 with 18 criteria and reviewer desk), `demand` (buyer requirements, validation gates), and `audit` (append-only audit trail).
+- **Matching Engine (`backend/ai_matching/`):** FastAPI AI matching engine implementing preprocessing, eligibility filtering, cosine similarity, hybrid scoring, and explainability pipeline.
+- **Frontend (`frontend/`):** Next.js 16 App Router with React 19, TypeScript, TanStack Query, and CSS Modules. Workspace routes for suppliers, products, readiness assessment v2.2, and buyer requirements are wired to dynamic REST endpoints via Next.js single-origin rewrites.
+- **Testing & Tooling:** Automated test suites in pytest, Vitest, and Playwright E2E; GitHub Actions CI pipelines; Docker Compose multi-service reference environment.
+- **Governance:** Registers and integration plans in `docs/governance/`, weekly reports in `docs/daily-reports/`, specification PDFs organized in `docs/source-documents/`.
 
 **Technology stack (team-selected, revised 28 Oct 2026; D-01).** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) is authoritative for the stack, layout, ownership, conventions and technical decisions. This table is a summary only.
 
@@ -95,9 +101,7 @@ These apply to every role.
 
 ### Repository layout and ownership
 
-Only `README.md`, `AGENTS.md`, `CLAUDE.md` and `docs/` (including `docs/daily-reports/`) exist today. The agreed target layout, the purpose of each directory, where code and tests go, every area's owner and reviewers, and when to coordinate with whom are all in **[ARCHITECTURE.md §4](docs/ARCHITECTURE.md#4-repository-layout-and-ownership)**. That section is the single source of truth for ownership. The "Owns" line in each role section below must agree with it.
-
-Create each directory when your work begins. Do not create empty placeholder folders.
+The repository structure reflects the implemented multi-service architecture: `backend/`, `frontend/`, `e2e/`, `docker-compose.yml`, `docs/`, `docs/governance/`, `docs/IMPLEMENTATION.md`, and `docs/source-documents/`. The agreed layout, the purpose of each directory, where code and tests go, every area's owner and reviewers, and when to coordinate with whom are in **[ARCHITECTURE.md §4](docs/ARCHITECTURE.md#4-repository-layout-and-ownership)**. That section is the single source of truth for ownership. The "Owns" line in each role section below must agree with it.
 
 ### Branches, commits and PRs
 
@@ -119,7 +123,7 @@ Reviewers:
 
 ## C. Current roles and individual build prompts
 
-**Source of truth:** `docs/InChi_Pilot_User_Delivery Ownership (revised).pdf`, effective 26 October 2026. The build manual's role table is **out of date**. It swaps Aryan and Ajendra (see MVP_FEATURES DS-01). Never apply the manual's role names.
+**Source of truth:** [`docs/source-documents/InChi_Pilot_User_Delivery Ownership (revised).pdf`](docs/source-documents/InChi_Pilot_User_Delivery%20Ownership%20(revised).pdf), effective 26 October 2026. The build manual's role table is **out of date**. It swaps Aryan and Ajendra (see MVP_FEATURES DS-01). Never apply the manual's role names.
 
 | Team member | Current role | `@role` aliases |
 |---|---|---|
