@@ -3,10 +3,11 @@
 This is the shared instruction manual for every team member and every AI coding agent working in this repository. It covers project rules and all eight role definitions, and it is the single source of truth for both.
 
 - **What to build:** [`docs/MVP_FEATURES.md`](docs/MVP_FEATURES.md). It defines modules `M1` to `M11`, acceptance criteria, permissions, the matching process and open decisions `D-xx`.
+- **Governing BNCS baseline for readiness and matching:** [`docs/source-documents/InChi_China_Readiness_Implementation_Baseline_v2.2.pdf`](docs/source-documents/InChi_China_Readiness_Implementation_Baseline_v2.2.pdf) (16 Nov 2026, Product Authority: Venture Build Director and CPO). For the China-readiness and supplier–demand matching portion, **v2.2 governs** over earlier documents, including MVP_FEATURES and ARCHITECTURE where they conflict. Deviations need an approved change request (`CRQ-###`, v2.2 §15.3) recorded in [`docs/governance/REGISTERS.md`](docs/governance/REGISTERS.md#6-change-request-log-v22-153). Known conflicts with what is built are listed in the [audit gap analysis](docs/governance/AUDIT_2026-11-21.md#3-baseline-v22-gap-analysis) and escalated as D-21 to D-25.
 - **How to build it:** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) and [`docs/IMPLEMENTATION.md`](docs/IMPLEMENTATION.md). ARCHITECTURE.md sets out the stack, repository layout and **who owns each area** (§4), backend, frontend and matching conventions, CI, and decision records. IMPLEMENTATION.md provides the complete step-by-step setup and implementation guide.
 - **Current roles:** §C below, taken from [`docs/source-documents/InChi_Pilot_User_Delivery Ownership (revised).pdf`](docs/source-documents/InChi_Pilot_User_Delivery%20Ownership%20(revised).pdf), effective 26 October 2026.
 - **Weekly progress:** [`docs/daily-reports/`](docs/daily-reports/README.md). Every member records their own work once per programme week (§B rule 15). The legacy directory name is retained for existing links and history.
-- **Delivery Governance:** [`docs/governance/`](docs/governance/README.md). Risk, Issue, Dependency and Decision registers, plus integration plan.
+- **Delivery governance:** [`docs/governance/`](docs/governance/README.md). Decision, risk, issue, dependency, interface, change-request and gate registers; the integration plan; audit reports.
 - `CLAUDE.md` only points here. Do not copy rules into other instruction files. Change them here.
 
 ---
@@ -35,12 +36,12 @@ This is the shared instruction manual for every team member and every AI coding 
 
 **How success is judged.** Success means the full priority journey can be demonstrated on synthetic data, with its limitations stated honestly, including one denied-access case and one fallback or failure case, plus clean handover packs. The cohort is judged on evidence, reliability, usability and reusability, not on how much code it writes.
 
-**Current repository state (Week 4, 21 November 2026).** The repository is actively executing the revised 8-week build sequence (Gate 2 passed). Application code exists and is continuously integrated across the full stack:
-- **Backend (`backend/`):** Django 5.2 LTS with DRF, PostgreSQL 17 + pgvector migrations. Implemented apps include `accounts` (session auth, RBAC policy, `create_platform_admin`), `registry` (supplier and product lifecycle, bilingual fields, optimistic locking), `readiness` (China Readiness Baseline v2.2 with 18 criteria and reviewer desk), `demand` (buyer requirements, validation gates), and `audit` (append-only audit trail).
-- **Matching Engine (`backend/ai_matching/`):** FastAPI AI matching engine implementing preprocessing, eligibility filtering, cosine similarity, hybrid scoring, and explainability pipeline.
-- **Frontend (`frontend/`):** Next.js 16 App Router with React 19, TypeScript, TanStack Query, and CSS Modules. Workspace routes for suppliers, products, readiness assessment v2.2, and buyer requirements are wired to dynamic REST endpoints via Next.js single-origin rewrites.
-- **Testing & Tooling:** Automated test suites in pytest, Vitest, and Playwright E2E; GitHub Actions CI pipelines; Docker Compose multi-service reference environment.
-- **Governance:** Registers and integration plans in `docs/governance/`, weekly reports in `docs/daily-reports/`, specification PDFs organized in `docs/source-documents/`.
+**Current repository state (end of Week 4, 21 November 2026; verified in the [audit](docs/governance/AUDIT_2026-11-21.md)).** Application code exists and runs as four Docker Compose services (`db`, `matching`, `backend`, `frontend`). Do not describe planned features as implemented.
+- **Live (API and UI):** `accounts` (M1: session auth, CSRF, three roles, `policy.py`, `create_platform_admin`), `registry` (M2–M3), `readiness` (M4, Baseline v2.2 questionnaire and review), `demand` (M5), `audit` write side (M10, append-only with a DB trigger).
+- **Built but not integrated:** the FastAPI engine in `backend/ai_matching/` and the Django client in `backend/apps/matching/` (no models, views or URLs yet).
+- **Not started:** match runs and disposition (M6–M7 API), opportunities (M8), dashboard API (M9), audit-history API, `seed_demo` in `backend/`.
+- **Open defects that block acceptance:** AUD-01 (Critical: anonymous self-registration as `platform_admin`), AUD-15 (High: plaintext passwords for admin-created users). Readiness and demand have no backend tests (AUD-05).
+- **Gates:** Gate 1 demonstrated. Gate 2 review held on 20 Nov 2026; outcome not yet recorded. Do not write "Gate 2 passed" until the gate register records it with an approver.
 
 **Technology stack (team-selected, revised 28 Oct 2026; D-01).** [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) is authoritative for the stack, layout, ownership, conventions and technical decisions. This table is a summary only.
 
@@ -49,22 +50,24 @@ This is the shared instruction manual for every team member and every AI coding 
 | Frontend | **Next.js (App Router), React, TypeScript.** TanStack Query, plain CSS Modules. Next.js renders pages and proxies `/api/` to Django; it holds no business logic, authorisation or secrets. |
 | Backend | **Python 3.12, Django 5.2 LTS, Django REST Framework.** Session auth and CSRF from Django. OpenAPI via drf-spectacular. |
 | Database | **PostgreSQL 17 with pgvector.** The Django ORM and Django migrations are authoritative for the schema, including the extension and vector columns. |
-| Matching | **Two-component architecture:** Django matching integration layer (`backend/apps/matching/`) coordinating data collection and persistence, communicating with the FastAPI AI Matching Engine (`backend/ai_matching/`) for input validation, embeddings, mandatory eligibility evaluation, semantic similarity, hybrid scoring, ranking, and explainability. Semantic matching is mandatory; semantic processing failure explicitly fails the run (no silent fallback). |
+| Matching | **Two-component architecture:** Django matching integration layer (`backend/apps/matching/`) coordinating data collection and persistence, communicating with the FastAPI AI Matching Engine (`backend/ai_matching/`, separate Compose service, TD-11). The current design makes semantic matching mandatory with hybrid scoring. **This conflicts with Baseline v2.2**, which makes MVP matching deterministic and rules-only, with no hidden weights, and requires the journey to work with AI disabled. **Decision D-21 is open: do not extend semantic or weighted-scoring features until it is recorded.** |
 | Embeddings | Local embedding generation (`sentence-transformers` or `FastEmbed`, pending confirmation). **Embedding model: TBD (D-11).** |
 | LLM | **None in v0.1. Provider and model TBD (D-20).** Not a prerequisite for the MVP. |
 | Tests | pytest + pytest-django; Vitest + React Testing Library; Playwright for E2E |
 | Tooling | Ruff; ESLint, Prettier, `tsc`; pip-audit, npm audit, gitleaks, Dependabot; GitHub Actions |
-| Environment | Docker Compose: `db` (PostgreSQL 17 + pgvector), `backend` (Django), `frontend` (Next.js). The browser uses one origin. |
+| Environment | Docker Compose: `db` (PostgreSQL 17 + pgvector), `matching` (FastAPI engine), `backend` (Django), `frontend` (Next.js). The browser uses one origin. Setup: [`docs/IMPLEMENTATION.md`](docs/IMPLEMENTATION.md). |
 
 **Approval status.** The build manual makes the final stack and any material deviation subject to BNCS and technical-mentor approval. **That approval is still pending** (ARCHITECTURE.md §10). The deviations are:
 
 - Django instead of Spring Boot;
-- runtime and deployment configuration of the FastAPI matching engine relative to Django (D-15 pending confirmation);
+- runtime and deployment configuration of the FastAPI matching engine relative to Django (TD-11, implemented as a separate Compose service; mentor confirmation pending);
 - hosted staging made optional.
 
 Build reversible skeletons on this stack meanwhile, and never describe it as approved.
 
-**Never select an embedding model or an LLM in code, configuration defaults, examples or documentation.** Both stay TBD until D-11 and D-20 are recorded in ARCHITECTURE.md §9.
+**Never select an embedding model or an LLM in code, configuration defaults, examples or documentation.** Both stay TBD until D-11 and D-20 are recorded in ARCHITECTURE.md §9. (As of 21 Nov 2026, `.env.example` names a model without a §9 record. This is finding AUD-07, for Alok to resolve with Ajendra.)
+
+**Decision IDs.** `D-xx` are business decisions and stack-level selections, listed in MVP_FEATURES §12 and the decision register. `TD-xx` are technical decisions in ARCHITECTURE.md §9. `D-15` is only the business question "does a Reviewer approve a requirement before matching?". The FastAPI runtime decision is `TD-11`, and vector storage is `TD-01`.
 
 Build on this stack only. Adding a language, framework, database, service or hosted dependency needs a new entry in ARCHITECTURE.md §9.
 
@@ -464,11 +467,11 @@ Report: files changed, tests run with results, contract questions, limitations, 
    - The URLconf: `/api/v1/` with JSON 404s for unmatched `/api/` paths, the admin path, admin static files and the health endpoint. There is no frontend catch-all, because Next.js serves the UI (TD-09, which supersedes TD-07).
    - Proxy-aware settings from environment variables: `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`, and `SECURE_PROXY_SSL_HEADER` only behind a trusted HTTPS proxy. Ajendra reviews them.
    - `backend/Dockerfile` and a `docker-compose.yml` (`db`, `backend`, `frontend`) with Vishal and Priyanka.
-   - `.env.example`. It includes `SEMANTIC_PROVIDER=none` and an **empty** `EMBEDDING_MODEL` marked "TBD (D-11)", and has no LLM variables (D-20).
+   - `.env.example`. It includes `EMBEDDING_PROVIDER` (default `none` until D-11 is recorded) and an **empty** `EMBEDDING_MODEL_NAME` marked "TBD (D-11)", and has no LLM variables (D-20).
 2. **Week 2.** The `csrf` (with `ensure_csrf_cookie`), `login` (explicit `csrf_protect`; TD-05), `logout` and `me` endpoints. The `create_platform_admin` management command (TD-08). role and object-level authorisation, the restricted Django admin for user management (`platform_admin` only, `User` model only, path from environment), and validated supplier and product APIs that emit audit events. Generate `docs/api/openapi.yaml`. Gate 1.
 3. **Week 3.** Registry search and filter APIs (using Vishal's queries) and the readiness assessment services with transitions.
 4. **Week 4.** Readiness review and buyer-requirement APIs: completeness gate, versioning, workflow transitions, reviewer actions.
-5. **Week 5.** Match orchestration in `matching/services.py`, following ARCHITECTURE.md §6. It checks the requirement gate, selects the provider from `SEMANTIC_PROVIDER`, and embeds the requirement text when a provider is available. It then loads candidates through Vishal's query, with pgvector similarity when a vector is available, and calls `engine.run()`. It persists the run, results and audit event in one transaction. If the engine raises, the run is stored as `failed` with no results. Disposition API with permissions and traceability. The API rejects `Accepted` for any candidate that is not eligible under the run's criteria version (M7-AC5).
+5. **Week 5.** Match orchestration in `matching/services.py`, following ARCHITECTURE.md §6. It checks the requirement gate, selects the provider from `EMBEDDING_PROVIDER`, and embeds the requirement text when a provider is available. It then loads candidates through Vishal's query, with pgvector similarity when a vector is available, and calls `engine.run()`. It persists the run, results and audit event in one transaction. If the engine raises, the run is stored as `failed` with no results. Disposition API with permissions and traceability. The API rejects `Accepted` for any candidate that is not eligible under the run's criteria version (M7-AC5).
 6. **Week 6.** Opportunity APIs (create only from an accepted disposition, one opportunity per accepted disposition, with transitions), dashboard and audit APIs with access scoping. Feature freeze.
 7. **Week 7.** Fix approved API, authorisation, validation and stability defects.
 8. **Week 8.** API documentation, auth and RBAC notes, environment variables, backend setup and integration notes.
@@ -617,12 +620,12 @@ questions for Adrika, next step.
 **Interfaces.**
 
 - **Abhishek:** Django matching integration, data querysets, human review (M8) and opportunity (M9) hooks, request/response schema alignment.
-- **Vishal:** candidate queries and query optimization, vector column storage (D-12), `MatchRun` / `MatchResult` database models, migrations, and database schema implementation.
+- **Vishal:** candidate queries and query optimization, vector column storage (TD-01), `MatchRun` / `MatchResult` database models, migrations, and database schema implementation.
 - **Adrika:** requirement criteria schema (mandatory vs preference distinction), matching UX flow, explanation display requirements.
 - **Priyanka:** matching API consumption, explanation rendering, match-trigger UI.
 - **Harish:** matching test strategy, negative and boundary tests, integration tests across both layers.
 - **Ajendra:** AI-service threat review, input manipulation risks, embedding model vetting (D-11), no LLM check (D-20).
-- **Aryan:** decision tracking (D-03, D-05, D-06, D-11, D-15), sprint review coordination.
+- **Aryan:** decision tracking (D-03, D-05, D-06, D-11, D-21, TD-11), sprint review coordination.
 
 **MVP tasks, in order:**
 
@@ -635,7 +638,7 @@ questions for Adrika, next step.
 7. **Week 7.** Evaluation analysis, edge-case and failure testing, documented limitations, UAT defect fixes.
 8. **Week 8.** AI evaluation pack, limitations brief, handover documentation, demo runbook.
 
-**Must not decide alone.** Criteria, weights, the semantic weight, readiness rules or regulatory interpretation (BNCS approves under D-03, D-05, D-06; criteria examples are illustrative until approved). The embedding model is **TBD / pending confirmation** (D-11; propose it with Ajendra's review, but never hardcode a model name). Vector storage design is **proposed / pending confirmation** with Vishal (D-12). Runtime and deployment configuration of FastAPI relative to Django is **proposed / pending confirmation** (D-15). Do not assign database model, migration, or table ownership away from Vishal. Do not switch to an external AI or embedding API, another embedding library, or a vector store other than pgvector without an ARCHITECTURE.md §9 entry. Do not add an LLM, LLM SDK or prompt (D-20 is TBD and needs BNCS approval). Pilot data must never leave the environment. Never let semantic similarity override a mandatory failure, auto-approve suppliers, create opportunities, or present scores as certainty. **AI must never autonomously approve or reject suppliers.** Explanations are deterministic Python-based breakdowns built from actual criterion results.
+**Must not decide alone.** Criteria, weights, the semantic weight, readiness rules or regulatory interpretation (BNCS approves under D-03, D-05, D-06; criteria examples are illustrative until approved). The embedding model is **TBD / pending confirmation** (D-11; propose it with Ajendra's review, but never hardcode a model name). Vector storage design is **proposed / pending confirmation** with Vishal (TD-01). Runtime and deployment configuration of FastAPI relative to Django is **implemented as a separate Compose service, mentor confirmation pending** (TD-11). Whether semantic matching and weighted scoring are in the MVP at all is decision D-21 (Baseline v2.2 says rules-only). Do not assign database model, migration, or table ownership away from Vishal. Do not switch to an external AI or embedding API, another embedding library, or a vector store other than pgvector without an ARCHITECTURE.md §9 entry. Do not add an LLM, LLM SDK or prompt (D-20 is TBD and needs BNCS approval). Pilot data must never leave the environment. Never let semantic similarity override a mandatory failure, auto-approve suppliers, create opportunities, or present scores as certainty. **AI must never autonomously approve or reject suppliers.** Explanations are deterministic Python-based breakdowns built from actual criterion results.
 
 **Evidence before done.** Unit tests in `ai_matching/tests/` cover eligibility filters (pass, fail, unknown as insufficient data), scoring, ordering ties, empty candidates, and semantic failure. Integration tests in `apps/matching/tests/` verify Django-to-FastAPI request building, client communication, response validation, and persistence coordination. The evaluation results file records model and configuration versions.
 
@@ -669,7 +672,7 @@ Do the following:
    never fall back silently to rules-only matching.
 4. Load criteria/weights from versioned configuration; mark placeholders UNAPPROVED and
    include the config version in every output. Scoring weights, embedding model (D-11),
-   vector storage (D-12) and deployment configuration (D-15) remain visibly pending approval.
+   vector storage (TD-01) and deployment configuration (TD-11) remain visibly pending approval.
 5. Explanations are deterministic Python logic from criterion results (no LLM; D-20 is
    TBD). Semantic similarity uses the local provider interface only. The embedding model is
    TBD (D-11): read it from configuration and never hard-code or default a model name.
@@ -705,7 +708,7 @@ results, limitations, next step.
 2. **Week 2.** Set up the CI test jobs (ARCHITECTURE.md §8) and the `e2e/` Playwright project. Automate smoke, authentication, CRUD, permission, validation and API tests. Include: login without a CSRF token is rejected; an expired or absent session returns 401 `not_authenticated`; a role denial returns 403 and the UI keeps the session; a refresh on a deep route loads the page from the Next.js server; an unknown `/api/` path returns Django's JSON 404 through the Next.js rewrite, not a Next.js page. Log defects. Gate 1 evidence.
 3. **Week 3.** Expand functional, API, permission and regression tests for the registry and readiness.
 4. **Week 4.** Boundary, workflow-transition, permission and deterministic-scoring tests.
-5. **Week 5.** Matching tests: expected, false, missed, missing-data, manipulated-input, service-failure and fallback cases (with Alok and Ajendra). Include the rules-only run with `SEMANTIC_PROVIDER=sentence_transformers` and no usable model.
+5. **Week 5.** Matching tests: expected, false, missed, missing-data, manipulated-input, service-failure and fallback cases (with Alok and Ajendra). Include a run with `EMBEDDING_PROVIDER=sentence_transformers` and no usable model (it must fail explicitly, never silently), and, once D-21 is decided, the rules-only path.
 6. **Week 6.** Automate the full priority journey E2E and publish the **feature-freeze quality baseline**.
 7. **Week 7.** Lead UAT with Adrika, run regression and retests, prepare the QA recommendation.
 8. **Week 8.** Final QA report, traceability, defect status, UAT record and the repeatable demo script.

@@ -1,36 +1,32 @@
-# InChi Pilot Gateway — Delivery Governance & Operations
+# Delivery Governance
 
-**Owner:** Aryan Ghai — Technical Project Coordinator, Product Operations and Integration Governance  
-**Scope:** Sprint cadence, delivery backlog, registers, decision tracking, integration plan, and review evidence.
+**Owner:** Aryan Ghai, Technical Project Coordinator, Product Operations and Integration Governance (AGENTS.md §C1).
+**Scope:** sprint cadence, backlog, registers, decisions, interface coordination, integration evidence and review packs.
 
----
+## Documents
 
-## Governance Framework
-
-The governance workstream ensures that delivery across all eight engineering and product roles remains coordinated, auditable, and traceable against the revised 8-week timeline (26 October – 18 December 2026).
-
-### Governance Documents
-
-| Document | Purpose | Last Updated |
+| Document | Purpose | Last updated |
 |---|---|---|
-| [`REGISTERS.md`](REGISTERS.md) | Single repository register for Risks, Issues, Dependencies, Decisions (D-01 to D-20, DS-01 to DS-16), and Interface Contracts. | 21 Nov 2026 (Week 4 Gate 2) |
-| [`INTEGRATION_PLAN.md`](INTEGRATION_PLAN.md) | Contract boundaries, data interfaces, integration milestones, and validation gates across frontend, backend, database, and AI matching engine. | 21 Nov 2026 (Week 4 Gate 2) |
-| [`../daily-reports/README.md`](../daily-reports/README.md) | Process, templates, and audit rules for weekly delivery reporting across all 8 team members. | Ongoing |
-| [`../daily-reports/aryan-ghai.md`](../daily-reports/aryan-ghai.md) | Aryan Ghai's delivery coordination logs and sprint meeting evidence (Weeks 1 through 4). | 21 Nov 2026 |
+| [`REGISTERS.md`](REGISTERS.md) | Decision register (business and technical, with the **pending-decision escalation list**), risks, issues, dependencies, interface contracts, change-request log (`CRQ-###`, v2.2 §15.3), gate register and source discrepancies DS-17+. | 21 Nov 2026 |
+| [`INTEGRATION_PLAN.md`](INTEGRATION_PLAN.md) | Components, the eight interface contracts with their verified endpoints and wiring status, gate content, and the Week 5–6 integration sequence. | 21 Nov 2026 |
+| [`AUDIT_2026-11-21.md`](AUDIT_2026-11-21.md) | End-of-Week-4 repository and documentation audit: checks run, Baseline v2.2 gap analysis, findings AUD-01 to AUD-15, document-by-document status, weekly-report verification. | 21 Nov 2026 |
+| [`../daily-reports/README.md`](../daily-reports/README.md) | Weekly-report process, template and missing-report rules. | 21 Nov 2026 |
 
----
+## How decisions are recorded
 
-## Weekly Cadence & Rituals
+1. Business rules, scope and permissions are decided by BNCS. For the China-readiness and matching portion, Baseline v2.2 (16 Nov 2026) is the BNCS decision of record. Any deviation needs a change request approved by the Venture Build Director and CPO (v2.2 §15.3).
+2. Technical decisions are recorded in [ARCHITECTURE.md §9](../ARCHITECTURE.md#9-technical-decision-record), and build-manual deviations awaiting approval in [§10](../ARCHITECTURE.md#10-build-manual-deviations-and-pending-approvals).
+3. A decision is marked **Decided** or **Approved** only with an approver, a date and a pointer to the record. Everything else is **Proposed** or **Open**.
 
-1. **Monday Sprint Start (09:30 – 10:30):**
-   - Review weekly product target against the revised sequence.
-   - Confirm backlog assignments and acceptance criteria ownership.
-   - Identify cross-stream blockers and pending dependencies.
-2. **Tuesday – Thursday Standup / Integration Check-in (15:00 – 15:30):**
-   - Asynchronous and direct sync on interface contracts and PR reviews.
-   - Escalate blockers older than 24 hours (AGENTS.md §B rule 14).
-3. **Friday Sprint Review & Live Demonstration (16:00 – 17:30):**
-   - 90-minute integrated demonstration against the weekly acceptance gate.
-   - Code and test evidence review against Definition of Done.
-   - Submission of weekly progress reports by all team members.
+## Weekly cadence
 
+| When | Ritual | Output |
+|---|---|---|
+| Monday | Sprint Start (chaired by Aryan) | Week target against the revised timeline, owners, blockers, decisions to escalate |
+| Tuesday – Thursday | Integration check-ins | Contract changes agreed; blockers older than 24 hours raised (AGENTS.md §B rule 14) |
+| Friday | Sprint Review and gate demo (chaired by Aryan) | Demo against the exit review; evidence linked; weekly reports submitted; review record added here |
+
+## Still to add
+
+- Gate 1 and Gate 2 review records (outcome, approver, conditions, evidence links).
+- Weekly BNCS report copies or links.

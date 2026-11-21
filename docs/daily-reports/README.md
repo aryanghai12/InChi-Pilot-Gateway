@@ -2,7 +2,7 @@
 
 Every team member records one concise progress report for each programme week. The reports give the team one place to see completed work, work in progress, blockers, validation, meeting and review activity, and the next step. They supply evidence for the sprint review and Aryan's weekly BNCS report.
 
-The folder name remains `daily-reports` to preserve existing links, open branches and Git history. It contains weekly reports only. The revised timeline in `docs/MVP_FEATURES.md §13` defines Week 1 (26–30 Oct), Week 2 (2–6 Nov, Gate 1), Week 3 (9–13 Nov), and Week 4 (16–20 Nov, Gate 2). As of 21 November 2026, the project has completed Week 4 delivery and passed Gate 2 (Workflow & Rule Approval).
+The folder name remains `daily-reports` to preserve existing links, open branches and Git history. It contains weekly reports only. Week numbers and dates come from the proposed revised timeline in `docs/MVP_FEATURES.md §13` (pending D-19): Week 1 26–30 Oct, Week 2 2–6 Nov (Gate 1), Week 3 9–13 Nov, Week 4 16–20 Nov (Gate 2), Week 5 23–27 Nov, Week 6 30 Nov–4 Dec (Gate 3, feature freeze), Week 7 7–11 Dec (Gate 4), Week 8 14–18 Dec (Gate 5). Use the revised week titles, not the build manual's. Gate outcomes are recorded only in the [gate register](../governance/REGISTERS.md#7-gate-register).
 
 | | |
 |---|---|

@@ -9,59 +9,60 @@ Only Aryan Ghai writes in this file. Newest report first.
 ## Week 4 - 16-20 November 2026
 
 **Completed**
-- Coordinated Gate 2 (Workflow and Rule Approval Gate) review: verified buyer demand (M5) and China-readiness assessment (M4) workflows, OpenAPI 3.0.3 contract synchronization, and pre-AI integration prerequisites - completed - evidence: [MVP timeline](../MVP_FEATURES.md#13-timeline-and-acceptance-gates) and Gate 2 verification.
-- Reviewed and merged major cross-functional PRs: Docker Compose one-command full-stack environment (PR #71), backend demand & China-readiness APIs with RBAC/audit (PR #70, PR #77), frontend v2.2 readiness desk & completeness gate (PR #75), and QA defect fixes #60, #61, #62 - merged - evidence: GitHub PRs #70, #71, #75, #76, #77.
-- Monitored repository security and dependencies: verified Next.js 16.4.6 security upgrade, Gitleaks pattern tuning, and full-stack CI pipeline stability - completed - evidence: `.github/workflows/ci.yml` and `.gitleaks.toml`.
+- Held the Gate 2 (Workflow and Rule Approval) review on Fri 20 Nov against the revised-timeline exit review ("fields, rules, criteria and interfaces receive approval before AI integration"), using China Readiness Implementation Baseline v2.2 (BNCS, dated 16 Nov 2026) as the rule baseline - review held; outcome, approver and conditions not yet recorded - evidence: [gate register](../governance/REGISTERS.md#7-gate-register).
+- Reviewed and merged the week's PRs: #66 and #65 (QA Week 1-3 delivery), #67 (AI matching Week 3 data preparation), #68 and #70 (backend demand and China-readiness APIs with RBAC and audit; #70 includes the QA fixes referenced as #60, #61, #62), #69 (frontend issue fixes), #71 (one-command Docker Compose full stack), #75 (frontend Week 4 readiness desk, completeness gate, OpenAPI sync, Next.js 16.4.6 upgrade), #76 (weekly report) - merged 16-20 Nov - evidence: `git log --merges` on `main`.
+- Monitored dependency and secret-scanning configuration: Next.js 16.4.6 in `frontend/package.json`, `.gitleaks.toml` tuning merged in #75 - completed - evidence: `.github/workflows/security.yml`, `.gitleaks.toml`.
 
 **Meetings, reviews and coordination**
-- Chaired Monday Sprint Start (16 Nov) and Friday Sprint Review / Gate 2 evaluation (20 Nov) - completed - evidence: Aryan's meeting minutes.
-- Held daily coordination syncs (17-19 Nov) with backend (Abhishek), frontend (Priyanka), AI matching (Alok), QA (Harish), and Security (Ajendra) on M4/M5 integration and matching engine boundaries - completed - evidence: team channel sync logs.
-- Conducted Gate 2 rule review: reviewed China Readiness Baseline v2.2 (18 criteria, 9 evidence conditions, qualitative categorical outcomes) and Buyer Requirement Field Dictionary v1.4 - completed - evidence: review record.
-- Followed up on weekly reporting submissions across all 8 team members following the Friday Sprint Review - completed - evidence: [docs/daily-reports/README.md](README.md).
+- Chaired Monday Sprint Start (16 Nov) and Friday Sprint Review with the Gate 2 review (20 Nov) - completed - evidence: Aryan's meeting minutes (not yet in the repository).
+- Coordination syncs 17-19 Nov with Abhishek, Priyanka, Alok, Harish and Ajendra on M4/M5 integration and the matching-engine boundary - completed - evidence: team channel.
+- Gate 2 rule review of Baseline v2.2 (18 questions, nine evidence conditions, categorical outcomes) and the buyer-requirement fields used by `demand` - completed - evidence: review notes.
+- Followed up weekly reports after the Sprint Review - completed - evidence: [missing-report check](../governance/AUDIT_2026-11-21.md#72-missing-weekly-reports-weeks-14).
 
 **In progress**
-- Week 5 AI matching integration (M6) and Reviewer disposition workflow (M7) coordination - M6-AC1 to M6-AC7 - tracking Alok's FastAPI matching engine and Abhishek's candidate selector integration.
-- Governance documentation and implementation guide completion - M11 / D-19 - preparing implementation guide and governance registers.
+- Repository and documentation audit after merging `main`, with README, IMPLEMENTATION, registers and integration plan updated to the verified state - M11 / D-19 - branch `governance/audit-and-implementation`, to be reviewed.
+- Week 5 matching (M6) and disposition (M7) coordination - waiting on D-21.
 
 **Tests and validation**
-- `git log --merges --since=2026-11-16 --until=2026-11-20` -> reviewed 5 merged PRs (PR #70, #71, #75, #76, #77).
-- `docker compose config` -> validated all 4 services (`db`, `matching`, `backend`, `frontend`) and environment variable bindings.
-- `git status` -> clean working tree on main.
+- `git log origin/main --merges` for 16-20 Nov -> 9 PR merges (#65, #66, #67, #68, #69, #70, #71, #75, #76) plus one branch-sync merge; #77 merged on 21 Nov, after the week.
+- `docker compose config` -> 4 services (`db`, `matching`, `backend`, `frontend`) validated.
 
 **Blocked, dependencies and decisions needed**
-- Decision D-04 (Mandatory eligibility criteria) and D-05 (Weighted preference criteria) - waiting on BNCS formal confirmation - raised in Gate 2 review pack.
-- Decision D-11 (Embedding model selection) - waiting on Ajendra security/licensing review and BNCS confirmation - shortlist documented in `docs/ai/`.
-- Decision D-19 (Formal revised timeline approval) - waiting on BNCS Programme Sponsor and University Coordinator - since 2026-10-26.
+- Baseline v2.2 conflicts with the built design: rules-only matching vs mandatory semantic hybrid scoring (D-21), five roles vs three (D-22), controlled values and Buyer Organisation (D-23), opportunity pipeline scope (D-24), approver of record and change control (D-25) - waiting on BNCS - since 2026-11-21 - raised in [REGISTERS.md §1.3](../governance/REGISTERS.md#13-pending-decisions--escalation-list).
+- Critical defect AUD-01 (anonymous self-registration as `platform_admin`) and High AUD-15 (plaintext passwords for admin-created users) - waiting on Abhishek (fix) and Ajendra (retest) - since 2026-11-21 - raised in the [audit](../governance/AUDIT_2026-11-21.md#4-findings-register).
+- D-11 embedding model named in `.env.example` without a decision record - waiting on Alok and Ajendra - since 2026-11-19.
+- D-19 revised timeline approval - waiting on BNCS Programme Sponsor and University Coordinator - since 2026-10-26.
+- Week 1 registers and integration plan were not produced in Week 1; first versions created 21 Nov in `docs/governance/`.
 
 **Next week**
-- Coordinate Week 5 explainable AI-assisted matching (M6) delivery, candidate scoring evaluation, and match disposition desk (M7) - revised timeline Week 5.
+- Record D-21 to D-25 and the Gate 2 outcome with BNCS at Sprint Start (23 Nov); coordinate Week 5 explainable matching and human decision - revised timeline Week 5.
 
 ## Week 3 - 9-13 November 2026
 
 **Completed**
-- Coordinated Week 3 delivery focusing on Supplier Registry (M2), Product Catalogue (M3), Evidence Metadata, and initial China-readiness assessment architecture - completed - evidence: [MVP timeline](../MVP_FEATURES.md#13-timeline-and-acceptance-gates).
-- Reviewed and merged Week 3 PRs: database schema additions, backend supplier/product CRUD with optimistic concurrency (PR #46, #50), frontend enterprise workspace shell and catalogue UI (PR #47, #45), QA deliverables (PR #65, #66), and AI matching week 3 data preparation (PR #67) - merged - evidence: repository merge history for 9-13 November 2026.
-- Established interface coordination between backend (Abhishek), frontend (Priyanka), and data models (Vishal) for DRF pagination unwrapping and field naming aliases - completed - evidence: interface review notes.
+- Coordinated Week 3 delivery of the supplier registry and China-readiness workflow target - completed - evidence: [MVP timeline](../MVP_FEATURES.md#13-timeline-and-acceptance-gates).
+- Reviewed and merged the week's PRs: #21 (DevSecOps CI and security pack), #43 (C7 AI matching scaffold), #44 (frontend Week 3 modules), #17 and #45 (weekly reports) - merged 9-12 Nov; followed by #46 (buyer-requirement schema and seed), #47 (frontend session auth and proxy rewrites), #50 (backend) and #51 (weekly report), merged Sat 14 Nov - evidence: `git log --merges` on `main`.
+- Interface coordination between Abhishek, Priyanka and Vishal on DRF pagination unwrapping and field-name aliases - completed - evidence: interface review notes.
 
 **Meetings, reviews and coordination**
-- Chaired Sprint Start (9 Nov) and Sprint Review (13 Nov) meetings - completed - evidence: Aryan's meeting minutes.
-- Held mid-week integration check-ins with Abhishek, Priyanka, and Vishal on supplier/product contracts and audit event schema - completed - evidence: team channel logs.
-- Reviewed and merged team pull requests, ensuring requirement tags (M2, M3, M10) and test evidence accompanied changes - completed - evidence: PR review logs.
-- Reminded team members on weekly report submissions and followed up on open dependencies - completed - evidence: [docs/daily-reports/README.md](README.md).
+- Chaired Sprint Start (9 Nov) and Sprint Review (13 Nov) - completed - evidence: Aryan's meeting minutes (not yet in the repository).
+- Mid-week integration check-ins with Abhishek, Priyanka and Vishal on supplier/product contracts and the audit-event schema - completed - evidence: team channel.
+- Reviewed PRs for requirement tags (M2, M3, M10) and test evidence - completed - evidence: PR review comments.
+- Reminded members about weekly reports and open dependencies - completed - evidence: team channel.
 
 **In progress**
-- Coordinate Week 4 targets: Buyer Demand (M5), China Readiness Baseline v2.2 (M4), and Gate 2 workflow/rule approval preparation - Gate 2 / D-19.
+- Week 4 targets: buyer demand (M5), Baseline v2.2 readiness (M4) and Gate 2 preparation - Gate 2 / D-19.
 
 **Tests and validation**
-- `git log --merges --since=2026-11-09 --until=2026-11-13` -> verified 8 merged PRs across frontend, backend, database, QA, and AI matching.
-- Verified CI pipeline execution on GitHub Actions across merged branches.
+- `git log origin/main --merges` for 9-13 Nov -> 5 PR merges (#21, #43, #17, #44, #45); 4 more on 14 Nov (#46, #47, #50, #51).
+- Checked GitHub Actions results on the merged PRs.
 
 **Blocked, dependencies and decisions needed**
-- China-readiness assessment criteria and questionnaire schema (D-03) - pending finalized baseline document from mentor/BNCS - unblocked late Week 3 with Baseline v2.2.
-- Decision D-19 (Formal revised timeline approval) - waiting on BNCS Programme Sponsor and University Coordinator.
+- Readiness questionnaire and criteria (D-03) - waiting on the final baseline from BNCS - unblocked by Baseline v2.2 (dated 16 Nov 2026).
+- D-19 revised timeline approval - waiting on BNCS Programme Sponsor and University Coordinator - since 2026-10-26.
 
 **Next week**
-- Coordinate Week 4 delivery: Buyer Demand (M5), China Readiness Baseline v2.2 integration (M4), and Gate 2 acceptance review - revised timeline Week 4.
+- Coordinate Week 4 buyer demand (M5), Baseline v2.2 readiness (M4) and the Gate 2 review - revised timeline Week 4.
 
 ## Week 2 - 2-6 November 2026
 
