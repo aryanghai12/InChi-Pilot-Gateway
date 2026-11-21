@@ -134,7 +134,18 @@ A dedicated Python/FastAPI service executing the AI algorithms:
 >
 > **Implemented (Weeks 1–3):** contract schemas on both sides, FastAPI app with `/health` and `/match`, configuration, exceptions, Stage 1 preprocessing and normalisation, quality flags, embedding-ready records, the provider interface (`none` only), cosine similarity, the semantic coordinator, the Django request builder, candidate mapping and HTTP client, and tests.
 >
-> **Not implemented (pending approvals):** eligibility (D-04), scoring and ranking (D-05), explainability, semantic provider (D-11), persistence (`result_handler.py`, `matching_service.py`, which need Vishal's models).
+> **Implemented (19 Nov 2026):**
+> - The full engine pipeline: `services/eligibility.py`, `hybrid_scorer.py`, `ranking.py`, `explainability.py`, `matching_pipeline.py`.
+> - The versioned scoring configuration: `core/scoring_config.py` and `criteria/v0-UNAPPROVED.json`, which has **no weights**.
+> - The `sentence-transformers` provider for the owner-selected model `all-MiniLM-L6-v2`, read only from `EMBEDDING_MODEL_NAME`, plus the `download_model` command.
+> - Django: `matching_service.run_matching`, `result_handler` (persistence-ready records, atomic save with audit through a persister), `weekly_summary`, and the `BuyerRequirement` adapter.
+>
+> Contract is now **0.2.0-proposed** ([MATCHING_CONTRACT.md](MATCHING_CONTRACT.md) §8).
+>
+> **Still blocked:**
+> - Real runs need BNCS-approved weights (D-04/D-05). The engine refuses `v0-UNAPPROVED`.
+> - Storing runs needs Vishal's `MatchRun`/`MatchResult` models and a persister.
+> - D-11 must still be recorded in ARCHITECTURE.md §9.
 >
 > See [MATCHING_CONTRACT.md](MATCHING_CONTRACT.md), [PREPROCESSING.md](PREPROCESSING.md), [EMBEDDING_MODEL_SELECTION.md](EMBEDDING_MODEL_SELECTION.md) and [EVALUATION_AND_FALLBACK_DESIGN.md](EVALUATION_AND_FALLBACK_DESIGN.md). Database models, migrations and table schemas remain owned by Vishal (C6); DRF endpoints and serializers by Abhishek (C5).
 

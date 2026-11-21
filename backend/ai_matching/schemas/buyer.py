@@ -21,12 +21,11 @@ NOTE ON ARCHITECTURE & DECISIONS:
 # no weight values travel in the requirement.
 """
 
-from typing import Any
-
 from pydantic import Field
 
 from ai_matching.core.constants import MAX_CRITERIA_PER_REQUIREMENT
 from ai_matching.schemas.common import (
+    BoundedJsonObject,
     Code,
     ContractModel,
     Identifier,
@@ -41,7 +40,7 @@ class MandatoryCriteriaInput(ContractModel):
 
     criterion_key: Identifier
     operator: Identifier
-    value: dict[str, Any] = Field(default_factory=dict)
+    value: BoundedJsonObject = Field(default_factory=dict)
     unknown_policy: Code = ""
 
 
@@ -49,7 +48,7 @@ class PreferenceCriteriaInput(ContractModel):
     """One weighted preference. Mirrors RequirementPreference."""
 
     preference_key: Identifier
-    value: dict[str, Any] = Field(default_factory=dict)
+    value: BoundedJsonObject = Field(default_factory=dict)
     weight_key: Code = ""
 
 

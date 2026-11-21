@@ -1,21 +1,18 @@
 """
 Matching Result and Scoring Schemas.
 
-Defines CriterionResult (EligibilityDetail), ScoreBreakdown, MatchWarning,
-SupplierRankResult, PipelineMetrics and MatchResponse — the body returned by a
-successful POST /match. Failures never use this model; they return the error
-envelope instead, so no partial results can be stored (M6-AC5).
+Defines CriterionResult (EligibilityDetail), ScoreContribution, ScoreBreakdown,
+MatchWarning, SupplierRankResult, PipelineMetrics and MatchResponse — the body
+returned by a successful POST /match. Failures never use this model; they
+return the error envelope instead, so no partial results can be stored (M6-AC5).
 
 Author: Alok Tiwari (C7 — AI Matching and Data Intelligence Engineer)
 Architecture: Component B (FastAPI AI Matching Engine)
-Status: Week 2. Contract is PROPOSED (docs/ai/MATCHING_CONTRACT.md).
-The engine cannot produce this response yet: eligibility (D-04), scoring
-weights (D-05) and the embedding model (D-11) are pending.
+Status: Contract 0.2.0-proposed (docs/ai/MATCHING_CONTRACT.md).
 
 NOTE ON ARCHITECTURE & DECISIONS:
-# Score fields are bounded [0, 1] containers only. How they are computed and
-# weighted is NOT defined here (D-05). Scores are decision support, never
-# certainty (MVP_FEATURES §2).
+# Scores are decision support, never certainty (MVP_FEATURES §2). How they are
+# weighted comes from the versioned scoring configuration (D-05).
 """
 
 from typing import Annotated, Literal
@@ -24,39 +21,49 @@ from pydantic import Field
 
 from ai_matching.core.constants import (
     CONTRACT_VERSION,
+    ConfigurationStatus,
     CriterionOutcome,
     EligibilityOutcome,
     MatchingMode,
+    PreferenceOutcome,
     QualityFlag,
     RunStatus,
 )
 from ai_matching.schemas.common import Code, ContractModel, Identifier, ShortText
 
 UnitInterval = Annotated[float, Field(ge=0.0, le=1.0)]
+Cosine = Annotated[float, Field(ge=-1.0, le=1.0)]
 
 
 class CriterionResult(ContractModel):
     """Outcome of one mandatory criterion for one candidate (EligibilityDetail)."""
 
     criterion_key: Identifier
+    operator: Code = ""
     outcome: CriterionOutcome
     detail: ShortText = ""
 
 
 class ScoreContribution(ContractModel):
-    """Weighted contribution of one preference criterion."""
+    """One preference: its approved weight, outcome and share of the rule score."""
 
     preference_key: Identifier
     weight_key: Code = ""
-    contribution: float
+    weight: float | None = Field(default=None, ge=0.0)
+    outcome: PreferenceOutcome
+    contribution: UnitInterval = 0.0
+    detail: ShortText = ""
 
 
 class ScoreBreakdown(ContractModel):
     """Score components for an eligible candidate (M6-AC3)."""
 
-    rule_score: UnitInterval
+    rule_score: UnitInterval | None = Field(description="None when no preference could be scored.")
+    semantic_cosine: Cosine = Field(description="Raw cosine similarity of the embedding texts.")
     semantic_score: UnitInterval = Field(description="Semantic signal; labelled as such in the UI.")
     hybrid_score: UnitInterval
+    rule_weight: UnitInterval
+    semantic_weight: UnitInterval
     contributions: list[ScoreContribution] = Field(default_factory=list)
 
 
@@ -100,9 +107,11 @@ class MatchResponse(ContractModel):
     requirement_id: Identifier
     requirement_version: int = Field(ge=1)
     criteria_version: Identifier
-    embedding_model_id: Code = Field(description="Model ID and version used, per M6-AC6.")
+    configuration_status: ConfigurationStatus
+    embedding_model_id: Code = Field(description="Model ID used, per M6-AC6.")
     embedding_text_template_version: Code
     ranked: list[SupplierRankResult] = Field(default_factory=list)
     excluded: list[SupplierRankResult] = Field(default_factory=list)
     insufficient_data: list[SupplierRankResult] = Field(default_factory=list)
+    run_warnings: list[ShortText] = Field(default_factory=list)
     metrics: PipelineMetrics

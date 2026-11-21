@@ -1,0 +1,11 @@
+{
+  "version": "v0-UNAPPROVED",
+  "status": "unapproved",
+  "approved_by": "",
+  "approved_at": "",
+  "decision_refs": ["D-04", "D-05"],
+  "notes": "UNAPPROVED placeholder. No weights or semantic mapping are set: BNCS must approve them at Gate 2 (D-05) before this file is filled in through a reviewed PR. The engine refuses to score with this file.",
+  "hybrid_weights": {"rule": null, "semantic": null},
+  "preference_weights": {},
+  "semantic_score_mapping": null
+}

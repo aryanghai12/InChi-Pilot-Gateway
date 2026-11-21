@@ -13,6 +13,7 @@ Author: Alok Tiwari (C7 — AI Matching and Data Intelligence Engineer)
 Architecture: Component A + Component B
 """
 
+import os
 import unittest
 
 from django.test import SimpleTestCase
@@ -39,6 +40,21 @@ try:
 except ImportError:  # pragma: no cover - depends on the environment
     ENGINE_AVAILABLE = False
 
+# Set REQUIRE_ENGINE_TESTS=1 in CI so a missing engine install FAILS instead of
+# being reported as skipped (ISSUES.md ISSUE-045).
+REQUIRE_ENGINE_TESTS = os.environ.get("REQUIRE_ENGINE_TESTS") == "1"
+
+
+class EngineAvailabilityTests(SimpleTestCase):
+    def test_engine_dependencies_present_when_required(self):
+        if not REQUIRE_ENGINE_TESTS:
+            self.skipTest("REQUIRE_ENGINE_TESTS is not set; contract tests may skip.")
+        self.assertTrue(
+            ENGINE_AVAILABLE,
+            "REQUIRE_ENGINE_TESTS=1 but the FastAPI engine dependencies are not installed "
+            "(pip install -r ai_matching/requirements-dev.txt).",
+        )
+
 
 @unittest.skipUnless(ENGINE_AVAILABLE, "FastAPI engine dependencies are not installed.")
 class DjangoEngineContractTests(SimpleTestCase):
@@ -48,6 +64,36 @@ class DjangoEngineContractTests(SimpleTestCase):
     def test_shared_constants_agree(self):
         self.assertEqual(matching_request.CONTRACT_VERSION, engine_constants.CONTRACT_VERSION)
         self.assertEqual(request_builder.MAX_CANDIDATES_PER_REQUEST, engine_constants.MAX_CANDIDATES_PER_REQUEST)
+        self.assertEqual(request_builder.MAX_LONG_TEXT_LENGTH, engine_constants.MAX_LONG_TEXT_LENGTH)
+        self.assertEqual(request_builder.MANUAL_REVIEW_OPERATOR, engine_constants.MANUAL_REVIEW_OPERATOR)
+
+    def test_full_round_trip_through_real_engine_pipeline(self):
+        """Django request -> real engine pipeline (test embedder, synthetic approved config) -> Django parse."""
+        from ai_matching.api.dependencies import (
+            embedding_provider_dependency,
+            settings_dependency,
+        )
+        from ai_matching.tests.factories import (
+            TEST_CONFIG_VERSION,
+            CriteriaDir,
+            KeywordEmbedder,
+            settings,
+        )
+
+        body = build_matching_request(requirement(), [candidate(1), candidate(2, origin="China")],
+                                      TEST_CONFIG_VERSION, "corr-rt").to_dict()
+        with CriteriaDir() as path:
+            engine_app.dependency_overrides[settings_dependency] = lambda: settings(path)
+            engine_app.dependency_overrides[embedding_provider_dependency] = KeywordEmbedder
+            try:
+                response = TestClient(engine_app).post("/match", json=body)
+            finally:
+                engine_app.dependency_overrides.clear()
+        self.assertEqual(response.status_code, 200, response.text)
+        parsed = MatchingResponsePayload.from_dict(response.json())
+        self.assertEqual([r.candidate_id for r in parsed.ranked], [candidate(1).candidate_id])
+        self.assertEqual([r.candidate_id for r in parsed.excluded], [candidate(2).candidate_id])
+        self.assertEqual(parsed.configuration_status, "approved")
 
     def test_django_request_validates_against_engine_schema(self):
         validated = MatchRequest.model_validate(self._request_body())
