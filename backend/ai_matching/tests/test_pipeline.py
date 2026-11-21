@@ -187,6 +187,36 @@ class MatchRequestContractTests(unittest.TestCase):
         with self.assertRaises(ValidationError):
             MatchRequest(**match_request_payload(candidates=too_many))
 
+    def _with_criterion_value(self, value):
+        payload = match_request_payload()
+        payload["requirement"]["mandatory_criteria"] = [
+            {"criterion_key": "origin_country", "operator": "equals", "value": value}
+        ]
+        return payload
+
+    def test_oversized_criterion_value_rejected(self):
+        """ISSUE-034: criterion values are bounded by serialised size."""
+        with self.assertRaises(ValidationError):
+            MatchRequest(**self._with_criterion_value({"value": "IN", "padding": "x" * 5000}))
+
+    def test_deeply_nested_criterion_value_rejected(self):
+        """ISSUE-034: criterion values are bounded by nesting depth."""
+        deep = {"a": {"b": {"c": {"d": {"e": "IN"}}}}}
+        with self.assertRaises(ValidationError):
+            MatchRequest(**self._with_criterion_value(deep))
+
+    def test_oversized_preference_value_rejected(self):
+        payload = match_request_payload()
+        payload["requirement"]["preference_criteria"] = [
+            {"preference_key": "lead_time", "value": {"note": "x" * 5000}, "weight_key": "lead_time"}
+        ]
+        with self.assertRaises(ValidationError):
+            MatchRequest(**payload)
+
+    def test_normal_criterion_values_still_accepted(self):
+        request = MatchRequest(**self._with_criterion_value({"value": ["IN", "AE"]}))
+        self.assertEqual(request.requirement.mandatory_criteria[0].value, {"value": ["IN", "AE"]})
+
 
 class ConfigurationTests(unittest.TestCase):
     def test_defaults_have_no_model(self):

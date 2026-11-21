@@ -45,6 +45,9 @@ from apps.matching.schemas.matching_request import (
 MAX_CANDIDATES_PER_REQUEST = 1000
 MAX_LONG_TEXT_LENGTH = 5000
 MANUAL_REVIEW_OPERATOR = "manual_review"
+# Free-text criteria are display-only; capped so they stay within the engine's
+# MAX_CRITERION_VALUE_CHARS bound (ai_matching/core/constants.py).
+MAX_FREE_TEXT_CHARS = 500
 
 
 def build_matching_request(
@@ -82,12 +85,13 @@ def build_matching_request(
 
 
 def _entry_text(entry: Any) -> str:
+    """Display text of a free-text entry, capped (the engine only shows the first 200 characters)."""
     if isinstance(entry, dict):
         for key in ("name", "text", "description", "document_name", "label"):
             if isinstance(entry.get(key), str) and entry[key].strip():
-                return entry[key].strip()
+                return entry[key].strip()[:MAX_FREE_TEXT_CHARS]
         return ""
-    return str(entry).strip() if entry is not None else ""
+    return str(entry).strip()[:MAX_FREE_TEXT_CHARS] if entry is not None else ""
 
 
 def _mandatory_criteria(entries: Any) -> tuple[MandatoryCriteriaPayload, ...]:

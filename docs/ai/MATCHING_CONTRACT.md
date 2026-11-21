@@ -61,7 +61,7 @@ Unknown fields are rejected at every level. Decimals travel as strings or number
 
 **`SupplierCandidateInput`**: one product with its supplier (`backend/apps/registry/models.py` field names). The fields are `candidate_id` (the product ID), `supplier_id`, `supplier_name`, `supplier_country`, `supplier_record_status`, `supplier_industry_description` and `readiness_status` (null until M4). Then `product_name`, `product_category`, `description`, `specifications`, `origin`, the MOQ, price, capacity and lead-time values with their units, and `evidence[]`.
 
-Bounds: short text ≤ 255, long text ≤ 5000, codes ≤ 100, ≤ 50 criteria per list, ≤ 50 evidence items per candidate (THREAT_MODEL T-DS-01).
+Bounds: short text ≤ 255, long text ≤ 5000, codes ≤ 100, ≤ 50 criteria per list, ≤ 50 evidence items per candidate (THREAT_MODEL T-DS-01). Each criterion or preference `value` object is ≤ 4000 characters when serialised and nested ≤ 4 levels deep; Django caps free-text criterion text at 500 characters.
 
 ## 4. Success response: `MatchResponse` (HTTP 200)
 

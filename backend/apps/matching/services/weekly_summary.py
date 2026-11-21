@@ -24,7 +24,9 @@ from __future__ import annotations
 from collections import Counter
 from collections.abc import Iterable
 from dataclasses import dataclass, field
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, tzinfo
+
+from django.utils import timezone
 
 # Proposed revised timeline, MVP_FEATURES §13 — pending D-19.
 PROGRAMME_START = date(2026, 10, 26)
@@ -76,11 +78,29 @@ def programme_week(day: date, programme_start: date = PROGRAMME_START) -> int:
     return (day - programme_start).days // 7 + 1
 
 
-def summarise_weekly(records: Iterable, programme_start: date = PROGRAMME_START) -> list[WeeklyMatchingSummary]:
-    """Aggregate run records into one summary per programme week, oldest first."""
+def _local_date(moment: datetime, tz: tzinfo | None) -> date:
+    """Calendar date of a timestamp in the reporting timezone (aware) or as-is (naive)."""
+    if timezone.is_aware(moment):
+        return timezone.localtime(moment, tz or timezone.get_current_timezone()).date()
+    return moment.date()
+
+
+def summarise_weekly(
+    records: Iterable,
+    programme_start: date = PROGRAMME_START,
+    tz: tzinfo | None = None,
+) -> list[WeeklyMatchingSummary]:
+    """
+    Aggregate run records into one summary per programme week, oldest first.
+
+    Aware timestamps are converted to `tz` before the date is taken, so a run just
+    after local midnight on a Monday falls in the new week (ISSUES.md ISSUE-035).
+    `tz` defaults to Django's configured TIME_ZONE; pass the programme's timezone
+    explicitly when it differs from the server setting.
+    """
     weeks: dict[int, WeeklyMatchingSummary] = {}
     for record in records:
-        week = programme_week(record.started_at.date(), programme_start)
+        week = programme_week(_local_date(record.started_at, tz), programme_start)
         start = programme_start + timedelta(weeks=week - 1)
         summary = weeks.setdefault(week, WeeklyMatchingSummary(week, start, start + timedelta(days=6)))
         summary.runs_total += 1

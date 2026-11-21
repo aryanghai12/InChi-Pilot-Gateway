@@ -115,3 +115,7 @@ MAX_LONG_TEXT_LENGTH = 5000
 MAX_CODE_LENGTH = 100
 MAX_CRITERIA_PER_REQUIREMENT = 50
 MAX_EVIDENCE_ITEMS_PER_CANDIDATE = 50
+# Criterion / preference `value` objects (free JSON in the demand schema): bounded
+# by serialised size and nesting depth (ISSUES.md ISSUE-034).
+MAX_CRITERION_VALUE_CHARS = 4000
+MAX_CRITERION_VALUE_DEPTH = 4

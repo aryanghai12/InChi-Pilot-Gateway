@@ -13,6 +13,7 @@ Author: Alok Tiwari (C7 — AI Matching and Data Intelligence Engineer)
 Architecture: Component A + Component B
 """
 
+import os
 import unittest
 
 from django.test import SimpleTestCase
@@ -38,6 +39,21 @@ try:
     ENGINE_AVAILABLE = True
 except ImportError:  # pragma: no cover - depends on the environment
     ENGINE_AVAILABLE = False
+
+# Set REQUIRE_ENGINE_TESTS=1 in CI so a missing engine install FAILS instead of
+# being reported as skipped (ISSUES.md ISSUE-045).
+REQUIRE_ENGINE_TESTS = os.environ.get("REQUIRE_ENGINE_TESTS") == "1"
+
+
+class EngineAvailabilityTests(SimpleTestCase):
+    def test_engine_dependencies_present_when_required(self):
+        if not REQUIRE_ENGINE_TESTS:
+            self.skipTest("REQUIRE_ENGINE_TESTS is not set; contract tests may skip.")
+        self.assertTrue(
+            ENGINE_AVAILABLE,
+            "REQUIRE_ENGINE_TESTS=1 but the FastAPI engine dependencies are not installed "
+            "(pip install -r ai_matching/requirements-dev.txt).",
+        )
 
 
 @unittest.skipUnless(ENGINE_AVAILABLE, "FastAPI engine dependencies are not installed.")

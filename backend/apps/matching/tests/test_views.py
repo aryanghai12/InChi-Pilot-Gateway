@@ -105,6 +105,12 @@ class RequirementAdapterTests(TestCase):
         with self.assertRaises(InvalidMatchingPayloadError):
             requirement_payload_from_model(_ready_requirement(product_specifications="x" * 5001))
 
+    def test_long_free_text_criterion_is_capped(self):
+        """ISSUE-034: free-text criteria stay within the engine's value bound."""
+        req = _ready_requirement(mandatory_criteria=[{"id": "m-1", "name": "y" * 3000, "type": "mandatory"}])
+        criterion = requirement_payload_from_model(req).mandatory_criteria[0]
+        self.assertEqual(len(criterion.value["text"]), 500)
+
 
 class MatchingServiceTests(TestCase):
     def setUp(self):
@@ -245,6 +251,20 @@ class WeeklySummaryTests(TestCase):
     def test_configurable_programme_start(self):
         weeks = weekly_summary.summarise_weekly([_record(date(2026, 11, 18))], programme_start=date(2026, 10, 19))
         self.assertEqual(weeks[0].week_number, 5)
+
+    def test_week_boundary_uses_reporting_timezone(self):
+        """ISSUE-035: 20:00 UTC Sunday 22 Nov is already Monday 23 Nov (week 5) in IST."""
+        from zoneinfo import ZoneInfo
+
+        record = _record(date(2026, 11, 22))
+        record.started_at = datetime(2026, 11, 22, 20, 0, tzinfo=UTC)
+        self.assertEqual(weekly_summary.summarise_weekly([record], tz=ZoneInfo("Asia/Kolkata"))[0].week_number, 5)
+        self.assertEqual(weekly_summary.summarise_weekly([record], tz=UTC)[0].week_number, 4)
+
+    def test_naive_timestamps_used_as_is(self):
+        record = _record(date(2026, 11, 23))
+        record.started_at = datetime(2026, 11, 23, 1, 0)
+        self.assertEqual(weekly_summary.summarise_weekly([record])[0].week_number, 5)
 
     def test_empty(self):
         self.assertEqual(weekly_summary.summarise_weekly([]), [])
