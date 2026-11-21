@@ -1,0 +1,4 @@
+supplier_id,legal_name,trading_name,supplier_type,registered_address,state_country,gstin,iec,primary_contact,contact_email,export_markets,record_status
+10000000-0000-0000-0000-000000000001,Bharat Precision Components Pvt Ltd,Bharat Precision,MANUFACTURER,"Pune, Maharashtra, India","Maharashtra, India",27ABCDE1234F1Z5,1234567890,Approved Contact,precision@example.com,"[""China"", ""UAE""]",ACTIVE
+10000000-0000-0000-0000-000000000002,Southern Harvest Foods LLP,Southern Harvest,MANUFACTURER,"Tamil Nadu, India","Tamil Nadu, India",33ABCDE1234F1Z5,1234567891,Food Contact,harvest@example.com,"[""China""]",ACTIVE
+10000000-0000-0000-0000-000000000003,Industrial Additive Supplies India,IAS India,TRADER,"Gujarat, India","Gujarat, India",24ABCDE1234F1Z5,1234567892,Trade Contact,additives@example.com,"[""China""]",ACTIVE

@@ -50,6 +50,13 @@ Those services should:
 9. Enforce field-level access rules for commercial terms and notes.
 10. Emit audit events without passwords, tokens or unnecessary personal data.
 
+## Product pricing integration rule
+
+For registry products, currency must be explicit whenever either price bound
+is supplied. Products without pricing may omit currency. The backend must
+validate this before persistence, and existing stored currency values must not
+be rewritten. See `product-currency-rule.md`.
+
 ## Local setup
 
 ```powershell

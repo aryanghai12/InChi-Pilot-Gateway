@@ -19,6 +19,13 @@ Excel field dictionary or BNCS approvals.
 | `RequirementPreference` | Non-mandatory desired attribute | Used only after mandatory eligibility |
 | `MatchingReadinessBlocker` | Specific unresolved reason preventing matching | Derived from approved gate configuration |
 | `MatchingConfiguration` | Versioned approved criteria/weights/configuration reference | Inactive until approved |
+| `Supplier` | Indian supplier or trading entity | Draft, Active or Archived; supplier data is separate from readiness outcome |
+| `Product` | Specific supplier product, model, grade or variant | Always linked to a supplier; material changes create history |
+| `ReadinessAssessment` | Versioned assessment for a supplier and at least one product | Immutable submission snapshots; reassessment creates a new version |
+| `EvidenceRecord` | Evidence metadata supporting a criterion | Evidence condition changes create audit events |
+| `MatchRun` | Immutable deterministic matching execution | Never overwritten; input versions and findings remain retained |
+| `Disposition` | Human decision for one match and requirement | Requirement-specific; reason is mandatory |
+| `AuditEvent` | Actor, timestamp and material before/after change summary | Append-only; not editable through normal application functions |
 
 ## State and provenance rules
 

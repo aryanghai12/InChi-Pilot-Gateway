@@ -10,7 +10,7 @@ This repository provides a centralized, reusable PostgreSQL database connection 
 - **Database:** PostgreSQL 17 (Official image with pgvector support)
 - **Database Driver:** `psycopg 3` (with binary wheels and pool support)
 - **Containerization:** Docker Compose
-- **Default Database Port:** `5432`
+- **Default Database Port:** `5434` for the dedicated InChi container
 - **Volume Persistence:** Named Docker volume `inchi_postgres_data`
 
 ---
@@ -28,6 +28,11 @@ apps/
         apps.py          # Buyer-demand Django app configuration
         models.py        # Buyer requirement schema and constraints
         migrations/      # Authoritative schema migration history
+    registry/
+        apps.py          # Supplier-product registry app configuration
+        models.py        # Supplier and product schema and constraints
+        migrations/      # Supplier and product migration history
+        tests.py          # Supplier and product database tests
 docs/
     buyer-requirement-schema-mapping.md
     open-data-decisions.md
@@ -130,6 +135,21 @@ Load repeatable synthetic reference and buyer-demand data:
 ```powershell
 python -m django seed_demo
 ```
+
+Synthetic role account emails are listed in
+`seed/synthetic_demo_accounts.csv`. Set `DEMO_USER_PASSWORD` locally in
+`.env` before seeding role accounts:
+
+```text
+DEMO_USER_PASSWORD=<team-supplied-synthetic-password>
+```
+
+Never commit the real demo password. The seed command uses Django password
+hashing and updates the three demo accounts without duplication:
+
+- `platform.admin@example.com`
+- `commercial.analyst@example.com`
+- `reviewer@example.com`
 
 The seed command creates at least 20 synthetic buyer requirements and related
 records. It never uses real buyer, supplier or personal data, and it does not
