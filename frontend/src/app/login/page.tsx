@@ -31,57 +31,6 @@ function LoginForm() {
     ensureCsrfToken();
   }, []);
 
-  const handleDemoSignIn = async () => {
-    setIsLoading(true);
-    setErrorMessage(null);
-    setFieldErrors({});
-
-    try {
-      // First attempt to log in to Django with test credentials
-      const res = await apiFetch<Record<string, unknown>>("/api/v1/auth/login/", {
-        method: "POST",
-        body: JSON.stringify({
-          email: "analyst@inchi.local",
-          password: "AnalystPass123!",
-        }),
-      });
-      const user = (res?.user || res) as Record<string, unknown> | null;
-      if (user && typeof user === "object" && (user.id || user.email)) {
-        queryClient.setQueryData(["currentUser"], user);
-      }
-      if (typeof document !== "undefined") {
-        document.cookie = "sessionid=demo-session; path=/; SameSite=Lax";
-      }
-      if (typeof window !== "undefined") {
-        window.location.href = nextUrl;
-      } else {
-        router.push(nextUrl);
-      }
-    } catch {
-      // Fallback to standalone client demo session if backend is offline/unreachable
-      if (typeof document !== "undefined") {
-        document.cookie = "sessionid=demo-session; path=/; SameSite=Lax";
-      }
-      queryClient.setQueryData(["currentUser"], {
-        id: "demo-user-1",
-        email: "analyst@inchi.local",
-        first_name: "Priyanka",
-        last_name: "Singh",
-        role: "commercial_analyst",
-        role_display: "Commercial Analyst",
-        is_active: true,
-        is_verified: true,
-        is_staff: false,
-      });
-      if (typeof window !== "undefined") {
-        window.location.href = nextUrl;
-      } else {
-        router.push(nextUrl);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -120,7 +69,7 @@ function LoginForm() {
 
         const displayMessage =
           err.status === 404
-            ? "Authentication service is currently unavailable. Please try again later or explore using Demo Session."
+            ? "Authentication service is currently unavailable. Please try again later or contact your Platform Administrator."
             : nonFieldError ||
             (isGenericValidationNotice ? "Invalid email or password." : err.message || "Invalid email or password.");
 
@@ -226,15 +175,6 @@ function LoginForm() {
           style={{ width: "100%", marginTop: "0.5rem" }}
         >
           Sign In
-        </Button>
-
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={handleDemoSignIn}
-          style={{ width: "100%", marginTop: "0.5rem" }}
-        >
-          Explore with Demo Session
         </Button>
       </form>
 
