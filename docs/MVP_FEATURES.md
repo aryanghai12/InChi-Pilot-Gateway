@@ -2,8 +2,8 @@
 
 | | |
 |---|---|
-| **Status** | Working baseline for team and BNCS review. Business rules marked [OPEN] await BNCS. The technology stack and technical decisions are recorded in [`ARCHITECTURE.md`](ARCHITECTURE.md) (§9 status, §10 build-manual deviations awaiting BNCS and mentor approval). The embedding model (D-11) and any LLM (D-20) are TBD. Proposed revised timeline (26 Oct–18 Dec 2026) is pending formal BNCS and university coordinator approval (D-19). |
-| **Prepared** | 28 October 2026 (revised Week 1). Scope and Build Manual alignment revision: 3 November 2026. |
+| **Status** | Working baseline at the end of Week 4 (21 Nov 2026). **For the China-readiness and matching portion, [Baseline v2.2](source-documents/InChi_China_Readiness_Implementation_Baseline_v2.2.pdf) (BNCS, 16 Nov 2026) governs and overrides this document where they conflict.** Live: M1, M2–M3, M4, M5, M10 (write side). Not yet integrated: M6–M9. Decisions: [§12](#12-open-decisions) and [`governance/REGISTERS.md`](governance/REGISTERS.md). Dates follow the proposed revised timeline (D-19 pending). |
+| **Prepared** | 28 October 2026 (revised Week 1). Scope alignment: 3 November 2026. Week 4 audit and Baseline v2.2 alignment of status, sources and decisions: 21 November 2026 ([audit](governance/AUDIT_2026-11-21.md)). Module acceptance criteria not yet re-based on v2.2 (Adrika). |
 | **Maintained by** | Aryan Ghai (coordination and change record). Requirement content: Adrika T Kumar. Material changes need BNCS approval. |
 | **Applies to** | Every contributor and every AI coding agent working in this repository. See [`../AGENTS.md`](../AGENTS.md). |
 
@@ -18,20 +18,21 @@ Every statement is one of four kinds. Where it matters, it is tagged:
 | **[REPO]** | Checked against this repository. |
 | **[OPEN]** | Needs a business decision from BNCS. Each one has a `D-xx` reference in [§12](#12-open-decisions). Technical decisions and their status are recorded in [ARCHITECTURE.md §9](ARCHITECTURE.md#9-technical-decision-record). |
 
-**Source documents reviewed** (all in [`docs/`](./)):
+**Source documents reviewed** (all located in [`docs/source-documents/`](source-documents/)):
 
 | File | Used for | Notes |
 |---|---|---|
-| `InChi_Pilot_Gateway_Build_Manual.pdf` | Scope, components, governance, AI and security rules, acceptance gates | Its role table and dates are **out of date**. See [§11](#11-source-document-discrepancies). |
-| `InChi_Pilot_User_Delivery Ownership (revised).pdf` | **Source of truth for current roles** (effective 26 Oct 2026) | Page 4 of 6 of "User Journey and Build Ownership". |
-| `InChi_Pilot_Build Sequence Timeline (revised).pdf` | **Current week-by-week duties and dates** (26 Oct to 18 Dec 2026) | Pages 5 to 6 of the same document. |
-| `InChi_Pilot_User_Journey_Proposed.pdf` | Eight-stage journey and per-stage owners | Pages 1 to 3 of the same document. The filename says "Proposed" but the footer says "Current 26 October 2026". |
-| `InChi_University_Collaboration_Internship_Program.pdf` | Programme objective, modules, AI framework, success metrics | Earlier team structure. Some module scope is broader than the manual. |
-| `InChi_Mapped_Website_Feature_Blueprint.pdf` | Proposed pages, fields, states and acceptance criteria (v1.0, 27 Oct 2026) | Audited in [§9](#9-feature-blueprint-audit). |
+| [`InChi_China_Readiness_Implementation_Baseline_v2.2.pdf`](source-documents/InChi_China_Readiness_Implementation_Baseline_v2.2.pdf) | **Governing BNCS decisions** for readiness, evidence, buyer requirements, matching rules, explanation, disposition, roles and permissions, acceptance criteria AC-01–AC-25, security tests SEC-01–SEC-06, change control | 16 Nov 2026, Product Authority VBD + CPO. Overrides earlier documents for its portion. Conflicts with the built design: DS-17 to DS-21, D-21 to D-25. |
+| [`InChi_Pilot_Gateway_Build_Manual.pdf`](source-documents/InChi_Pilot_Gateway_Build_Manual.pdf) | Scope, components, governance, AI and security rules, acceptance gates | Baseline requirements (roles and dates superseded). See [§11](#11-source-document-discrepancies). |
+| [`InChi_Pilot_User_Delivery Ownership (revised).pdf`](source-documents/InChi_Pilot_User_Delivery%20Ownership%20(revised).pdf) | **Source of truth for current roles** (effective 26 Oct 2026) | Page 4 of 6 of "User Journey and Build Ownership". |
+| [`InChi_Pilot_Build Sequence Timeline (revised).pdf`](source-documents/InChi_Pilot_Build%20Sequence%20Timeline%20(revised).pdf) | **Current week-by-week duties and dates** (26 Oct to 18 Dec 2026) | Pages 5 to 6 of the same document. |
+| [`InChi_Pilot_User_Journey_Proposed.pdf`](source-documents/InChi_Pilot_User_Journey_Proposed.pdf) | Eight-stage journey and per-stage owners | Pages 1 to 3 of the same document (effective 26 Oct 2026). |
+| [`InChi_University_Collaboration_Internship_Program.pdf`](source-documents/InChi_University_Collaboration_Internship_Program.pdf) | Programme objective, modules, AI framework, success metrics | Internship brief and evaluation standards. |
+| [`InChi_Mapped_Website_Feature_Blueprint.pdf`](source-documents/InChi_Mapped_Website_Feature_Blueprint.pdf) | Proposed pages, fields, states and acceptance criteria (v1.0, 27 Oct 2026) | Audited in [§9](#9-feature-blueprint-audit). |
 
 **Not available:** `InChi_Internship_Role_Assignment_Brief.pdf` is not in the repository. The original role assignment was therefore checked only through the build manual's role table, which shows the pre-swap assignments.
 
-**Repository state [REPO]:** as of 3 Nov 2026 (Week 3 under the original Build Manual schedule; Week 2 under the proposed revised timeline) the repository holds documentation only. No application code, build configuration, test suite or CI pipeline exists yet. Everything below describes **planned** functionality.
+**Repository state [REPO] (21 November 2026, verified in the [audit](governance/AUDIT_2026-11-21.md#1-checks-actually-run)):** M1, M2–M3, M4 and M5 APIs and screens are live in the Docker Compose stack; M10 records audit events. The FastAPI engine and Django matching client exist but are not wired into the API (M6). M7, M8, M9 and the audit-history API are not started. Readiness and demand have no backend tests. Open defects: AUD-01 (Critical) and AUD-15 (High). Gate 1 was demonstrated; the Gate 2 outcome is not yet recorded.
 
 ---
 
@@ -172,6 +173,9 @@ From the user journey document and build manual [SRC]. Owners come from the revi
 
 Module IDs (`M1` to `M11`) and acceptance-criterion IDs (`M2-AC3`) are stable. Use them in issues, PRs, tests and the traceability matrix.
 
+> [!IMPORTANT]
+> **Baseline v2.2 alignment pending (owner: Adrika; change record: Aryan).** Baseline v2.2 adds its own acceptance criteria (AC-01–AC-25) and security tests (SEC-01–SEC-06), field IDs (SUP, PRD, BYR, REQ, ASM, EVD, MCH, DSP) and screens (SCR-01–SCR-07). Where a module below conflicts with v2.2 (matching weights and semantic signal in M6, the three-role matrix in §5, disposition labels in M7, the opportunity pipeline in M8), **v2.2 governs** until a change request is approved. See the [gap analysis](governance/AUDIT_2026-11-21.md#3-baseline-v22-gap-analysis). Harish maps AC/SEC IDs to `M#-AC#` in `docs/qa/traceability.md`.
+
 ### M1 — Authentication and role-based access
 
 | | |
@@ -180,7 +184,7 @@ Module IDs (`M1` to `M11`) and acceptance-criterion IDs (`M2-AC3`) are stable. U
 | **Why** | Stage 1. It is a precondition for every other module and for least-privilege access [SRC]. |
 | **Owner** | Abhishek (auth, RBAC, object-level checks). Priyanka (login UI, route guards, role-aware navigation). Ajendra (review and negative tests). |
 | **Depends on** | Permission matrix (§5, D-09), the custom `User` model with `role` (Vishal, Abhishek). |
-| **Decided (D-12)** | Django session auth with CSRF. Three fixed roles, one role per user. A Platform Administrator creates and deactivates users and resets passwords in a restricted Django admin. No self-registration, email password reset or SSO. |
+| **Decided (D-12)** | Django session auth with CSRF. Three fixed roles today, one role per user (v2.2 defines five; D-22). **Open defects:** anonymous self-registration endpoint (AUD-01) and plaintext passwords from the admin add form (AUD-15) contradict this decision. A Platform Administrator creates and deactivates users and resets passwords in a restricted Django admin. No self-registration, email password reset or SSO. |
 
 | ID | Acceptance criterion |
 |---|---|
@@ -423,6 +427,9 @@ The blueprint proposes a fourth role, *Read-only Auditor*. It is not in the buil
 
 **Authentication** establishes who the user is. **Authorisation** decides what that user may do with a specific record. The **backend is the only authority** for both. The frontend hides actions only for usability.
 
+> [!IMPORTANT]
+> **D-09 is decided by Baseline v2.2 §4 and §4.2: five roles (Administrator, Data Contributor, Analyst, Reviewer, Viewer).** The three-role model below is what is implemented today. Adopting v2.2 or keeping three roles through a change request is decision **D-22**.
+
 ### Proposed permission matrix [REC — confirm under D-09]
 
 Key: **V** view · **C** create · **E** edit · **S** submit / mark ready · **R** review / decide · **M** manage · — no access
@@ -492,6 +499,9 @@ Requirements-level only. Vishal owns the physical schema, migrations and data di
 
 From build manual §7 *AI Governance* and the internship brief's *AI Matching Framework* [SRC]. Implementation details follow the two-component C7 architecture [REC].
 
+> [!IMPORTANT]
+> **Superseded in part by Baseline v2.2 §9 (BNCS, 16 Nov 2026).** v2.2 makes MVP matching **deterministic and rules-only**: requirement gate, then category, specification, quantity and capacity, MOQ, lead time, evidence, commercial fit and export/language rules; result NOT_ELIGIBLE on any confirmed fail, INFORMATION_REQUIRED on any unknown, otherwise ELIGIBLE. Preferences are shown as "Met X of Y" with **no hidden weights** and no confidence percentage. Semantic similarity is only a *Could* with explicit human confirmation, and the journey must work with AI disabled. The weighted and semantic steps below stay on hold until **D-21** is decided.
+
 ```
 Ready requirement (version N) + active CriteriaVersion
         │
@@ -518,8 +528,8 @@ Ready requirement (version N) + active CriteriaVersion
 - **Component B: FastAPI AI Matching Engine (`backend/ai_matching/`).** A dedicated FastAPI service handling input validation (Pydantic schemas), data preprocessing, embedding generation, cosine similarity, mandatory eligibility evaluation, hybrid scoring, supplier ranking, and deterministic Python explainability.
 - **Eligibility Safeguards.** Failing a mandatory criterion permanently excludes a candidate from ranking, regardless of semantic score. Criteria examples (such as category, certifications, capacity, MOQ) are illustrative pending formal BNCS approval under D-03. Unknown or missing mandatory data is flagged as insufficient data and never treated as a pass.
 - **Embedding Model (D-11).** **TBD (Proposed / Pending Confirmation).** Embedding generation executes locally; pilot data never leaves the environment. Selection of `sentence-transformers` vs `FastEmbed` and model choice are pending confirmation. No external embedding API is used.
-- **Vector Storage (D-12).** **Proposed / Pending Confirmation** (co-owned with Vishal; Vishal owns database models and migrations).
-- **Runtime and Deployment (D-15).** **Proposed / Pending Confirmation** (FastAPI service in backend directory).
+- **Vector Storage (TD-01).** **Proposed / Pending Confirmation** (co-owned with Vishal; Vishal owns database models and migrations).
+- **Runtime and Deployment (TD-11).** Implemented as a separate `matching` Compose service; mentor confirmation pending.
 - **Scoring Weights and Criteria (D-05, D-06).** **Pending BNCS Approval** (configuration uses `v0-UNAPPROVED.json`).
 - **No LLM (D-20).** Explanations are generated using deterministic Python-based scoring breakdown logic. No external LLM or LLM framework is introduced.
 - **Human-in-the-Loop.** AI advises, ranks, explains, and flags uncertainty; **AI must never autonomously approve or reject suppliers**. Final approval decisions (`Accepted`, `Rejected`, `On hold`) are strictly reserved for authorised human reviewers in M8.
@@ -649,57 +659,70 @@ Not commitments. Each needs BNCS approval, an owner and an effort trade-off [SRC
 | **DS-12** | Internship brief ("verification status" on buyer requirements) | What is being verified, and by whom, is not defined anywhere. | Unclear field. | Decide under D-13 or D-15. Do not implement until defined. |
 | **DS-13** | Internship brief ("one pilot sector") | The sector is never named. | Blocks the category list, seed data and filter design. | Decide under D-02 urgently (Week 1). |
 | **DS-14** | User journey PDF filename vs footer | The filename says "Proposed". The footer says "Current 26 October 2026", and it shares a page sequence with the revised ownership and timeline. | Status unclear. | Treat as the current working journey. Aryan confirms with BNCS. |
-| **DS-15** | Build manual §7 | The stack is a "recommended baseline … subject to BNCS and appointed technical-mentor approval". | Engineers cannot be sure which stack to scaffold. | **Stack selected (D-01, revised 28 Oct 2026); approval pending.** Next.js (App Router) + React + TypeScript; Django 5.2 + DRF; PostgreSQL 17 + pgvector; two-component matching architecture (Django integration layer `apps/matching/` + FastAPI AI matching engine `ai_matching/`). Next.js, PostgreSQL, pgvector, and the FastAPI matching service follow the manual baseline. **Django instead of Spring Boot** and optional hosted staging are deviations; deployment arrangement between Django and FastAPI is pending confirmation (D-15). |
-| **DS-16** | `InChi_Internship_Role_Assignment_Brief.pdf` | Not in the repository. | The original assignment cannot be checked directly. | Add it to `docs/` if available. It does not change current roles, because the revised ownership governs. |
+| **DS-15** | Build manual §7 | The stack is a "recommended baseline … subject to BNCS and appointed technical-mentor approval". | Engineers cannot be sure which stack to scaffold. | **Stack selected (D-01, revised 28 Oct 2026); approval pending.** Next.js (App Router) + React + TypeScript; Django 5.2 + DRF; PostgreSQL 17 + pgvector; two-component matching architecture (Django integration layer `apps/matching/` + FastAPI AI matching engine `ai_matching/`). Next.js, PostgreSQL, pgvector, and the FastAPI matching service follow the manual baseline. **Django instead of Spring Boot** and optional hosted staging are deviations; deployment arrangement between Django and FastAPI is implemented as a separate Compose service, mentor confirmation pending (TD-11). |
+| **DS-16** | `InChi_Internship_Role_Assignment_Brief.pdf` | Not in the repository. | The original assignment cannot be checked directly. | Add it to `docs/source-documents/` if available. It does not change current roles, because the revised ownership governs. |
+| **DS-17** | Baseline v2.2 §1, §3, §9, §14.2 vs build manual §7, ARCHITECTURE §6, M6 | v2.2: rules-only matching, no hidden weights, semantic similarity only a *Could* with human confirmation, journey works with AI disabled. Repository: mandatory semantic matching with weighted hybrid scoring. | Week 5 design depends on it. | v2.2 governs its portion. Decide under **D-21**. |
+| **DS-18** | Baseline v2.2 §4, §4.2 vs build manual §2, §5 above | Five roles vs three. | RBAC model, tests AC-06, AC-22, SEC-01, SEC-02. | v2.2 governs. Decide adoption or change request under **D-22**. |
+| **DS-19** | Baseline v2.2 §3, §15.2 vs build manual, M8 | v2.2 Must scope and build order end at disposition and history; no opportunity pipeline. | Week 6 and Gate 3 content. | v2.2 is silent rather than excluding. Decide under **D-24**. |
+| **DS-20** | Baseline v2.2 §4.1 vs revised ownership | v2.2 lists generic intern functions, not people. | Ownership confusion. | Revised ownership governs people. Mapping in [governance/REGISTERS.md §8](governance/REGISTERS.md#8-source-discrepancy-register). |
+| **DS-21** | Baseline v2.2 §2.2, §5.1 vs `demand` and `registry` models | Separate Buyer Organisation object and v2.2 controlled codes vs a name field and other code lists. | Category matching, demo dataset. | v2.2 governs. Decide under **D-23**. |
 
 ---
 
 ## 12. Open decisions
 
-Aryan records each decision in the decision register with its approver and date.
+Aryan records each decision in the decision register ([`governance/REGISTERS.md`](governance/REGISTERS.md)) with its approver, date and record. A decision is **Decided** only with all three. Baseline v2.2 (16 Nov 2026, Product Authority: Venture Build Director and CPO) is the record for every entry marked *v2.2*.
 
-### Business decisions awaiting BNCS
+### Business decisions
 
-These are business-owned. Until one is decided, implement only reversible placeholders, clearly labelled `UNAPPROVED`.
+These are business-owned. Until one is decided, implement only reversible placeholders, clearly labelled `UNAPPROVED`. Where v2.2 decides a value that differs from the code, the code is a gap to close, or a change request must be approved (v2.2 §15.3).
 
-| ID | Decision | Approver | Needed by | Recommendation [REC] |
+| ID | Decision | Status | Decided value or working assumption | Approver · date |
 |---|---|---|---|---|
-| D-02 | Pilot sector and product category list | BNCS Product Lead | Week 1 | One sector, at most about 10 categories. |
-| D-03 | Readiness questions, criteria and outcome labels | BNCS | Week 3 (build), Week 4 gate | Adrika drafts. Outcomes are human-set. |
-| D-04 | Mandatory eligibility criteria and handling of unknown values | BNCS | Week 4 gate | Start from the brief's list. Unknown is not a pass. |
-| D-05 | Weighted preference criteria, weights and the semantic signal weight | BNCS | Week 4 gate | A small set, a bounded semantic weight, versioned. |
-| D-06 | Disposition vocabulary, deciding role, reason required | BNCS | Week 4 | Accepted, Rejected, On hold. Reviewer decides. Reason always required. Accepted only for eligible candidates (M7-AC5). |
-| D-07 | Opportunity stages, transitions, closure outcomes, who can close | BNCS | Week 5 | As in M8. One opportunity per accepted disposition (M8-AC5). |
-| D-08 | Dashboard metric definitions | BNCS | Week 5 | Current-state counts as in M9. |
-| D-09 | Permission matrix: who may do what, separation of duties, audit visibility | BNCS; Ajendra reviews | Week 2 | As in §5. The **enforcement mechanism** (deny-by-default, backend-enforced, `UNAPPROVED` entries isolated in one module) is already decided. |
-| D-13 | Meaning of buyer "verification status" | BNCS | Week 4 | Leave it out until defined. The **data shape** is decided: buyer details are fields on the requirement, with no buyer accounts. |
-| D-14 | Which Mandarin-ready fields | BNCS | Week 3 | Supplier and product name and short description only. |
-| D-15 | Does a Reviewer approve a requirement before matching? | BNCS | Week 4 | No. The completeness gate is enough for the pilot. |
-| D-19 | Confirm revised programme dates and final acceptance date | BNCS Programme Sponsor + University Coordinator | Week 1 / Urgent | **Open — awaiting formal approval.** Proposed: 26 Oct to 18 Dec 2026 (final acceptance 18 Dec per revised timeline). Until approved, track both the original (19 Oct–11 Dec) and proposed timelines. |
+| D-02 | Pilot sector and category list | **Decided (v2.2 §5.1)** | `ENG_COMPONENT`, `INDUSTRIAL_INPUT`, `SHELF_STABLE_FOOD`; Indian supply to Chinese demand | BNCS-PA · 16 Nov 2026 |
+| D-03 | Readiness questions, criteria, outcomes | **Decided (v2.2 §6, §7)** | CR-01–CR-18, submission gate, three categorical outcomes, nine evidence conditions, no numeric score | BNCS-PA · 16 Nov 2026 |
+| D-04 | Mandatory eligibility and unknown values | **Decided (v2.2 §9.2, §9.3)** | Fixed rule sequence; confirmed fail → NOT_ELIGIBLE; unknown → INFORMATION_REQUIRED; no invented conversions | BNCS-PA · 16 Nov 2026 |
+| D-05 | Preference criteria and weights; semantic weight | **Decided (v2.2 §3, §9.2)** | No weights. Preferences as Met X of Y for eligible candidates only. Semantic similarity only an optional, human-confirmed *Could*. | BNCS-PA · 16 Nov 2026 |
+| D-06 | Disposition vocabulary, role, reason | **Decided (v2.2 §5.1, §8.3)** | `ACCEPT_FOR_FOLLOW_UP`, `HOLD_FOR_INFORMATION`, `REJECT` (+ Superseded); reason mandatory; Reviewer or Administrator | BNCS-PA · 16 Nov 2026 |
+| D-07 | Opportunity stages | Open | Proposed: Initiated, Discovery, Negotiation, Closed. Depends on D-24. | BNCS Product Lead · — |
+| D-08 | Dashboard metrics | **Decided (v2.2 SCR-01)** | Suppliers, Products, Assessments needing review, Open buyer requirements; work queue | BNCS-PA · 16 Nov 2026 |
+| D-09 | Permission matrix | **Decided (v2.2 §4, §4.2)** | Five roles and the v2.2 matrix. Implemented: three roles (gap, D-22). | BNCS-PA · 16 Nov 2026 |
+| D-13 | Buyer "verification status" | **Decided (not in v2.2)** | No verification field; minimal Buyer Organisation (BYR-001–003) | BNCS-PA · 16 Nov 2026 |
+| D-14 | Mandarin-ready fields | **Decided in part (v2.2 PRD-004, CR-16)** | `product_name_zh_draft`; status Not Available / Draft / Human Reviewed | BNCS-PA · 16 Nov 2026 |
+| D-15 | Does a Reviewer approve a requirement before matching? | **Decided (v2.2 §8.2)** | No. An Analyst marks it Ready for Matching when complete. | BNCS-PA · 16 Nov 2026 |
+| D-19 | Revised programme dates and final acceptance date | **Open (overdue)** | Working baseline 26 Oct – 18 Dec 2026 | BNCS Programme Sponsor + University Coordinator · — |
+| **D-21** | Matching approach | **Open (blocks Week 5)** | Adopt v2.2 rules-only, or change request to keep semantic hybrid scoring. Coordinator recommends adopting v2.2. | BNCS-PA; Mentor · — |
+| **D-22** | Role model | Open | Adopt five roles, or change request for three | BNCS-PA · — |
+| **D-23** | Controlled values and Buyer Organisation entity | Open | Adopt v2.2 §5.1 codes and entity, or change request | BNCS-PA · — |
+| **D-24** | Opportunity pipeline (M8) in MVP scope | Open | v2.2 silent; build manual includes it | BNCS Product Lead · — |
+| **D-25** | Approver of record and change control | Open | Confirm VBD + CPO as approver; adopt CRQ process | BNCS Programme Sponsor · — |
 
-### Technical decisions — recorded 28 Oct 2026
+*BNCS-PA = BNCS Product Authority named in v2.2 (Venture Build Director and Chief Product Officer).* The previous version of this table marked D-02, D-06, D-09, D-13, D-14 and D-15 as approved or resolved with values that had no recorded approver, and D-02 and D-06 values that v2.2 contradicts. Those entries are withdrawn.
 
-Full reasoning and the authoritative status of each decision are in [ARCHITECTURE.md §9](ARCHITECTURE.md#9-technical-decision-record). Changes go through a new ARCHITECTURE.md §9 entry. Where a decision deviates from the build manual, BNCS and mentor approval is tracked in ARCHITECTURE.md §10. **None of that approval has been recorded yet.**
+### Technical decisions
+
+Full reasoning and status are in [ARCHITECTURE.md §9](ARCHITECTURE.md#9-technical-decision-record). Changes go through a new §9 entry. Build-manual deviations and their approvals are in ARCHITECTURE.md §10. **No deviation approval has been recorded yet.**
 
 | ID | Decision | Resolution | Status |
 |---|---|---|---|
-| D-01 | Technology stack | Next.js (App Router) + React + TypeScript; Python 3.12, Django 5.2 LTS + DRF; PostgreSQL 17 + pgvector with Django migrations authoritative; two-component matching (Django integration layer + FastAPI AI matching engine with mandatory semantic matching); Docker Compose; GitHub Actions. | Selected; BNCS + mentor approval pending |
-| D-10 | Evidence uploads | Metadata only. Uploads are Phase 2. | Resolved |
-| D-11 | Embedding library and model | Library: `sentence-transformers`, local, optional. **Model: TBD.** No external embedding API. Rules-only by default until a model is chosen and the Week 5 evaluation supports it. | Model **Open**; needed before Week 5 hybrid work |
-| D-12 | Authentication and provisioning | Django session auth + CSRF. Admin-provisioned accounts via a restricted Django admin. | Resolved |
-| D-16 | Staging | The Docker Compose reference environment is the demo and UAT environment. Hosted staging is optional. | Selected; BNCS confirmation pending (deviates from the manual) |
-| D-17 | Results after data changes | Runs are immutable and versioned. The UI shows "data changed since this run". | Resolved |
-| D-18 | Tracking tool | GitHub Issues + Projects in this repository. | Resolved |
-| D-20 | LLM provider and model | **TBD.** Not a prerequisite for the MVP and not used in v0.1. Any future use needs a §9 entry, Ajendra's review and BNCS approval. | **Open** (later stage) |
+| D-01 | Technology stack | Next.js (App Router) + React + TypeScript; Python 3.12, Django 5.2 LTS + DRF; PostgreSQL 17 + pgvector with Django migrations; Django matching layer + FastAPI engine; Docker Compose; GitHub Actions | Implemented; BNCS + mentor approval pending |
+| D-10 | Evidence uploads | Metadata only. Upload is a v2.2 *Should*, only if secure storage is approved. | Resolved |
+| D-11 | Embedding library and model | Library `sentence-transformers` (optional install). **Model not recorded**; `.env.example` names one without review (AUD-07). Non-blocking if D-21 adopts rules-only. | Open |
+| D-12 | Authentication and provisioning | Django session auth + CSRF; admin-provisioned accounts; no self-registration | Resolved; **defects AUD-01, AUD-15 open** |
+| D-16 | Staging | Compose is the demo and UAT environment; hosted staging optional | Selected; BNCS confirmation pending |
+| D-17 | Results after data changes | Runs immutable and versioned; matches v2.2 AC-18, AC-21 | Resolved |
+| D-18 | Tracking tool | GitHub Issues + Projects | Resolved |
+| D-20 | LLM provider and model | None in v0.1. Only the optional, isolated v2.2 §14.2 experiment could ever use one, after Must scope passes, with a §9 entry, Ajendra's review and BNCS approval. | None in v0.1 |
+| TD-11 | FastAPI engine runtime | Separate `matching` Compose service (previously mislabelled D-15) | Implemented; mentor confirmation pending |
 
 ---
 
 ## 13. Timeline and acceptance gates
 
-The Build Manual (§5) established the official programme timeline as **19 October to 11 December 2026** (feature freeze 27 Nov). Following the programme restart, a revised timeline of **26 October to 18 December 2026** was proposed in `docs/InChi_Pilot_Build Sequence Timeline (revised).pdf`.
+The Build Manual (§5) established the official programme timeline as **19 October to 11 December 2026** (feature freeze 27 Nov). Following the programme restart, a revised timeline of **26 October to 18 December 2026** was proposed in [`source-documents/InChi_Pilot_Build Sequence Timeline (revised).pdf`](source-documents/InChi_Pilot_Build%20Sequence%20Timeline%20(revised).pdf).
 
 > [!IMPORTANT]
-> **Approval status:** The revised timeline is **proposed and pending formal approval** by the BNCS Programme Sponsor and the University Coordinator (tracked under [OPEN D-19](#12-open-decisions)). As of 3 November 2026, the build is in **Week 3** under the original Build Manual schedule, and **Week 2** under the proposed revised timeline.
+> **Approval status and current position (21 Nov 2026):** The revised timeline is the team's working baseline, pending formal approval ([D-19](#12-open-decisions)). Week 4 is complete. Gate 1 was demonstrated. The Gate 2 review was held on 20 Nov 2026 with Baseline v2.2 as the rule baseline; its outcome is **not yet recorded** and D-21 to D-25 are open ([gate register](governance/REGISTERS.md#7-gate-register)). Week 5 (23–27 Nov) targets explainable matching and a human decision.
 
 ### Timeline comparison
 
