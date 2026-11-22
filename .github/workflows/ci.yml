@@ -32,7 +32,7 @@ jobs:
       - run: npm ci
       - run: npm run test:config
       - run: npm run test:list
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: qa-discovery
@@ -110,7 +110,7 @@ jobs:
         if: ${{ !cancelled() }}
         run: python -m pytest --ds=config.settings apps/demand/tests --junitxml=test-results/database.xml
         working-directory: database
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: backend-results
@@ -141,7 +141,7 @@ jobs:
         working-directory: e2e
       - run: npm test
         working-directory: e2e
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: frontend-smoke-results
@@ -186,7 +186,7 @@ jobs:
       - run: npm ci
       - run: npm run preflight
       - run: npm test
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: external-api-results
