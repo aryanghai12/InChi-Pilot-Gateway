@@ -2,6 +2,6 @@
 # FastAPI is the selected matching-engine framework (ARCHITECTURE.md §1, TD-02).
 # Exact pins per the ARCHITECTURE.md §1 version rule. All MIT/BSD licensed.
 # No ML or embedding library is listed: the library and model are pending D-11.
-fastapi==0.135.1      # MIT  — HTTP API and request validation
+fastapi==0.165.0      # MIT  — HTTP API and request validation
 pydantic==2.13.4      # MIT  — request/response contract schemas (FastAPI dependency)
 uvicorn==0.54.0       # BSD-3 — ASGI server for the engine process
