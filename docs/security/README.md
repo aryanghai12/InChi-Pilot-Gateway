@@ -28,12 +28,15 @@ This directory comprises the mandatory **Security Handover Pack** defined in [`d
 |---|---|---|
 | **[THREAT_MODEL.md](THREAT_MODEL.md)** | STRIDE Threat Model evaluating data flows, trust boundaries, IDOR, AI matching inputs, and session hijacking. | Baseline Complete |
 | **[DATA_CLASSIFICATION.md](DATA_CLASSIFICATION.md)** | Sensitivity classification for all 15 core entities (MVP_FEATURES §6), synthetic data rules, and zero-secrets mandate. | Baseline Complete |
-| **[ACCESS_CONTROL_MATRIX.md](ACCESS_CONTROL_MATRIX.md)** | Object-level RBAC matrix across Platform Admin, Commercial Analyst, and Reviewer (MVP_FEATURES §5; `UNAPPROVED - D-09`). | Baseline Complete |
+| **[ACCESS_CONTROL_MATRIX.md](ACCESS_CONTROL_MATRIX.md)** | Object-level RBAC matrix across Baseline v2.2 five-role standard (Administrator, Data Contributor, Analyst, Reviewer, Viewer) and interim 3-role transition (D-22). | Baseline Updated (v2.2) |
 | **[AUTH_THREAT_REVIEW.md](AUTH_THREAT_REVIEW.md)** | Threat review covering Django Session Auth, CSRF bootstrap, single-origin Next.js proxying (TD-09), and 401/403 semantics. | Baseline Complete |
-| **[REMEDIATION_REGISTER.md](REMEDIATION_REGISTER.md)** | Central vulnerability ledger tracking issues, severity (Critical/High/Medium/Low), owners, fixes, and retest evidence. | Active Ledger |
+| **[SECURITY_HEADERS_AND_CONTAINER_REVIEW.md](SECURITY_HEADERS_AND_CONTAINER_REVIEW.md)** | Comprehensive audit of Next.js edge security headers (CSP, HSTS, X-Frame-Options) and CIS Docker benchmarks for container hardening. | Baseline Complete |
+| **[REMEDIATION_REGISTER.md](REMEDIATION_REGISTER.md)** | Central vulnerability ledger tracking issues, severity (Critical/High/Medium/Low), owners, fixes, and retest evidence (incorporates Week 4 audit findings AUD-01 and AUD-15). | Active Ledger (Updated W4) |
 | **[STAGING_CHECKLIST.md](STAGING_CHECKLIST.md)** | Pre-deployment verification checklist for optional hosted staging environments (pending D-16). | Pending D-16 |
 | **[RESIDUAL_RISK_STATEMENT.md](RESIDUAL_RISK_STATEMENT.md)** | Explicit non-production risk boundary statement for final Gate 4/5 acceptance. | Formal Baseline |
 | **[SECURITY_TEST_SPECIFICATIONS.md](SECURITY_TEST_SPECIFICATIONS.md)** | Automated negative security test cases, CSRF, IDOR, RBAC boundary assertions, and pytest reference suite (with Harish). | Approved Baseline |
+| **[MATCHING_THREAT_REVIEW.md](MATCHING_THREAT_REVIEW.md)** | Security threat review of matching architecture: input manipulation, logging sanitization, Reviewer disposition RBAC, embedding model review (D-11), and zero-LLM verification (D-20). | Formal Baseline (Week 5) |
+| **[LOGIN_THROTTLING_DECISION_TD04.md](LOGIN_THROTTLING_DECISION_TD04.md)** | Technical decision record for TD-04: DRF ScopedRateThrottle (`5/minute` on `/auth/login/`) preventing brute-force authentication attacks. | Resolved (TD-04) |
 
 ---
 

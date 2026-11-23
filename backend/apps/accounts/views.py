@@ -5,6 +5,7 @@ from rest_framework import status, viewsets
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.decorators import action
 
 from drf_spectacular.utils import extend_schema, OpenApiResponse
@@ -48,6 +49,8 @@ class LoginView(APIView):
 
     permission_classes = [AllowAny]
     authentication_classes = []
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "login"
 
     @extend_schema(
         summary="Internal User Login",
