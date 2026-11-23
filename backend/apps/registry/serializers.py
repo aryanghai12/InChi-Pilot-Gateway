@@ -372,7 +372,7 @@ class EvidenceItemSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "evidence_id", "created_at", "updated_at"]
+        read_only_fields = ["id", "evidence_id", "review_status", "created_at", "updated_at"]
 
     def to_internal_value(self, data):
         data_copy = data.copy() if hasattr(data, "copy") else dict(data)
