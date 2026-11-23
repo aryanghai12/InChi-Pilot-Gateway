@@ -60,7 +60,7 @@ export default function LandingPage() {
               <circle cx="12" cy="12" r="10" />
               <path d="M12 6v6l4 2" />
             </svg>
-            BNCS Internal Pilot Gateway · Supervised Evaluation Prototype · Synthetic Data
+            BNCS Internal Pilot Gateway · Supervised Evaluation Prototype · Synthetic or Explicitly Approved Data
           </span>
 
           <h1 className={styles.heroTitle}>
@@ -70,8 +70,8 @@ export default function LandingPage() {
 
           <p className={styles.heroSubtitle}>
             A supervised, explainable decision-support gateway helping BNCS analysts evaluate Indian supplier
-            readiness and match them with Chinese commercial demand through deterministic eligibility screening
-            and assisted intelligence.
+            readiness and match them with Chinese commercial demand through deterministic mandatory rules
+            and transparent preference comparison.
           </p>
 
           <div className={styles.heroCtaGroup}>
@@ -92,7 +92,7 @@ export default function LandingPage() {
               <svg className={styles.badgeIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              <span>18-Point Readiness Evaluation</span>
+              <span>18-Question China Readiness Assessment</span>
             </div>
             <div className={styles.badgeItem}>
               <svg className={styles.badgeIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -110,7 +110,7 @@ export default function LandingPage() {
               <svg className={styles.badgeIcon} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <polyline points="20 6 9 17 4 12" />
               </svg>
-              <span>Full Activity &amp; Decision Traceability</span>
+              <span>Full Audit History &amp; Material Traceability</span>
             </div>
           </div>
         </section>
@@ -123,7 +123,7 @@ export default function LandingPage() {
             <div className={styles.sectionTag}>Platform Capabilities</div>
             <h2 className={styles.sectionTitle}>Built for Rigorous Trade Qualification</h2>
             <p className={styles.sectionSubtitle}>
-              Four integrated pillars ensuring every supplier recommendation is verified, explainable, and auditable.
+              Four integrated pillars ensuring evidence-based assessment, transparent evaluation, and complete auditability.
             </p>
           </div>
 
@@ -134,10 +134,10 @@ export default function LandingPage() {
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                 </svg>
               </div>
-              <span className={styles.cardTag}>Standardized Verification</span>
+              <span className={styles.cardTag}>Evidence-Based Assessment</span>
               <h3 className={styles.cardTitle}>China-Readiness Assessment</h3>
               <p className={styles.cardDescription}>
-                Standardized 18-criteria evaluation assessing corporate background, production capacity,
+                Standardized 18-question assessment evaluating corporate background, production capacity,
                 standards certifications, export experience, and categorical evidence conditions against China market feasibility.
               </p>
             </div>
@@ -153,9 +153,9 @@ export default function LandingPage() {
               <span className={styles.cardTag}>Decision Support</span>
               <h3 className={styles.cardTitle}>Explainable Matching Engine</h3>
               <p className={styles.cardDescription}>
-                Strict mandatory eligibility filters execute first to screen out ineligible candidates,
-                followed by weighted preference scoring and bounded semantic similarity signals. AI advises and flags data gaps;
-                humans retain full decision authority.
+                Strict mandatory eligibility rules execute first to screen out non-compliant candidates,
+                followed by transparent preference comparison. AI operates only as optional decision support;
+                humans retain full commercial authority.
               </p>
             </div>
 
@@ -184,8 +184,9 @@ export default function LandingPage() {
               <span className={styles.cardTag}>Access &amp; Traceability</span>
               <h3 className={styles.cardTitle}>Least-Privilege Activity Log</h3>
               <p className={styles.cardDescription}>
-                Role-based access control enforces least privilege across Platform Admin, Commercial Analyst,
-                and Reviewer roles. Every assessment outcome, status change, and match decision writes a permanent record with reviewer rationale.
+                Role-based access control enforces least privilege across five defined roles: Administrator, Data Contributor,
+                Analyst, Reviewer, and Viewer. Every assessment outcome, status change, and match decision records the acting user,
+                precise timestamp, and material changes in the audit history.
               </p>
             </div>
           </div>
@@ -216,7 +217,7 @@ export default function LandingPage() {
                 <span className={styles.stepNumber}>2</span>
                 <h3 className={styles.stepTitle}>Readiness Review</h3>
                 <p className={styles.stepDescription}>
-                  Evaluate suppliers against the 18 baseline readiness criteria. Reviewers inspect supporting evidence and record official readiness outcomes.
+                  Evaluate suppliers against the 18-question China readiness assessment. Reviewers inspect supporting evidence and record official readiness outcomes.
                 </p>
               </div>
 
@@ -232,7 +233,7 @@ export default function LandingPage() {
                 <span className={styles.stepNumber}>4</span>
                 <h3 className={styles.stepTitle}>Rank &amp; Decide</h3>
                 <p className={styles.stepDescription}>
-                  Run explainable matching. Reviewers inspect per-criterion breakdowns, note data warnings, and record review decisions (Accept / Reject / Defer) with mandatory business rationale.
+                  Run deterministic matching. Reviewers inspect per-criterion breakdowns, note data warnings, and record review decisions (Accept for Follow-up / Hold for Information / Reject) with mandatory business rationale.
                 </p>
               </div>
 
@@ -264,8 +265,8 @@ export default function LandingPage() {
               <p>
                 InChi Pilot Gateway is a private internal evaluation system built exclusively for authorized BNCS personnel.
                 Matching outputs represent explainable decision-support recommendations and do not constitute autonomous commercial contracts,
-                customs clearances, or legal/regulatory compliance certifications. All records and assessments utilize synthetic demonstration datasets
-                in accordance with the pilot governance baseline.
+                customs clearances, or legal/regulatory compliance certifications. All records and assessments utilize synthetic or explicitly approved
+                demonstration data in accordance with the pilot governance baseline.
               </p>
             </div>
           </div>
