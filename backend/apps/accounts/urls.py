@@ -5,8 +5,6 @@ from apps.accounts.views import (
     LoginView,
     LogoutView,
     MeView,
-    RegisterView,
-    VerifyAccountView,
     UserManagementViewSet,
 )
 
@@ -20,11 +18,6 @@ urlpatterns = [
     path("logout/", LogoutView.as_view(), name="auth-logout"),
     path("me/", MeView.as_view(), name="auth-me"),
 
-    # Registration & Verification
-    path("register/", RegisterView.as_view(), name="auth-register"),
-    path("verify/", VerifyAccountView.as_view(), name="auth-verify"),
-    path("verify/status/", VerifyAccountView.as_view(), name="auth-verify-status"),
-
-    # User Management (Platform Admin)
+    # User Management (Platform Admin only per D-12)
     path("", include(router.urls)),
 ]

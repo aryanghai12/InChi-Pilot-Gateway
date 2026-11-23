@@ -53,8 +53,37 @@ class LoginSerializer(serializers.Serializer):
         if not user.is_active:
             raise serializers.ValidationError("This account has been deactivated. Please contact an administrator.")
 
+        if not user.is_verified:
+            raise serializers.ValidationError("Account verification required. Please contact an administrator.")
+
         attrs["user"] = user
         return attrs
+
+
+class UserCreateSerializer(serializers.ModelSerializer):
+    """Serializer for Platform Administrators to provision new users per D-12."""
+    password = serializers.CharField(
+        write_only=True,
+        required=True,
+        validators=[validate_password],
+        style={"input_type": "password"},
+    )
+    role = serializers.ChoiceField(choices=Role.choices, default=Role.COMMERCIAL_ANALYST)
+
+    class Meta:
+        model = User
+        fields = ["id", "email", "password", "first_name", "last_name", "role", "is_active", "is_verified"]
+        read_only_fields = ["id"]
+
+    def create(self, validated_data):
+        password = validated_data.pop("password")
+        validated_data.setdefault("is_verified", True)
+        validated_data.setdefault("is_active", True)
+        user = User.objects.create_user(
+            password=password,
+            **validated_data,
+        )
+        return user
 
 
 class RegisterSerializer(serializers.ModelSerializer):
