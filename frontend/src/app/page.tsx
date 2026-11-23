@@ -225,7 +225,7 @@ export default function LandingPage() {
                 <span className={styles.stepNumber}>3</span>
                 <h3 className={styles.stepTitle}>Capture Demand</h3>
                 <p className={styles.stepDescription}>
-                  Define buyer requirements with strict separation between mandatory filters and weighted preferences.
+                  Define buyer requirements with strict separation between mandatory eligibility filters and commercial preferences.
                 </p>
               </div>
 
