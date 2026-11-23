@@ -18,7 +18,7 @@ class RolePermission(BasePermission):
         "POST": "create",
         "PUT": "update",
         "PATCH": "update",
-        "DELETE": "deactivate",
+        "DELETE": "destroy",
     }
 
     def has_permission(self, request, view):
@@ -49,8 +49,6 @@ class RolePermission(BasePermission):
         action = getattr(view, "action", None)
         if action == "partial_update":
             action = "update"
-        elif action == "destroy":
-            action = "deactivate"
 
         rule_key = f"{resource}.{action}"
 
