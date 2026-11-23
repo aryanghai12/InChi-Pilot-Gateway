@@ -21,7 +21,7 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument("--phase", choices=["full", "browser-retest"], default="full")
 parser.add_argument("--evidence-dir", type=Path)
 options = parser.parse_args()
-if subprocess.check_output(["git", "branch", "--show-current"], cwd=ROOT, text=True).strip() not in {"test", "qa/week1-3-delivery"}:
+if subprocess.check_output(["git", "branch", "--show-current"], cwd=ROOT, text=True).strip() not in {"test", "qa/week1-3-delivery", "qa/week4-demand-readiness-boundaries"}:
     raise SystemExit("Local QA runner must execute on an assigned QA branch")
 EVIDENCE = options.evidence_dir or ROOT / ".cache/qa-evidence" / datetime.now(timezone.utc).strftime("%Y-%m-%dT%H%M%S")
 if (EVIDENCE / "summary.json").exists():
@@ -114,7 +114,7 @@ try:
         run("backend-check", [python, "manage.py", "check"], ROOT / "backend")
         run("backend-migration-drift", [python, "manage.py", "makemigrations", "--check", "--dry-run"], ROOT / "backend")
         run("backend-tests", [python, "-m", "pytest", "--ds=config.settings", "apps/accounts/tests", "apps/registry/tests", "--tb=short", "-q"], ROOT / "backend")
-        run("qa-backend-controls", [python, "-m", "pytest", "--ds=config.settings", str(ROOT / "e2e/backend/test_controls.py"), "--tb=short", "-q"], ROOT / "backend")
+        run("qa-backend-controls", [python, "-m", "pytest", "--ds=config.settings", str(ROOT / "e2e/backend/test_controls.py"), str(ROOT / "e2e/backend/test_week4_workflows.py"), "--tb=short", "-q"], ROOT / "backend")
         run("database-tests", [python, "-m", "pytest", "--ds=config.settings", "apps/demand/tests", "--tb=short", "-q"], ROOT / "database",
             {"PYTHONPATH": str(ROOT / "database"), "DATABASE_URL": env["DATABASE_URL"].rsplit("/", 1)[0] + "/qa_data"})
     if run("backend-migrate", [python, "manage.py", "migrate", "--noinput"], ROOT / "backend"):

@@ -2,6 +2,8 @@
 
 Owner: Harish Pal. Uses the existing Playwright stack. Current results: [integrated execution report](../docs/qa/execution-2026-11-16-integrated.md).
 
+Week 4 API results (executed 23 November): [execution report](../docs/qa/execution-2026-11-23-week4.md). From the root, run `<QA Python> e2e/scripts/week4-qa.py` with `backend/requirements-dev.txt` installed in an isolated virtual environment. It runs the new M4/M5 cases plus existing backend regression on a disposable SQLite test database, disables dotenv and writes raw output under ignored `.cache/qa-week4/`. Pass `--postgres` only with `DATABASE_URL` explicitly configured for a disposable synthetic PostgreSQL server with test-database creation permission. SQLite runs cannot prove PostgreSQL triggers or live browser/proxy behavior. The existing Compose runner and backend CI also collect the Week 4 file. Genuine product failures produce a nonzero exit; explicit Blocked cases do not count as acceptance passes. Historical blocked M4 statements below are superseded by this execution report.
+
 From `e2e/`, run `npm ci`, `npm run test:config`, `npm run test:list`, `npm run preflight`, `npx playwright install chromium`, then `npm test`. On Windows use `npm.cmd` if PowerShell blocks `npm.ps1`.
 
 Without `E2E_BASE_URL`, Playwright builds and starts the integrated `../frontend`. Preflight reports missing source or role configuration; dependency installation is separate. Discovery validates collection only; it requires neither the application nor browsers.

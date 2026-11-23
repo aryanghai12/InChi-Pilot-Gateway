@@ -105,7 +105,7 @@ jobs:
         run: python -c "import secrets, os; open(os.environ['GITHUB_ENV'], 'a').write('SECRET_KEY=' + secrets.token_urlsafe(48) + '\n')"
       - run: python manage.py check
       - run: python manage.py makemigrations --check --dry-run
-      - run: python -m pytest --ds=config.settings apps/accounts/tests apps/registry/tests ../e2e/backend/test_controls.py --junitxml=test-results/backend.xml
+      - run: python -m pytest --ds=config.settings apps/accounts/tests apps/registry/tests ../e2e/backend/test_controls.py ../e2e/backend/test_week4_workflows.py --junitxml=test-results/backend.xml
       - name: Database model and seed regression
         if: ${{ !cancelled() }}
         run: python -m pytest --ds=config.settings apps/demand/tests --junitxml=test-results/database.xml

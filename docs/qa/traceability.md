@@ -1,5 +1,24 @@
 # Requirements-to-test traceability (M11-AC2)
 
+**Week 4 update - executed 23 November 2026:** [execution](execution-2026-11-23-week4.md), [sanitized per-case evidence](evidence/week4/summary.json). New tests: `e2e/backend/test_week4_workflows.py` on `qa/week4-demand-readiness-boundaries`, base main `e4e320d`: **90 passed / 17 failed / 8 Blocked**. Including existing backend regression: **116 passed / 17 failed / 10 Blocked, 0 errors**. This update supersedes the old M4/M5 dependency/status rows below; Week 1-3 evidence remains historical. D-03/04/05/09/15 are decided by v2.2; implementation alignment (D-21/22/23) and Gate 2 acceptance remain open.
+
+| Requirement | Week 4 automation (test names in the file above) | Executed status / remaining dependency |
+|---|---|---|
+| M4-AC1; v2.2 AC-04, section 6.1 | `each_missing_submission_answer_is_rejected`, `blank_required_response_is_rejected`, `product_link_required`, `limitation_confirmation_required`, `gate_requires_referenced_evidence_record` | Required-answer/product/declaration cases Pass; missing referenced Evidence record Fail W4-03; snapshots Blocked |
+| M4-AC2/3; v2.2 AC-07/08, section 8.1 | `submit_persists_actor_version_and_audit`, `permitted_review_actions_persist`, `reason_required`, `self_review_denied`, `analyst_cannot_bypass_review_with_patch`, `review_actions_require_under_review_state`, `unresolved_mandatory_evidence_blocks_ready` | Valid actions/reasons/self-review Pass; field bypass and invalid review states Fail W4-01/02; AC-07/08 evidence applicability cases Blocked W4-04: prose does not establish mandatory evidence |
+| M4-AC4; v2.2 AC-10 | `request_information_resubmit_preserves_reviewer_notes` | Current answers/notes retained: Pass; immutable previous answers/submission snapshots/history API: Blocked, not proved by notes or a counter |
+| M4-AC5/6; v2.2 AC-23 | `submit_persists_actor_version_and_audit`, `analyst_cannot_forge_workflow_actors`, `permitted_review_actions_persist` | Version 2.2 and current submit/review audit existence Pass; forged workflow actors Fail W4-01; explicit submission/review timestamps and version history remain Gap/Blocked; complete audit diffs remain #87 |
+| M4 evidence; v2.2 AC-05 | `evidence_defaults_unverified`, `evidence_rejects_invalid_condition` | Pass for initial metadata persistence/default and invalid enum/null values; full nine-condition/reason/expiry UI coverage remains Gap |
+| M5-AC1 | `create_ready_close_persists_and_audits` | Mandatory/preferred values persist separately: Pass for API/storage; UI distinction not executed |
+| M5-AC2; v2.2 AC-11, section 8.2 | `invalid_patch_is_field_specific_and_atomic`, `quantity_valid_decimal_boundaries_persist`, `price_bounds`, `delivery_window_bounds`, `ready_gate_cannot_be_bypassed`, `create_ready_close_persists_and_audits` | Numeric/date/basic field gates and lifecycle Pass; blank specification readiness Fail W4-05; mandatory criteria schema/reference approval integration Blocked D-23 |
+| M5-AC3; v2.2 AC-18/21 | `stale_patch_returns_409_without_mutation` (also M4 concurrency) | Current-record stale PATCH rejection Pass; immutable requirement versions and previous match-run references Blocked |
+| M5-AC4 | `week4_blocked_contracts` | Blocked: active approved criteria/reference-version API absent, D-23 |
+| M5-AC5; v2.2 AC-23 | `create_ready_close_persists_and_audits` | Create/ready/close audit existence Pass; before/after completeness not asserted as passing (#87) |
+| M1-AC2/3 supporting M4/M5; v2.2 section 14.1 | `anonymous_read_denied`, `anonymous_mutation_denied`, `session_mutations_require_csrf`, `current_policy_denies_source_edits`, `current_policy_denies_review_actions`, `current_policy_reviewer_lifecycle_denied` | Pass for current three-role implementation only; Contributor/Viewer and changed Admin/Reviewer permissions Blocked D-22 (AC-06/22, SEC-01/02); SEC-03 object boundary contract Blocked |
+| M10-AC2; v2.2 SEC-06 | Existing `test_controls.py` raw SQL checks | Blocked in this run: Docker Linux engine/PostgreSQL unavailable; application immutability regression passes separately |
+
+No new weighted/semantic scoring implementation or approval is inferred. Deterministic matching requires D-21 alignment and an integrated match-run API. Browser/proxy behavior is not covered by APIClient execution. See execution report for infrastructure limits and issue drafts.
+
 **Owner:** Harish Pal · **Updated:** 16 November 2026 · QA base `test@a7cc398` plus QA-only working-tree changes.
 
 Current evidence: [sanitized integrated report](execution-2026-11-16-integrated.md). Source main `e89ab65` is integrated and QA preserved. Latest observed public-case ledger: **44 Pass / 8 Fail across 52 cases**, combining full and focused runs, not a single complete 52-case execution. One restricted case/evidence is maintained privately and excluded from the public collection. Historical raw reports remain local.
@@ -39,7 +58,7 @@ Status values: Pass / Fail (executed), Not Run (not attempted), Blocked (missing
 | M3-AC4 | Mandarin update remains provided_unreviewed; backend translation check passes. | **Partial Pass**; full UI labels/reviewer-only verification need further coverage. |
 | M3-AC5 | Denied edits preserve product data; audit service exists. | **Gap / Not Run** for material-change audit event content/exact count. |
 
-## M4 — China-readiness assessment
+## M4 — China-readiness assessment (historical design; Week 4 results above supersede statuses)
 
 These are designed functional/API/regression cases, **not automated or executed cases**. The inspected backend has only app scaffolding and no readiness API. Do not guess URLs/payloads or treat local UI rules as approved business criteria. Dependencies: Abhishek workflow/API, Vishal storage/history, Adrika question schema, BNCS D-03; reviewer permissions D-09.
 
@@ -55,7 +74,7 @@ These are designed functional/API/regression cases, **not automated or executed 
 ## Later-week scope retained
 
 The following planned M5–M11 baseline is outside Week 1–3 execution; its dependency statements are planning notes, not a new run result.
-## M5 — Buyer requirement capture
+## M5 — Buyer requirement capture (historical plan; Week 4 results above supersede status)
 
 | AC | Test(s) | Status |
 |---|---|---|

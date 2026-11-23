@@ -1,0 +1,116 @@
+{
+  "base_sha": "e4e320dcf8bb23f267e8450c77a109981832adc0",
+  "packages": {
+    "Django": "5.2.19",
+    "djangorestframework": "3.18.3",
+    "pytest": "9.2.0",
+    "pytest-django": "4.14.0",
+    "ruff": "0.17.6",
+    "drf-spectacular": "0.30.0"
+  },
+  "sha256": {
+    "e2e/backend/test_week4_workflows.py": "436f5ed60096fa58449e2a83504357d2e286279f3a2cce527b8d9755a265e185",
+    "e2e/scripts/week4-qa.py": "dfd923dabaf3e10779ce19a1efd44a70a40a8e21bf1761d2350be17666a6832e",
+    ".github/workflows/ci.yml": "590ff0a33aaf31e0d303e6725672006ae38c732ab68c40b70fa0c29b87c22e7b",
+    "e2e/scripts/local-qa.py": "c79d632e6405a84efed625dd5f052ab340b9f28b1e96930a2e3bf1e6bf7430b3"
+  },
+  "database": "pytest-django in-memory SQLite; PostgreSQL blocked: Docker Desktop Linux engine unavailable",
+  "scope": "Uncommitted QA code; no product files changed",
+  "final_review": {
+    "checked_utc": "2026-11-23T07:52:23.300813+00:00",
+    "confirmed_failure_groups": {
+      "W4-02": 8,
+      "W4-01": 6,
+      "W4-03": 1,
+      "W4-05": 2
+    },
+    "W4-04": "Blocked: fixture cannot establish mandatory evidence applicability",
+    "github_issue_inventory": [
+      {
+        "number": 87,
+        "title": "Material actions are not audited; update events have empty `changes`",
+        "state": "open",
+        "url": "https://github.com/aryanghai12/InChi-Pilot-Gateway/issues/87"
+      },
+      {
+        "number": 86,
+        "title": "Commercial Analysts can mark evidence as verified",
+        "state": "open",
+        "url": "https://github.com/aryanghai12/InChi-Pilot-Gateway/issues/86"
+      },
+      {
+        "number": 85,
+        "title": "`DELETE /api/v1/auth/users/{id}/` hard-deletes accounts",
+        "state": "open",
+        "url": "https://github.com/aryanghai12/InChi-Pilot-Gateway/issues/85"
+      },
+      {
+        "number": 84,
+        "title": "Django admin stores plaintext passwords and lets admins grant superuser",
+        "state": "open",
+        "url": "https://github.com/aryanghai12/InChi-Pilot-Gateway/issues/84"
+      },
+      {
+        "number": 83,
+        "title": "Anonymous onboarding endpoints allow privilege escalation",
+        "state": "open",
+        "url": "https://github.com/aryanghai12/InChi-Pilot-Gateway/issues/83"
+      },
+      {
+        "number": 64,
+        "title": "[QA-B05] Frontend lint fails with 36 errors and 5 warnings",
+        "state": "closed",
+        "url": "https://github.com/aryanghai12/InChi-Pilot-Gateway/issues/64"
+      },
+      {
+        "number": 63,
+        "title": "[QA-B04] Frontend npm ci fails due to tinypool lockfile conflict",
+        "state": "closed",
+        "url": "https://github.com/aryanghai12/InChi-Pilot-Gateway/issues/63"
+      },
+      {
+        "number": 62,
+        "title": "[QA-006] Unknown API endpoints return HTML instead of JSON 404",
+        "state": "closed",
+        "url": "https://github.com/aryanghai12/InChi-Pilot-Gateway/issues/62"
+      },
+      {
+        "number": 61,
+        "title": "[QA-005] Login CSRF failures return HTML instead of structured JSON",
+        "state": "closed",
+        "url": "https://github.com/aryanghai12/InChi-Pilot-Gateway/issues/61"
+      },
+      {
+        "number": 60,
+        "title": "[QA-003] Product API accepts pricing without explicit currency",
+        "state": "closed",
+        "url": "https://github.com/aryanghai12/InChi-Pilot-Gateway/issues/60"
+      },
+      {
+        "number": 59,
+        "title": "[QA-002] Frontend .env.example is ignored by Git",
+        "state": "closed",
+        "url": "https://github.com/aryanghai12/InChi-Pilot-Gateway/issues/59"
+      },
+      {
+        "number": 58,
+        "title": "[QA-001] Unauthenticated workspace routes do not redirect to login",
+        "state": "closed",
+        "url": "https://github.com/aryanghai12/InChi-Pilot-Gateway/issues/58"
+      },
+      {
+        "number": 49,
+        "title": "[Frontend/Architecture] Align Authentication Flow with D-12 and Backend Milestone Roadmap",
+        "state": "closed",
+        "url": "https://github.com/aryanghai12/InChi-Pilot-Gateway/issues/49"
+      },
+      {
+        "number": 48,
+        "title": "[Frontend] Handle DRF Pagination Envelope in Supplier and Product Pages",
+        "state": "closed",
+        "url": "https://github.com/aryanghai12/InChi-Pilot-Gateway/issues/48"
+      }
+    ],
+    "secret_review": "Only synthetic test data and outcome metadata in commit candidates; raw logs, JUnit, credentials and issue response bodies excluded"
+  }
+}
