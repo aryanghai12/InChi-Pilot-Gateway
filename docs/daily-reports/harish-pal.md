@@ -62,6 +62,72 @@
 
 ---
 
+---
+
+## Week 4 — 16 November–20 November 2026
+
+**Product target:** Buyer demand and rule approval gate.
+
+**Assigned responsibility:** Boundary, workflow and permission testing.
+
+### Completed
+- Implemented 115 automated test cases covering M4 China-readiness and M5 Buyer Requirements workflows.
+- Developed tests for readiness submission gates, required questionnaire responses, evidence linkage, reviewer actions and workflow-state transitions.
+- Added buyer requirement validation tests covering quantity, pricing, delivery dates, required fields and specification completeness.
+- Implemented authorization tests for role-based access, unauthorized mutations, workflow bypass attempts, session protection and CSRF enforcement.
+- Extended existing CI and local QA execution to include Week 4 backend regression tests.
+- Updated requirements traceability, defect tracking and sanitized execution evidence.
+- Identified and reported four confirmed application defects:
+  - [#101 — W4-01: Unauthorized readiness workflow and actor-field modifications](https://github.com/aryanghai12/InChi-Pilot-Gateway/issues/101)
+  - [#102 — W4-02: Invalid readiness review transitions](https://github.com/aryanghai12/InChi-Pilot-Gateway/issues/102)
+  - [#103 — W4-03: Missing assessment Evidence linkage](https://github.com/aryanghai12/InChi-Pilot-Gateway/issues/103)
+  - [#104 — W4-05: Buyer readiness without product specifications](https://github.com/aryanghai12/InChi-Pilot-Gateway/issues/104)
+- Submitted the Week 4 QA contribution through [Draft PR #105](https://github.com/aryanghai12/InChi-Pilot-Gateway/pull/105).
+
+### Testing and Validation
+
+*Execution performed on 23 November 2026 against the Week 4 implementation; results are not backdated to the reporting period.*
+
+| Test Suite / Environment | Passed | Failed | Blocked |
+|---|---:|---:|---:|
+| New Week 4 automated tests (local SQLite) | 90 | 17 | 8 |
+| Existing backend regression (local SQLite) | 26 | 0 | 2 |
+| **Total local execution** | **116** | **17** | **10** |
+| GitHub Actions PostgreSQL execution | **118** | **17** | **8** |
+
+- All 17 failures correspond to four confirmed product defects; no test setup errors occurred.
+- Ruff lint, formatting, CI YAML validation and Git diff checks passed.
+- Frontend, E2E and QA tooling CI checks passed.
+- Security CI checks passed.
+- PostgreSQL CI successfully executed two database-trigger checks that were blocked locally.
+- Confirmed failures were preserved as regression assertions rather than suppressed.
+
+**Evidence:** `docs/qa/execution-2026-11-23-week4.md`
+
+### Dependencies / Blockers
+- Four confirmed M4/M5 defects require backend-owner remediation before workflow acceptance.
+- Mandatory evidence applicability (W4-04) remains Blocked pending an agreed contract; it was not reported as a confirmed defect.
+- Five-role permission coverage requires D-22 clarification and implementation.
+- Immutable assessment/requirement history, assignment actions and approved reference APIs remain unavailable.
+- D-21/D-23 governance dependencies and Gate 2 approval evidence remain unresolved.
+- Full browser integration testing remains pending; local PostgreSQL execution was unavailable, although PostgreSQL CI verification completed.
+- [Draft PR #105](https://github.com/aryanghai12/InChi-Pilot-Gateway/pull/105) remains under review, with backend CI failing on the 17 confirmed product regressions.
+
+### Next Steps
+- Coordinate with backend and security owners to resolve Issues #101–#104.
+- Rerun affected regression cases after product fixes and update defect statuses.
+- Complete blocked workflow, permissions and evidence tests once the required contracts are approved.
+- Support review and eventual merge of PR #105 after required approvals and checks.
+
+### Delivery
+- QA branch: `qa/week4-demand-readiness-boundaries`
+- Commit: [`f412132`](https://github.com/aryanghai12/InChi-Pilot-Gateway/commit/f4121324da3855cee4570e64412738337a361873)
+- Draft PR: [#105 — Week 4 readiness and buyer-demand boundaries](https://github.com/aryanghai12/InChi-Pilot-Gateway/pull/105)
+- Execution report: `docs/qa/execution-2026-11-23-week4.md`
+- Traceability: `docs/qa/traceability.md`
+
+**Status:** Week 4 feasible QA automation completed and submitted for review. Four confirmed application defects and outstanding contract dependencies prevent full acceptance; regression coverage and execution evidence are documented.
+
 ## Subsequent Verification of Week 1–3 Deliverables
 
 *Performed on 16 November 2026; included for traceability, not attributed to earlier weeks.*
