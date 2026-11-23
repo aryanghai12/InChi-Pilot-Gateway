@@ -138,3 +138,140 @@ class SecurityPostureTests(TestCase):
         # Attempt to delete must raise PermissionDenied
         with self.assertRaises(PermissionDenied):
             event.delete()
+
+    def test_issue_83_anonymous_onboarding_routes_return_404(self):
+        """Issue #83 / QA-004 / D-12: Anonymous onboarding routes removed, must return 404."""
+        response = self.client.post("/api/v1/auth/register/", {"email": "attacker@evil.com", "role": "platform_admin"}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+        response2 = self.client.post("/api/v1/auth/verify/", {"token": "123"}, format="json")
+        self.assertEqual(response2.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_issue_83_unverified_account_login_rejected(self):
+        """Issue #83: Unverified users cannot log in."""
+        unverified_user = User.objects.create_user(
+            email="unverified@bncs.local",
+            password="Password123!",
+            role=Role.COMMERCIAL_ANALYST,
+            is_verified=False,
+        )
+        response = self.client.post("/api/v1/auth/login/", {"email": unverified_user.email, "password": "Password123!"}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("verification", response.json().get("message", "").lower())
+
+    def test_issue_84_admin_user_creation_hashes_password_and_superuser_guarded(self):
+        """Issue #84: Admin form creation hashes password with pbkdf2 and denies superuser."""
+        from apps.accounts.admin import CustomUserCreationForm
+        form = CustomUserCreationForm(data={
+            "email": "newadminuser@bncs.local",
+            "role": Role.COMMERCIAL_ANALYST,
+            "password1": "SecurePass123!",
+            "password2": "SecurePass123!",
+        })
+        self.assertTrue(form.is_valid(), form.errors)
+        created_user = form.save()
+        self.assertTrue(created_user.password.startswith("pbkdf2_"))
+        self.assertTrue(created_user.check_password("SecurePass123!"))
+        self.assertFalse(created_user.is_superuser)
+
+    def test_issue_85_delete_user_returns_405_and_preserves_row(self):
+        """Issue #85: DELETE /api/v1/auth/users/{id}/ returns 405 Method Not Allowed and preserves row."""
+        self.client.force_login(self.admin)
+        target_user = User.objects.create_user(
+            email="victim@bncs.local",
+            password="Password123!",
+            role=Role.COMMERCIAL_ANALYST,
+            is_verified=True,
+        )
+        url = f"/api/v1/auth/users/{target_user.id}/"
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+        # Ensure row remains in database
+        self.assertTrue(User.objects.filter(id=target_user.id).exists())
+
+    def test_issue_86_analyst_cannot_mark_evidence_verified_via_patch(self):
+        """Issue #86 / AC-06: Commercial Analyst cannot mark evidence verified via plain PATCH."""
+        from apps.registry.models import Supplier, EvidenceItem
+        supplier = Supplier.objects.create(legal_name="Test Supplier", country_of_registration="IN")
+        evidence = EvidenceItem.objects.create(
+            supplier=supplier,
+            document_type="gst_certificate",
+            document_name="GSTIN Cert",
+            review_status="unreviewed",
+        )
+        self.client.force_login(self.analyst)
+        # Plain PATCH attempt
+        response = self.client.patch(f"/api/v1/evidence/{evidence.id}/", {"review_status": "verified"}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        evidence.refresh_from_db()
+        # Value must NOT have changed to verified
+        self.assertNotEqual(evidence.review_status, "verified")
+
+        # Analyst calling /verify/ action directly must be denied with 403
+        verify_response = self.client.post(
+            f"/api/v1/evidence/{evidence.id}/verify/",
+            {"reason": "Analyst attempting verification", "condition": "verified"},
+            format="json",
+        )
+        self.assertEqual(verify_response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_issue_86_reviewer_can_verify_evidence_with_audit(self):
+        """Issue #86 / §7.1: Reviewer can verify evidence with mandatory reason and audit trail."""
+        from apps.registry.models import Supplier, EvidenceItem
+        supplier = Supplier.objects.create(legal_name="Test Supplier 2", country_of_registration="IN")
+        evidence = EvidenceItem.objects.create(
+            supplier=supplier,
+            document_type="gacc_registration",
+            document_name="GACC Decree 248",
+            review_status="unreviewed",
+        )
+        self.client.force_login(self.reviewer)
+
+        # Missing reason must fail with 400
+        fail_response = self.client.post(f"/api/v1/evidence/{evidence.id}/verify/", {}, format="json")
+        self.assertEqual(fail_response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Valid verification with reason
+        response = self.client.post(
+            f"/api/v1/evidence/{evidence.id}/verify/",
+            {"reason": "Official GACC Single Window Checked", "condition": "official_source_checked"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        evidence.refresh_from_db()
+        self.assertEqual(evidence.review_status, "official_source_checked")
+        self.assertTrue(AuditEvent.objects.filter(action="verify", object_id=str(evidence.id)).exists())
+
+    def test_issue_87_logins_and_diffs_are_audited(self):
+        """Issue #87 / AC-23 / §14.1: Login success, login failure, and update diffs are audited."""
+        # 1. Successful login
+        self.client.post(
+            "/api/v1/auth/login/",
+            {"email": self.analyst.email, "password": "AnalystPassword123!"},
+            format="json",
+        )
+        self.assertTrue(AuditEvent.objects.filter(action="login", outcome="success", actor=self.analyst).exists())
+
+        # 2. Failed login (password wrong)
+        self.client.post(
+            "/api/v1/auth/login/",
+            {"email": self.analyst.email, "password": "BadPassword123!"},
+            format="json",
+        )
+        self.assertTrue(AuditEvent.objects.filter(action="login", outcome="failure").exists())
+
+        # 3. Denied action
+        self.client.force_login(self.analyst)
+        denied_resp = self.client.get("/api/v1/auth/users/")
+        self.assertEqual(denied_resp.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertTrue(AuditEvent.objects.filter(action="denied", outcome="denied", actor=self.analyst).exists())
+
+        # 4. Supplier update has non-empty before/after diff in changes
+        from apps.registry.models import Supplier
+        supplier = Supplier.objects.create(legal_name="Initial Name", country_of_registration="IN")
+        self.client.patch(f"/api/v1/suppliers/{supplier.id}/", {"legal_name": "Updated Name"}, format="json")
+        update_event = AuditEvent.objects.filter(action="update", object_id=str(supplier.id)).first()
+        self.assertIsNotNone(update_event)
+        self.assertIn("legal_name", update_event.changes)
+        self.assertEqual(update_event.changes["legal_name"]["before"], "Initial Name")
+        self.assertEqual(update_event.changes["legal_name"]["after"], "Updated Name")

@@ -168,4 +168,23 @@ def custom_exception_handler(exc, context):
         "correlation_id": correlation_id,
     }
 
+    # Automatically audit denied actions (AC-23, §14.1)
+    if response.status_code == status.HTTP_403_FORBIDDEN:
+        try:
+            from apps.audit.services import record_event
+
+            user = getattr(request, "user", None) if request else None
+            path = getattr(request, "path", "") if request else ""
+            method = getattr(request, "method", "") if request else ""
+            record_event(
+                actor=user if (user and user.is_authenticated) else None,
+                action="denied",
+                obj=path or "access_control",
+                outcome="denied",
+                reason=f"Forbidden access to {method} {path}: {str(message)}",
+                correlation_id=correlation_id,
+            )
+        except Exception:
+            pass
+
     return response
