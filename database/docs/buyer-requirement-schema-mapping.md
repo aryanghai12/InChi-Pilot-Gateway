@@ -54,8 +54,8 @@ names while keeping open business decisions configurable.
 | BUY-024 | `priority_weights` | `MatchingConfiguration` reference | Versioned JSON/config | Nullable | No weights until approved |
 | BUY-025 | `buyer_preferences` | `RequirementPreference` | Child rows | Nullable | Must never be silently promoted to mandatory |
 | BUY-026 | `requirement_notes` | `BuyerRequirementVersion.requirement_notes` | Text | Nullable | Apply approved length and access policy |
-| BUY-027 | `buyer_verification_status` | Deferred buyer profile/config field | Enum/config code | Nullable | Do not expose `Verified` without an approved process |
-| BUY-028 | `requirement_status` | `BuyerRequirement.requirement_status` | Enum/config code | Not null after creation | Transitions require approved workflow |
+| BUY-027 | `buyer_verification_status` | Not part of the MVP database schema | N/A | N/A | Buyer verification and external buyer accounts are out of scope |
+| BUY-028 | `requirement_status` | `BuyerRequirement.requirement_status` | Enum/config code | Not null after creation | MVP values: Draft, Ready for Matching, Closed |
 | BUY-029 | `completeness_status` | `BuyerRequirement.completeness_status` | Derived enum | Not null after evaluation | Separate from workflow status |
 | BUY-030 | `version` | `BuyerRequirementVersion.version` | Positive integer | Not null | Unique per requirement and immutable |
 | BUY-031 | `created_by`, `created_at`, `updated_by`, `updated_at` | `RequirementAuditMetadata` | UUID/timestamps | System-generated | UTC timestamps; material changes audited |

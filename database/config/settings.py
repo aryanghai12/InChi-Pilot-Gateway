@@ -29,6 +29,8 @@ INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "apps.demand.apps.DemandConfig",
+    "apps.registry.apps.RegistryConfig",
+    "apps.readiness.apps.ReadinessConfig",
 ]
 
 # Centralized PostgreSQL Database Configuration

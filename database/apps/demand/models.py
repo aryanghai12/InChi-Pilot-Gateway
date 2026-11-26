@@ -2,6 +2,7 @@ import uuid
 
 from django.conf import settings
 from django.core.validators import MinValueValidator
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
@@ -71,6 +72,15 @@ class MatchingConfiguration(models.Model):
 
 
 class BuyerRequirement(models.Model):
+    class RequirementStatus(models.TextChoices):
+        DRAFT = "DRAFT", "Draft"
+        READY_FOR_MATCHING = "READY_FOR_MATCHING", "Ready for Matching"
+        CLOSED = "CLOSED", "Closed"
+
+    class CompletenessStatus(models.TextChoices):
+        INCOMPLETE = "INCOMPLETE", "Incomplete"
+        COMPLETE = "COMPLETE", "Complete"
+
     requirement_id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -88,8 +98,16 @@ class BuyerRequirement(models.Model):
     target_market = models.CharField(max_length=100, blank=True, default="")
     product_category_id = models.CharField(max_length=100, blank=True, default="")
     requirement_title = models.CharField(max_length=255, blank=True, default="")
-    requirement_status = models.CharField(max_length=50, default="draft")
-    completeness_status = models.CharField(max_length=50, default="incomplete")
+    requirement_status = models.CharField(
+        max_length=50,
+        choices=RequirementStatus.choices,
+        default=RequirementStatus.DRAFT,
+    )
+    completeness_status = models.CharField(
+        max_length=50,
+        choices=CompletenessStatus.choices,
+        default=CompletenessStatus.INCOMPLETE,
+    )
     matching_ready = models.BooleanField(default=False)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -110,6 +128,18 @@ class BuyerRequirement(models.Model):
 
     class Meta:
         db_table = "buyer_requirement"
+        constraints = [
+            models.CheckConstraint(
+                condition=(
+                    (
+                        models.Q(requirement_status="READY_FOR_MATCHING")
+                        & models.Q(matching_ready=True)
+                    )
+                    | ~models.Q(requirement_status="READY_FOR_MATCHING")
+                ),
+                name="buyer_ready_status_requires_matching_ready",
+            ),
+        ]
         indexes = [
             models.Index(fields=["requirement_status"]),
             models.Index(fields=["completeness_status"]),
@@ -118,10 +148,127 @@ class BuyerRequirement(models.Model):
             models.Index(fields=["target_market"]),
             models.Index(fields=["product_category_id"]),
             models.Index(fields=["-updated_at"]),
+            models.Index(
+                fields=["requirement_status", "matching_ready", "-updated_at"],
+                name="buyer_status_ready_upd_idx",
+            ),
         ]
 
     def __str__(self):
         return self.requirement_title or str(self.requirement_id)
+
+    def evaluate_readiness_gate(self, version):
+        blockers = []
+
+        if not self.buyer_organisation_name.strip():
+            blockers.append(("BUY-002", "BUYER_ORGANISATION_REQUIRED"))
+        if not self.product_category_id.strip():
+            blockers.append(("BUY-006", "PRODUCT_CATEGORY_REQUIRED"))
+        if not self.owner_user_id:
+            blockers.append(("BUY-004", "INTERNAL_OWNER_REQUIRED"))
+
+        specification = getattr(version, "specification", None)
+        if specification is None or not specification.attributes:
+            blockers.append(("BUY-008", "SPECIFICATION_REQUIRED"))
+
+        quantity = getattr(version, "quantity", None)
+        if (
+            quantity is None
+            or quantity.quantity_value is None
+            or quantity.quantity_value <= 0
+            or not quantity.quantity_unit.strip()
+        ):
+            blockers.append(("BUY-009/BUY-010", "QUANTITY_AND_UNIT_REQUIRED"))
+
+        delivery = getattr(version, "delivery", None)
+        if (
+            delivery is None
+            or not delivery.delivery_location
+            or not str(delivery.delivery_location.get("country", "")).strip()
+            or not str(delivery.delivery_location.get("city", "")).strip()
+        ):
+            blockers.append(("BUY-017", "DELIVERY_LOCATION_REQUIRED"))
+
+        if not version.eligibility_criteria.exists():
+            blockers.append(("BUY-022", "MANDATORY_CRITERION_REQUIRED"))
+
+        commercial = getattr(version, "commercial_terms", None)
+        if commercial is not None:
+            price_supplied = (
+                commercial.target_price_min is not None
+                or commercial.target_price_max is not None
+            )
+            if price_supplied:
+                if not commercial.currency_code.strip():
+                    blockers.append(("BUY-014", "CURRENCY_REQUIRED"))
+                if not commercial.price_basis.strip():
+                    blockers.append(("BUY-015", "PRICE_BASIS_REQUIRED"))
+
+        MatchingReadinessBlocker.objects.filter(
+            requirement_version=version,
+            active=True,
+        ).exclude(
+            field_id__in=[field_id for field_id, _ in blockers],
+        ).update(active=False)
+
+        for field_id, reason_code in blockers:
+            blocker, created = MatchingReadinessBlocker.objects.get_or_create(
+                requirement_version=version,
+                field_id=field_id,
+                reason_code=reason_code,
+                defaults={
+                    "reason_detail": "Required for Ready for Matching.",
+                    "active": True,
+                },
+            )
+            if not created and not blocker.active:
+                blocker.active = True
+                blocker.reason_detail = "Required for Ready for Matching."
+                blocker.save(update_fields=["active", "reason_detail"])
+
+        active_blockers = MatchingReadinessBlocker.objects.filter(
+            requirement_version=version,
+            active=True,
+        )
+        if active_blockers.exists():
+            self.matching_ready = False
+            self.completeness_status = self.CompletenessStatus.INCOMPLETE
+            self.requirement_status = self.RequirementStatus.DRAFT
+            self.save(update_fields=[
+                "matching_ready",
+                "completeness_status",
+                "requirement_status",
+                "updated_at",
+            ])
+            return False, blockers
+
+        self.matching_ready = True
+        self.completeness_status = self.CompletenessStatus.COMPLETE
+        return True, []
+
+    def mark_ready_for_matching(self, version):
+        ready, blockers = self.evaluate_readiness_gate(version)
+        if not ready:
+            raise ValidationError(
+                "The buyer requirement cannot become Ready for Matching.",
+                code="matching_readiness_blocked",
+            )
+        self.requirement_status = self.RequirementStatus.READY_FOR_MATCHING
+        self.save(update_fields=[
+            "matching_ready",
+            "completeness_status",
+            "requirement_status",
+            "updated_at",
+        ])
+
+    def close(self):
+        self.requirement_status = self.RequirementStatus.CLOSED
+        self.matching_ready = False
+        self.save(update_fields=[
+            "requirement_status",
+            "matching_ready",
+            "updated_at",
+        ])
 
 
 class BuyerRequirementVersion(models.Model):
@@ -157,6 +304,22 @@ class BuyerRequirementVersion(models.Model):
             models.Index(fields=["requirement", "version"]),
             models.Index(fields=["-created_at"]),
         ]
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            previous = BuyerRequirementVersion.objects.filter(pk=self.pk).first()
+            if previous is not None:
+                raise ValidationError(
+                    "Buyer requirement versions are immutable.",
+                    code="immutable_requirement_version",
+                )
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ValidationError(
+            "Buyer requirement versions cannot be deleted.",
+            code="immutable_requirement_version",
+        )
 
 
 class RequirementSpecification(models.Model):
@@ -201,6 +364,16 @@ class RequirementQuantity(models.Model):
                     | models.Q(quantity_value__gt=0)
                 ),
                 name="quantity_value_positive_when_supplied",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(quantity_value__isnull=True)
+                    | (
+                        ~models.Q(quantity_unit="")
+                        & models.Q(quantity_value__gt=0)
+                    )
+                ),
+                name="quantity_unit_required_with_value",
             ),
         ]
 
@@ -253,6 +426,16 @@ class RequirementCommercialTerms(models.Model):
                     | models.Q(target_price_min__lte=models.F("target_price_max"))
                 ),
                 name="target_price_min_lte_max",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    models.Q(target_price_min__isnull=True, target_price_max__isnull=True)
+                    | (
+                        ~models.Q(currency_code="")
+                        & ~models.Q(price_basis="")
+                    )
+                ),
+                name="price_requires_currency_and_basis",
             ),
         ]
 
