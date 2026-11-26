@@ -41,6 +41,28 @@ The tests in `apps/demand/tests/test_demand.py` verify:
 | `requirement_delivery` | 20 |
 | `matching_readiness_blocker` | 15 |
 
+## Week 6 — Index review
+
+Date: 26 November 2026
+
+### PostgreSQL validation
+
+- Database: PostgreSQL 17 on host port `5434`
+- Applied migrations:
+  - `demand.0005_buyerrequirement_buyer_status_ready_upd_idx`
+  - `registry.0004_product_prod_cat_unit_upd_idx_and_more`
+  - `readiness.0003_readinessassessment_assess_state_updated_idx_and_more`
+- `python -m django makemigrations --check --dry-run` -> No changes detected
+- `python -m django test apps.demand apps.readiness apps.registry` -> 28 passed
+- `EXPLAIN (ANALYZE, BUFFERS)` -> representative supplier, product, buyer
+  queue, assessment queue and audit-history plans inspected
+
+The audit-history query used the new composite audit index without an
+explicit sort. Other plans chose sequential scans on the small synthetic
+tables (3 suppliers, 6 products, 20 requirements and 3 assessments).
+These fixture-scale plans do not establish production performance gains;
+compare against final dashboard queries and representative-volume data.
+
 ## Remaining validation
 
 The backend integration team must run the full application test suite after

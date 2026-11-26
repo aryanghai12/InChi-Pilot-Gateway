@@ -69,6 +69,10 @@ class Supplier(models.Model):
             models.Index(fields=["legal_name"]),
             models.Index(fields=["supplier_type", "record_status"]),
             models.Index(fields=["-updated_at"]),
+            models.Index(
+                fields=["record_status", "-updated_at"],
+                name="supp_status_upd_idx",
+            ),
         ]
 
     def __str__(self):
@@ -165,6 +169,10 @@ class Product(models.Model):
             models.Index(fields=["supplier", "category_code"]),
             models.Index(fields=["category_code", "unit_of_measure"]),
             models.Index(fields=["supplier", "-updated_at"]),
+            models.Index(
+                fields=["category_code", "unit_of_measure", "-updated_at"],
+                name="prod_cat_unit_upd_idx",
+            ),
         ]
         constraints = [
             models.CheckConstraint(

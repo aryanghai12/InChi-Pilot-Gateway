@@ -75,6 +75,10 @@ class ReadinessAssessment(models.Model):
             models.Index(fields=["supplier", "workflow_state"]),
             models.Index(fields=["workflow_state", "readiness_outcome"]),
             models.Index(fields=["-updated_at"]),
+            models.Index(
+                fields=["workflow_state", "-updated_at"],
+                name="assess_state_updated_idx",
+            ),
         ]
 
 
@@ -261,4 +265,8 @@ class ReadinessAuditEvent(models.Model):
         indexes = [
             models.Index(fields=["object_type", "object_id"]),
             models.Index(fields=["-occurred_at"]),
+            models.Index(
+                fields=["object_type", "object_id", "-occurred_at"],
+                name="audit_object_time_idx",
+            ),
         ]

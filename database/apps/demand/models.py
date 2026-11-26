@@ -148,6 +148,10 @@ class BuyerRequirement(models.Model):
             models.Index(fields=["target_market"]),
             models.Index(fields=["product_category_id"]),
             models.Index(fields=["-updated_at"]),
+            models.Index(
+                fields=["requirement_status", "matching_ready", "-updated_at"],
+                name="buyer_status_ready_upd_idx",
+            ),
         ]
 
     def __str__(self):
