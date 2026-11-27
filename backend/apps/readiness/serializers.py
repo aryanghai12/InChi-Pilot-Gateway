@@ -41,8 +41,8 @@ class ReadinessAssessmentSerializer(serializers.ModelSerializer):
     """
 
     supplier_name = serializers.CharField(source="supplier.legal_name", read_only=True)
-    status = serializers.CharField(source="workflow_state", required=False)
-    outcome = serializers.CharField(source="readiness_outcome", required=False, allow_null=True)
+    status = serializers.CharField(source="workflow_state", read_only=True)
+    outcome = serializers.CharField(source="readiness_outcome", read_only=True)
     state_display = serializers.CharField(source="get_workflow_state_display", read_only=True)
     outcome_display = serializers.CharField(source="get_readiness_outcome_display", read_only=True)
     completeness = serializers.SerializerMethodField()
@@ -80,8 +80,14 @@ class ReadinessAssessmentSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             "id",
+            "workflow_state",
+            "status",
             "state_display",
+            "readiness_outcome",
+            "outcome",
             "outcome_display",
+            "submitted_by",
+            "reviewer",
             "created_by",
             "created_at",
             "updated_at",
@@ -110,27 +116,6 @@ class ReadinessAssessmentSerializer(serializers.ModelSerializer):
                     detail="Assessment has been modified by another transaction. Please reload.",
                     code="concurrency_conflict",
                 )
-
-        # Normalize frontend aliased fields
-        if "status" in self.initial_data and "workflow_state" not in attrs:
-            val = self.initial_data["status"].lower().replace(" ", "_")
-            if val in dict(WorkflowState.choices):
-                attrs["workflow_state"] = val
-
-        if "outcome" in self.initial_data and "readiness_outcome" not in attrs:
-            val = self.initial_data["outcome"]
-            if val:
-                val_norm = val.lower().replace("-", "_").replace(" ", "_")
-                # Map frontend legacy strings if any
-                mapping = {
-                    "china_ready": ReadinessOutcome.READY_FOR_MATCHING,
-                    "ready_for_matching": ReadinessOutcome.READY_FOR_MATCHING,
-                    "more_information_required": ReadinessOutcome.INFORMATION_REQUIRED,
-                    "information_required": ReadinessOutcome.INFORMATION_REQUIRED,
-                    "not_ready": ReadinessOutcome.NOT_CURRENTLY_ELIGIBLE,
-                    "not_currently_eligible": ReadinessOutcome.NOT_CURRENTLY_ELIGIBLE,
-                }
-                attrs["readiness_outcome"] = mapping.get(val_norm, val)
 
         return attrs
 

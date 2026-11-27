@@ -219,6 +219,20 @@ class ReadinessAssessment(models.Model):
         if not cr18_confirmed:
             reasons.append("CR-18 China Readiness Assessment Limitation Confirmation must be explicitly confirmed.")
 
+        # Referenced evidence gate: any question referencing an evidence document must have a matching AssessmentEvidence record
+        for qid, val in norm.items():
+            if isinstance(val, dict):
+                ref = val.get("evidence_reference")
+                if ref and str(ref).strip() and str(ref).strip().lower() not in ("none", "null", ""):
+                    ref_name = str(ref).strip()
+                    has_evidence = self.evidence_items.filter(
+                        models.Q(document_name=ref_name) | models.Q(criterion_id=qid)
+                    ).exists()
+                    if not has_evidence:
+                        reasons.append(
+                            f"Referenced evidence document '{ref_name}' for criterion {qid} has no linked AssessmentEvidence record."
+                        )
+
         can_submit = len(reasons) == 0
         return can_submit, reasons
 

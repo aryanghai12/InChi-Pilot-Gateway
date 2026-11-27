@@ -63,12 +63,21 @@ class SupplierViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         user = self.request.user if self.request.user.is_authenticated else None
         correlation_id = getattr(self.request, "correlation_id", "")
+        instance = serializer.instance
+        old_data = {field: getattr(instance, field) for field in serializer.validated_data}
         supplier = serializer.save()
+        changes = {}
+        for field, old_val in old_data.items():
+            new_val = getattr(supplier, field)
+            if old_val != new_val:
+                changes[field] = {"before": str(old_val), "after": str(new_val)}
+
         record_event(
             actor=user,
             action="update",
             obj=supplier,
             reason="Supplier record updated.",
+            changes=changes,
             correlation_id=correlation_id,
         )
 
@@ -197,12 +206,21 @@ class ProductViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         user = self.request.user if self.request.user.is_authenticated else None
         correlation_id = getattr(self.request, "correlation_id", "")
+        instance = serializer.instance
+        old_data = {field: getattr(instance, field) for field in serializer.validated_data}
         product = serializer.save()
+        changes = {}
+        for field, old_val in old_data.items():
+            new_val = getattr(product, field)
+            if old_val != new_val:
+                changes[field] = {"before": str(old_val), "after": str(new_val)}
+
         record_event(
             actor=user,
             action="update",
             obj=product,
             reason=f"Product {product.product_name} updated.",
+            changes=changes,
             correlation_id=correlation_id,
         )
 
@@ -211,6 +229,7 @@ class EvidenceItemViewSet(viewsets.ModelViewSet):
     """
     Evidence metadata viewset (EVD-01 to EVD-10).
     Allows linking supporting evidence references to suppliers or products.
+    Restricts verification to Reviewers with mandatory reason and audit event logging (v2.2 §7.1, AC-06).
     """
 
     queryset = EvidenceItem.objects.all().order_by("-created_at")
@@ -229,3 +248,78 @@ class EvidenceItemViewSet(viewsets.ModelViewSet):
             qs = qs.filter(product__id=product_id)
 
         return qs
+
+    def perform_create(self, serializer):
+        user = self.request.user if self.request.user.is_authenticated else None
+        correlation_id = getattr(self.request, "correlation_id", "")
+        evidence = serializer.save()
+        record_event(
+            actor=user,
+            action="create",
+            obj=evidence,
+            outcome="success",
+            reason=f"Evidence item {evidence.document_name} created.",
+            changes={"document_type": {"before": None, "after": evidence.document_type}},
+            correlation_id=correlation_id,
+        )
+
+    def perform_update(self, serializer):
+        user = self.request.user if self.request.user.is_authenticated else None
+        correlation_id = getattr(self.request, "correlation_id", "")
+        instance = serializer.instance
+        old_data = {field: getattr(instance, field) for field in serializer.validated_data}
+        evidence = serializer.save()
+        changes = {}
+        for field, old_val in old_data.items():
+            new_val = getattr(evidence, field)
+            if old_val != new_val:
+                changes[field] = {"before": str(old_val), "after": str(new_val)}
+
+        record_event(
+            actor=user,
+            action="update",
+            obj=evidence,
+            outcome="success",
+            reason=f"Evidence item {evidence.document_name} updated.",
+            changes=changes,
+            correlation_id=correlation_id,
+        )
+
+    @extend_schema(
+        summary="Verify Evidence Item",
+        description="Restricted action for Reviewers to record evidence verification per v2.2 §7.1 and AC-06.",
+        responses={200: EvidenceItemSerializer, 400: OpenApiResponse(description="Validation error.")},
+    )
+    @action(detail=True, methods=["post"], url_path="verify")
+    def verify(self, request, pk=None):
+        evidence = self.get_object()
+
+        reason = request.data.get("reason", "").strip() if isinstance(request.data, dict) else ""
+        if not reason:
+            return Response(
+                {
+                    "code": "validation_error",
+                    "message": "A verification reason is required.",
+                    "field_errors": {"reason": ["Verification reason is mandatory."]},
+                    "correlation_id": getattr(request, "correlation_id", ""),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        condition = request.data.get("condition") or request.data.get("evidence_condition") or "verified"
+        old_status = evidence.review_status
+        evidence.review_status = condition
+        evidence.save()
+
+        user = request.user if request.user.is_authenticated else None
+        record_event(
+            actor=user,
+            action="verify",
+            obj=evidence,
+            outcome="success",
+            reason=reason,
+            changes={"review_status": {"before": old_status, "after": condition}},
+            correlation_id=getattr(request, "correlation_id", ""),
+        )
+
+        return Response(EvidenceItemSerializer(evidence).data)

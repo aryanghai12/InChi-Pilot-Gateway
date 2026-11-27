@@ -183,6 +183,9 @@ class BuyerRequirementSerializer(serializers.ModelSerializer):
                 errors["quantity_unit"] = ["Approved quantity unit is required for matching."]
             if not deliv_loc:
                 errors["delivery_location"] = ["Delivery location in destination market is required for matching."]
+            specs = attrs.get("product_specifications", getattr(self.instance, "product_specifications", ""))
+            if not specs or not str(specs).strip():
+                errors["product_specifications"] = ["Product specifications are required for matching."]
 
         if errors:
             raise serializers.ValidationError(errors)
