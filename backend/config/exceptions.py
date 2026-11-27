@@ -8,6 +8,7 @@ from rest_framework.exceptions import (
     ValidationError,
     NotFound,
     MethodNotAllowed,
+    Throttled,
 )
 from rest_framework.response import Response
 from rest_framework import status
@@ -153,6 +154,11 @@ def custom_exception_handler(exc, context):
         error_code = "method_not_allowed"
         message = getattr(exc, "detail", f"Method '{request.method}' not allowed.")
         response.status_code = status.HTTP_405_METHOD_NOT_ALLOWED
+
+    elif isinstance(exc, Throttled):
+        error_code = "throttled"
+        message = getattr(exc, "detail", "Request was throttled.")
+        response.status_code = status.HTTP_429_TOO_MANY_REQUESTS
 
     else:
         # Default fallback

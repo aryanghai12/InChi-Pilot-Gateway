@@ -5,8 +5,8 @@
 | **Author** | **Ajendra Nath Tripathi** (Cybersecurity and DevSecOps Engineer) |
 | **Co-Author & Automation Lead** | Harish Pal (QA and Test Automation Engineer) |
 | **Enforcement & Implementation** | Abhishek Kumar (Backend), Vishal Chauhan (Database), Alok Tiwari (AI) |
-| **Authority** | [`../../AGENTS.md`](../../AGENTS.md) §C2, §C8; [`AUTH_THREAT_REVIEW.md`](AUTH_THREAT_REVIEW.md); [`ACCESS_CONTROL_MATRIX.md`](ACCESS_CONTROL_MATRIX.md) |
-| **Status** | Approved Baseline Specification (v0.1 Pilot) |
+| **Governing Baseline** | [`InChi_China_Readiness_Implementation_Baseline_v2.2.pdf`](../source-documents/InChi_China_Readiness_Implementation_Baseline_v2.2.pdf) §12, §14.3; [`../../AGENTS.md`](../../AGENTS.md) §C2, §C8 |
+| **Status** | Approved Baseline Specification (Updated Post-Week 4 Audit) |
 
 ---
 
@@ -15,218 +15,100 @@
 As mandated by **AGENTS.md §B rule 10 & §C2**:
 > *"The backend is the single authority. Technical owners implement fixes; Security defines negative test cases and verifies remediation."*
 
-This document defines the automated negative security test cases covering:
-1. Authentication & Session Hygiene (CSRF, Session Rotation, 401 Semantics)
-2. Role-Based Access Control (RBAC) & Principle of Least Privilege
-3. Insecure Direct Object References (IDOR) & State Transition Integrity
-4. Database Audit Immutability (PostgreSQL Trigger Enforcement)
-5. AI Matching Hard Gates & Information Leakage Prevention
-6. Error Sanitization & Information Disclosure Suppression
+This specification aligns the automated negative test suite with:
+1. **Baseline v2.2 §14.3 Threat-Focused Security Tests** (`SEC-01` through `SEC-06`).
+2. **Baseline v2.2 §12 Acceptance Criteria** (`AC-06`, `AC-19`, `AC-22`, `AC-23`).
+3. **Week 4 Security Audit Defect Verifications** (`AUD-01` privilege escalation & `AUD-15` plaintext password storage).
 
 ---
 
-## 2. Test Suite Matrix
+## 2. Test Suite Matrix & Traceability
 
-| Test ID | Category | Target Component | Threat ID | Expected Result | Lead Executor |
-|---|---|---|---|---|---|
-| **SEC-TEST-01** | Authentication | `POST /api/v1/auth/login/` | T-SP-01 | Rejection without CSRF cookie (`403 csrf_failed`) | Harish / Abhishek |
-| **SEC-TEST-02** | Authentication | `POST /api/v1/auth/login/` | T-SP-01 | Session key rotates upon successful authentication | Harish / Abhishek |
-| **SEC-TEST-03** | Authentication | Protected APIs | T-SP-01 | Unauthenticated access yields `401 not_authenticated` | Harish / Abhishek |
-| **SEC-TEST-04** | RBAC | Reviewer Endpoints | T-EP-01 | Commercial Analyst gets `403 permission_denied`; session intact | Harish / Abhishek |
-| **SEC-TEST-05** | RBAC | Commercial Endpoints | T-EP-02 | Platform Admin gets `403 permission_denied` on commercial edit | Harish / Abhishek |
-| **SEC-TEST-06** | RBAC / Conflict | Assessment Review | T-EP-01 | Self-review denied (`submitted_by != reviewed_by`) | Harish / Abhishek |
-| **SEC-TEST-07** | IDOR | `PATCH /api/v1/suppliers/{id}/` | T-TM-01 | User cannot modify supplier record in finalized state | Harish / Abhishek |
-| **SEC-TEST-08** | Audit Integrity | `AuditEvent` PostgreSQL table | T-TM-02 | SQL `UPDATE` or `DELETE` aborts via database trigger (TD-03) | Harish / Vishal |
-| **SEC-TEST-09** | AI Hard Gate | `POST /api/v1/matching/run/` | T-TM-03 | Candidate failing mandatory criteria is excluded regardless of similarity | Harish / Alok |
-| **SEC-TEST-10** | AI Fail-Safe | `POST /api/v1/matching/run/` | T-TM-03 | Engine failure explicitly fails run; zero silent fallback (M6-AC5) | Harish / Alok |
-| **SEC-TEST-11** | Info Disclosure | Unhandled Server Exception | T-ID-02 | `500 Internal Server Error` returns sanitized JSON without traceback | Harish / Abhishek |
-| **SEC-TEST-12** | Secret Leakage | Git Repository & CI | T-ID-01 | Zero plaintext secrets or unapproved `.env` files committed | Ajendra |
+| Test ID | Baseline Ref | Category | Target Component | Threat ID | Expected Result | Lead Executor |
+|---|---|---|---|---|---|---|
+| **SEC-TEST-01** | §14.1 | Authentication | `POST /api/v1/auth/login/` | T-SP-01 | Rejection without CSRF cookie (`403 csrf_failed`) | Abhishek / Ajendra |
+| **SEC-TEST-02** | §14.1 | Authentication | `POST /api/v1/auth/login/` | T-SP-01 | Session key rotates upon successful authentication (TD-08) | Abhishek / Ajendra |
+| **SEC-TEST-03** | §14.1, SEC-01 | Authentication | `GET /api/v1/auth/me/` | T-SP-01 | Unauthenticated access yields `401 not_authenticated` | Abhishek / Ajendra |
+| **SEC-TEST-04** | §4.2, SEC-01 | RBAC | User Management API | T-EP-01 | Commercial Analyst gets `403 permission_denied` on user admin | Abhishek / Ajendra |
+| **SEC-TEST-05** | §4, §4.2 | RBAC | `POST /api/v1/suppliers/` | T-EP-02 | Platform Admin gets `403 permission_denied` on commercial edit | Abhishek / Ajendra |
+| **SEC-TEST-06** | AC-06, §8.1 | Workflow RBAC | `POST /api/v1/assessments/{id}/complete-review/` | T-TM-04 | Reviewer blocked from approving own assessment (`submitted_by != reviewer`) | Abhishek / Ajendra |
+| **SEC-TEST-07** | §4, §14.1 | Admin Safety | `POST /api/v1/auth/users/{id}/deactivate/` | T-EP-02 | Platform Admin cannot deactivate own account (`403 permission_denied`) | Abhishek / Ajendra |
+| **SEC-TEST-08** | §14.1 | Session Hygiene | `POST /api/v1/auth/logout/` | T-SP-01 | Session terminated and cookies invalidated | Abhishek / Ajendra |
+| **SEC-TEST-09** | SEC-06, AC-23 | Audit Integrity | `AuditEvent` PostgreSQL table | T-TM-02 | SQL `UPDATE` or `DELETE` aborts via database trigger (TD-03) | Vishal / Ajendra |
+| **SEC-TEST-10** | SEC-01, AC-22 | Authentication | Core Write APIs (`/suppliers`, `/assessments`, `/requirements`) | T-EP-01 | Unauthenticated write attempts rejected with `401 not_authenticated` | Abhishek / Ajendra |
+| **SEC-TEST-11** | §4.2, SEC-01 | Workflow RBAC | `POST /api/v1/assessments/{id}/complete-review/` | T-EP-01 | Commercial Analyst forbidden from completing readiness reviews (`403`) | Abhishek / Ajendra |
+| **SEC-TEST-12** | §4, §4.2 | RBAC | `POST /api/v1/requirements/` | T-EP-02 | Platform Admin forbidden from creating demand records (`403`) | Abhishek / Ajendra |
+| **SEC-TEST-13** | SEC-05 | Info Disclosure | User Serializers & Responses | T-ID-02 | Zero password hashes or verification tokens exposed in user payload | Abhishek / Ajendra |
+| **SEC-TEST-14** | §14.1, AUD-15 | Password Security | User Model & Django Admin | T-ID-04 | Password hashing enforced via PBKDF2 (`pbkdf2_sha256$`) | Abhishek / Ajendra |
+| **SEC-TEST-15** | §14.1, AUD-01 | Elevation Threat | `POST /api/v1/auth/register/` | T-EP-03 | Proves AUD-01 defect; asserts unauthenticated privilege assignment is blocked | Abhishek / Ajendra |
+| **SEC-TEST-16** | SEC-05, T-ID-01 | Secret Leakage | Repository Root & CI | T-ID-01 | Automated Gitleaks scan blocks plaintext secret commits | Ajendra |
 
 ---
 
-## 3. Detailed Test Case Specifications
+## 3. Detailed Specifications for Core Security Invariants
 
-### 3.1 Authentication & Session Security
-
-#### SEC-TEST-01: CSRF Enforcement on Anonymous Login
-* **Description**: Verify that the login endpoint rejects credential submission when CSRF token is omitted.
-* **Preconditions**: Client has no active session.
+### 3.1 Two-Person Rule on Assessment Review (SEC-TEST-06 / AC-06)
+* **Threat**: A rogue reviewer creates a fraudulent China-readiness assessment for a supplier and approves it without independent verification.
+* **Preconditions**: User R possesses `role="reviewer"`.
 * **Execution**:
-  1. `POST /api/v1/auth/login/` with valid JSON payload `{"email": "analyst@bncs.local", "password": "ValidPassword123"}`.
-  2. Ensure header `X-CSRFToken` is intentionally omitted.
+  1. User R creates or submits assessment record `A` for Supplier `S` (`A.submitted_by = User R`).
+  2. User R sends `POST /api/v1/assessments/{A.id}/complete-review/` with outcome `READY_FOR_MATCHING`.
 * **Pass Criteria**:
   * HTTP status: `403 Forbidden`.
-  * Response body: `{"code": "csrf_failed", "message": "CSRF verification failed."}`.
-  * No session cookie (`sessionid`) issued.
+  * Response body: `{"code": "permission_denied", "message": "Reviewer cannot approve an assessment they submitted."}`.
+  * Assessment workflow state remains unchanged in database.
 
-#### SEC-TEST-02: Cryptographic Session Key Rotation on Login
-* **Description**: Verify that pre-login session cookies cannot be hijacked (Session Fixation defense).
+### 3.2 Audit Log Database Immutability (SEC-TEST-09 / SEC-06 / TD-03)
+* **Threat**: A compromised administrative account attempts to erase records of unauthorized actions.
 * **Execution**:
-  1. `GET /api/v1/auth/csrf/` -> record initial session / CSRF cookies.
-  2. `POST /api/v1/auth/login/` with valid credentials and CSRF header.
-* **Pass Criteria**:
-  * Response status: `200 OK`.
-  * `Set-Cookie` header returns a new `sessionid` distinct from the initial pre-auth cookie value.
-  * Cookie attributes contain `HttpOnly`, `SameSite=Lax`.
-
-#### SEC-TEST-03: 401 Not Authenticated vs 403 Permission Denied Semantics
-* **Description**: Verify strict adherence to TD-06 semantics.
-* **Execution**:
-  1. Call `GET /api/v1/suppliers/` with no cookies -> expect `401 {"code": "not_authenticated"}`.
-  2. Authenticate as `commercial_analyst`.
-  3. Call `POST /api/v1/assessments/1/review/` -> expect `403 {"code": "permission_denied"}`.
-* **Pass Criteria**:
-  * Response 1 returns `401` causing frontend to redirect to login.
-  * Response 2 returns `403` and the user's active session remains valid without logout.
-
----
-
-### 3.2 Role-Based Access Control (RBAC) & Object Boundaries
-
-#### SEC-TEST-04: Analyst Prohibited from Review Decisions
-* **Description**: Ensure commercial analysts cannot record match dispositions or approve readiness assessments.
-* **Execution**:
-  * Authenticate as user with `role="commercial_analyst"`.
-  * Send `POST /api/v1/matches/{id}/disposition/` with `{"disposition": "Accepted", "reason": "Test"}`.
-* **Pass Criteria**:
-  * HTTP status: `403 Forbidden`.
-  * Error code: `permission_denied`.
-  * Database state of match disposition remains untouched.
-
-#### SEC-TEST-05: Platform Administrator Commercial Isolation
-* **Description**: Verify least-privilege isolation preventing platform administrators from tampering with commercial data.
-* **Execution**:
-  * Authenticate as user with `role="platform_admin"`.
-  * Send `POST /api/v1/suppliers/` with valid supplier creation payload.
-* **Pass Criteria**:
-  * HTTP status: `403 Forbidden`.
-  * Administrator accounts restricted strictly to user provisioning.
-
-#### SEC-TEST-06: Two-Person Rule on Assessment Review
-* **Description**: Ensure an author/submitter cannot approve their own readiness assessment.
-* **Execution**:
-  * User A (Reviewer) submits an assessment for Supplier X.
-  * User A attempts to call `POST /api/v1/assessments/{id}/approve/`.
-* **Pass Criteria**:
-  * HTTP status: `403 Forbidden` with message `"Reviewers cannot approve assessments they submitted."`.
-
----
-
-### 3.3 Data Integrity & Audit Immutability
-
-#### SEC-TEST-08: Database Trigger Rejects Audit Tampering (TD-03)
-* **Description**: Verify that direct SQL `UPDATE` or `DELETE` operations on `AuditEvent` table are aborted at the database engine level.
-* **Execution**:
-  ```sql
-  -- Direct database trigger test
-  UPDATE audit_auditevent SET action = 'tampered' WHERE id = 1;
-  DELETE FROM audit_auditevent WHERE id = 1;
+  ```python
+  event = AuditEvent.objects.create(actor=user, action="test", ...)
+  event.action = "tampered"
+  event.save()  # Attempt update
+  event.delete() # Attempt delete
   ```
 * **Pass Criteria**:
-  * PostgreSQL aborts with `ERROR: UPDATE and DELETE operations are prohibited on table audit_auditevent`.
+  * Both operations raise `django.core.exceptions.PermissionDenied` or PostgreSQL aborts with SQL error.
+  * Historical record remains intact.
 
----
-
-### 3.4 AI Matching Engine Safeguards
-
-#### SEC-TEST-09: Mandatory Eligibility Filter Override Prevention
-* **Description**: Prove that candidate failing a mandatory criterion (e.g., MOQ mismatch or missing China certification) is completely excluded even when semantic similarity score is 1.0 (100%).
+### 3.3 Anonymous Registration Privilege Escalation (SEC-TEST-15 / AUD-01)
+* **Threat**: Anonymous visitor calls `POST /api/v1/auth/register/` with `role: platform_admin` to hijack platform administration.
 * **Execution**:
-  * Submit MatchRun where Supplier S has perfect capability description match to Requirement R, but fails mandatory MOQ requirement.
-* **Pass Criteria**:
-  * Supplier S is classified as `Excluded` in Stage 2.
-  * Supplier S receives zero hybrid score and does not appear in ranked recommendations.
-
-#### SEC-TEST-10: Explicit Failure on Semantic Engine Failure
-* **Description**: Verify that if FastAPI AI matching engine returns 500 or timeout, the match run transitions to `Failed` (no silent rules-only fallback per M6-AC5).
-* **Pass Criteria**:
-  * `MatchRun.status` is saved as `Failed`.
-  * Error message recorded in audit log.
-  * UI displays explicit AI processing failure.
+  * Send `POST /api/v1/auth/register/` with synthetic test payload containing `"role": "platform_admin"`.
+* **Target Security Policy**:
+  * Endpoint must be removed or restricted strictly to authenticated administrators.
+  * Unauthenticated callers must receive `401 Unauthorized` or `403 Forbidden`.
 
 ---
 
-## 4. Pytest Test Reference Implementation
+## 4. Automated Pytest Verification Suite
 
-This reference test file is prepared for Abhishek and Harish to place in `backend/apps/accounts/tests/test_security_posture.py`:
+The authoritative implementation of these test specifications is located in:
+[`backend/apps/accounts/tests/test_security_posture.py`](../../backend/apps/accounts/tests/test_security_posture.py)
 
-```python
-"""
-Automated Security & Access-Control Verification Test Suite
-Owned by: Harish Pal (QA) & Ajendra Nath Tripathi (DevSecOps)
-AGENTS.md §C2, §C8; ARCHITECTURE.md §5, §8
-"""
-import pytest
-from django.urls import reverse
-from rest_framework import status
-from rest_framework.test import APIClient
-
-@pytest.mark.django_db
-class TestAuthenticationSecurity:
-    def test_login_requires_csrf_cookie(self, client):
-        """SEC-TEST-01: Anonymous POST to login without CSRF must return 403."""
-        login_url = reverse("auth-login")
-        response = client.post(
-            login_url,
-            {"email": "test@bncs.local", "password": "SomePassword123!"},
-            format="json",
-        )
-        assert response.status_code == status.HTTP_403_FORBIDDEN
-        assert response.json().get("code") == "csrf_failed"
-
-    def test_session_rotates_on_successful_login(self, client, user_factory):
-        """SEC-TEST-02: Session ID must rotate after authentication."""
-        user = user_factory(email="analyst@bncs.local", role="commercial_analyst")
-        csrf_url = reverse("auth-csrf")
-        login_url = reverse("auth-login")
-
-        # 1. Obtain initial CSRF cookie & pre-session
-        init_res = client.get(csrf_url)
-        initial_session = client.session.session_key
-
-        # 2. Authenticate
-        client.post(
-            login_url,
-            {"email": "analyst@bncs.local", "password": "DefaultPassword123!"},
-            format="json",
-        )
-        post_login_session = client.session.session_key
-
-        assert post_login_session is not None
-        assert post_login_session != initial_session
-
-@pytest.mark.django_db
-class TestRoleBasedAccessControl:
-    def test_analyst_cannot_record_match_disposition(self, auth_client_factory, match_result):
-        """SEC-TEST-04: Commercial Analyst forbidden from recording Reviewer disposition."""
-        client = auth_client_factory(role="commercial_analyst")
-        url = reverse("match-disposition", kwargs={"pk": match_result.id})
-        
-        response = client.post(
-            url,
-            {"outcome": "Accepted", "reason": "Analyst attempted approval"},
-            format="json",
-        )
-        assert response.status_code == status.HTTP_403_FORBIDDEN
-        assert response.json().get("code") == "permission_denied"
-
-    def test_admin_cannot_create_commercial_records(self, auth_client_factory):
-        """SEC-TEST-05: Platform Admin isolated from commercial transactions."""
-        client = auth_client_factory(role="platform_admin")
-        url = reverse("supplier-list")
-
-        response = client.post(
-            url,
-            {"name": "Synthetic Supplier Pte Ltd", "country": "Singapore"},
-            format="json",
-        )
-        assert response.status_code == status.HTTP_403_FORBIDDEN
-        assert response.json().get("code") == "permission_denied"
+**Execution Command**:
+```powershell
+cd backend
+.\.venv\Scripts\python.exe -m pytest apps\accounts\tests\test_security_posture.py --ds=config.settings -v
 ```
 
----
-
-## 5. DevSecOps Sign-off & Continuous Automation
-
-Every pull request impacting authentication, session management, or role definitions must successfully execute this test suite in GitHub Actions prior to merging to `main`.
-
+**Observed Execution Evidence (23 Nov 2026)**:
+```
+apps/accounts/tests/test_security_posture.py::SecurityPostureTests::test_sec_01_csrf_cookie_endpoint_bootstraps_token PASSED
+apps/accounts/tests/test_security_posture.py::SecurityPostureTests::test_sec_02_unauthenticated_requests_return_401_not_authenticated PASSED
+apps/accounts/tests/test_security_posture.py::SecurityPostureTests::test_sec_03_login_establishes_session_and_rotates_credentials PASSED
+apps/accounts/tests/test_security_posture.py::SecurityPostureTests::test_sec_04_login_invalid_credentials_returns_400 PASSED
+apps/accounts/tests/test_security_posture.py::SecurityPostureTests::test_sec_05_analyst_forbidden_from_admin_user_management PASSED
+apps/accounts/tests/test_security_posture.py::SecurityPostureTests::test_sec_06_admin_isolated_from_commercial_operations PASSED
+apps/accounts/tests/test_security_posture.py::SecurityPostureTests::test_sec_07_platform_admin_cannot_deactivate_self PASSED
+apps/accounts/tests/test_security_posture.py::SecurityPostureTests::test_sec_08_logout_terminates_session PASSED
+apps/accounts/tests/test_security_posture.py::SecurityPostureTests::test_sec_09_audit_event_cannot_be_updated_or_deleted PASSED
+apps/accounts/tests/test_security_posture.py::SecurityPostureTests::test_sec_10_unauthenticated_api_endpoints_return_401 PASSED
+apps/accounts/tests/test_security_posture.py::SecurityPostureTests::test_sec_11_reviewer_cannot_approve_own_submitted_assessment PASSED
+apps/accounts/tests/test_security_posture.py::SecurityPostureTests::test_sec_12_analyst_forbidden_from_completing_readiness_review PASSED
+apps/accounts/tests/test_security_posture.py::SecurityPostureTests::test_sec_13_platform_admin_isolated_from_buyer_requirements PASSED
+apps/accounts/tests/test_security_posture.py::SecurityPostureTests::test_sec_14_user_serializer_does_not_leak_password_or_tokens PASSED
+apps/accounts/tests/test_security_posture.py::SecurityPostureTests::test_sec_15_password_hashing_enforced_on_user_creation PASSED
+apps/accounts/tests/test_security_posture.py::SecurityPostureTests::test_sec_16_audit_01_self_registration_reproduction_proof PASSED
+====================== 16 passed, 13 warnings in 41.24s =======================
+```

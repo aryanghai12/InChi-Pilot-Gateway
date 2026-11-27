@@ -132,6 +132,17 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 25,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    # Login Rate Limiting & Throttling (TD-04 / Week 5)
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+        "rest_framework.throttling.ScopedRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": os.getenv("THROTTLE_ANON_RATE", "100/day"),
+        "user": os.getenv("THROTTLE_USER_RATE", "1000/day"),
+        "login": os.getenv("THROTTLE_LOGIN_RATE", "5/minute"),
+    },
 }
 
 # drf-spectacular OpenAPI Settings
