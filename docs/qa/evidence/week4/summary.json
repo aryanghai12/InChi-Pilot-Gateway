@@ -1,0 +1,876 @@
+{
+  "executed_utc": "2026-11-23T07:49:55.173754+00:00",
+  "base_sha": "e4e320dcf8bb23f267e8450c77a109981832adc0",
+  "branch": "qa/week4-demand-readiness-boundaries",
+  "uncommitted_qa_changes": true,
+  "database": "sqlite in-memory",
+  "python": "3.12.0",
+  "command": "python -m pytest --ds=config.settings --tb=short -q -rs apps/accounts/tests apps/registry/tests ../e2e/backend/test_controls.py ../e2e/backend/test_week4_workflows.py --junitxml=<ignored evidence>/junit.xml",
+  "exit_code": 1,
+  "counts": {
+    "passed": 116,
+    "failed": 17,
+    "blocked": 10,
+    "error": 0
+  },
+  "cases": [
+    {
+      "suite": "backend.apps.accounts.tests.test_security_posture.SecurityPostureTests",
+      "test": "test_sec_01_csrf_cookie_endpoint_bootstraps_token",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "backend.apps.accounts.tests.test_security_posture.SecurityPostureTests",
+      "test": "test_sec_02_unauthenticated_requests_return_401_not_authenticated",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "backend.apps.accounts.tests.test_security_posture.SecurityPostureTests",
+      "test": "test_sec_03_login_establishes_session_and_rotates_credentials",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "backend.apps.accounts.tests.test_security_posture.SecurityPostureTests",
+      "test": "test_sec_04_login_invalid_credentials_returns_400",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "backend.apps.accounts.tests.test_security_posture.SecurityPostureTests",
+      "test": "test_sec_05_analyst_forbidden_from_admin_user_management",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "backend.apps.accounts.tests.test_security_posture.SecurityPostureTests",
+      "test": "test_sec_06_admin_isolated_from_commercial_operations",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "backend.apps.accounts.tests.test_security_posture.SecurityPostureTests",
+      "test": "test_sec_07_platform_admin_cannot_deactivate_self",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "backend.apps.accounts.tests.test_security_posture.SecurityPostureTests",
+      "test": "test_sec_08_logout_terminates_session",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "backend.apps.accounts.tests.test_security_posture.SecurityPostureTests",
+      "test": "test_sec_09_audit_event_cannot_be_updated_or_deleted",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "backend.apps.registry.tests.test_registry.SupplierRegistryTests",
+      "test": "test_archive_supplier_success",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "backend.apps.registry.tests.test_registry.SupplierRegistryTests",
+      "test": "test_complete_supplier_success",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "backend.apps.registry.tests.test_registry.SupplierRegistryTests",
+      "test": "test_complete_supplier_validation_failure",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "backend.apps.registry.tests.test_registry.SupplierRegistryTests",
+      "test": "test_create_draft_supplier_success",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "backend.apps.registry.tests.test_registry.SupplierRegistryTests",
+      "test": "test_supplier_concurrency_conflict",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "backend.apps.registry.tests.test_registry.SupplierRegistryTests",
+      "test": "test_supplier_rbac_reviewer_denied_create",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "backend.apps.registry.tests.test_registry.ProductCatalogueTests",
+      "test": "test_create_product_success",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "backend.apps.registry.tests.test_registry.ProductCatalogueTests",
+      "test": "test_create_product_under_archived_supplier_rejected",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "backend.apps.registry.tests.test_registry.ProductCatalogueTests",
+      "test": "test_frontend_product_payload_compatibility",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "backend.apps.registry.tests.test_registry.ProductCatalogueTests",
+      "test": "test_frontend_supplier_payload_compatibility",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "backend.apps.registry.tests.test_registry.ProductCatalogueTests",
+      "test": "test_product_concurrency_conflict",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "backend.apps.registry.tests.test_registry.ProductCatalogueTests",
+      "test": "test_product_mandarin_translation_status",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "backend.apps.registry.tests.test_registry.ProductCatalogueTests",
+      "test": "test_product_validation_errors",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_controls",
+      "test": "test_m1_ac3_real_csrf_rejects_anonymous_login",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_controls",
+      "test": "test_m1_ac2_expired_session_denied",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_controls",
+      "test": "test_m1_ac4_deactivation_revokes_next_request",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_controls",
+      "test": "test_m1_ac1_login_rotates_existing_session_key",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_controls",
+      "test": "test_m10_ac2_database_trigger_blocks_raw_mutation[UPDATE]",
+      "outcome": "blocked",
+      "detail": "Blocked: PostgreSQL required to prove the TD-03 trigger"
+    },
+    {
+      "suite": "e2e.backend.test_controls",
+      "test": "test_m10_ac2_database_trigger_blocks_raw_mutation[DELETE]",
+      "outcome": "blocked",
+      "detail": "Blocked: PostgreSQL required to prove the TD-03 trigger"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac1_each_missing_submission_answer_is_rejected[CR-01]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac1_each_missing_submission_answer_is_rejected[CR-02]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac1_each_missing_submission_answer_is_rejected[CR-04]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac1_each_missing_submission_answer_is_rejected[CR-06]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac1_each_missing_submission_answer_is_rejected[CR-07]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac1_each_missing_submission_answer_is_rejected[CR-08]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac1_each_missing_submission_answer_is_rejected[CR-09]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac1_each_missing_submission_answer_is_rejected[CR-10]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac1_each_missing_submission_answer_is_rejected[CR-11]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac1_each_missing_submission_answer_is_rejected[CR-12]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac1_each_missing_submission_answer_is_rejected[CR-13]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac1_each_missing_submission_answer_is_rejected[CR-14]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac1_each_missing_submission_answer_is_rejected[CR-15]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac1_each_missing_submission_answer_is_rejected[CR-16]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac1_each_missing_submission_answer_is_rejected[CR-17]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac1_each_missing_submission_answer_is_rejected[CR-18]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac1_blank_required_response_is_rejected[]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac1_blank_required_response_is_rejected[   ]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac1_blank_required_response_is_rejected[None]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac1_product_link_required",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac1_limitation_confirmation_required[No]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac1_limitation_confirmation_required[Unknown]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac1_limitation_confirmation_required[]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac2_ac5_ac6_submit_persists_actor_version_and_audit[draft]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac2_ac5_ac6_submit_persists_actor_version_and_audit[information_required]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_submit_rejects_invalid_source_states[submitted]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_submit_rejects_invalid_source_states[under_review]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_submit_rejects_invalid_source_states[review_complete]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_submit_rejects_invalid_source_states[archived]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_review_actions_require_under_review_state[complete-review-payload0-draft]",
+      "outcome": "failed",
+      "detail": "AssertionError: Invalid draft -> complete-review accepted (200)\nassert 400 <= 200\n +  where 200 = <Response status_code=200, \"application/json\">.status_code"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_review_actions_require_under_review_state[complete-review-payload0-submitted]",
+      "outcome": "failed",
+      "detail": "AssertionError: Invalid submitted -> complete-review accepted (200)\nassert 400 <= 200\n +  where 200 = <Response status_code=200, \"application/json\">.status_code"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_review_actions_require_under_review_state[complete-review-payload0-review_complete]",
+      "outcome": "failed",
+      "detail": "AssertionError: Invalid review_complete -> complete-review accepted (200)\nassert 400 <= 200\n +  where 200 = <Response status_code=200, \"application/json\">.status_code"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_review_actions_require_under_review_state[complete-review-payload0-archived]",
+      "outcome": "failed",
+      "detail": "AssertionError: Invalid archived -> complete-review accepted (200)\nassert 400 <= 200\n +  where 200 = <Response status_code=200, \"application/json\">.status_code"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_review_actions_require_under_review_state[request-information-payload1-draft]",
+      "outcome": "failed",
+      "detail": "AssertionError: Invalid draft -> request-information accepted (200)\nassert 400 <= 200\n +  where 200 = <Response status_code=200, \"application/json\">.status_code"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_review_actions_require_under_review_state[request-information-payload1-submitted]",
+      "outcome": "failed",
+      "detail": "AssertionError: Invalid submitted -> request-information accepted (200)\nassert 400 <= 200\n +  where 200 = <Response status_code=200, \"application/json\">.status_code"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_review_actions_require_under_review_state[request-information-payload1-review_complete]",
+      "outcome": "failed",
+      "detail": "AssertionError: Invalid review_complete -> request-information accepted (200)\nassert 400 <= 200\n +  where 200 = <Response status_code=200, \"application/json\">.status_code"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_review_actions_require_under_review_state[request-information-payload1-archived]",
+      "outcome": "failed",
+      "detail": "AssertionError: Invalid archived -> request-information accepted (200)\nassert 400 <= 200\n +  where 200 = <Response status_code=200, \"application/json\">.status_code"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_permitted_review_actions_persist[complete-review-payload0-review_complete]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_permitted_review_actions_persist[request-information-payload1-information_required]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac3_reason_required[complete-review-reviewer_notes-]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac3_reason_required[complete-review-reviewer_notes-   ]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac3_reason_required[complete-review-reviewer_notes-None]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac3_reason_required[request-information-request_notes-]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac3_reason_required[request-information-request_notes-   ]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac3_reason_required[request-information-request_notes-None]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac3_self_review_denied",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac2_ac3_analyst_cannot_bypass_review_with_patch[readiness_outcome-ready_for_matching]",
+      "outcome": "failed",
+      "detail": "AssertionError: Unauthorized readiness_outcome persisted (200)\nassert 'ready_for_matching' is None\n +  where 'ready_for_matching' = <ReadinessAssessment: Assessment for Synthetic Week 4 Supplier [Draft]>.readiness_outcome"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac2_ac3_analyst_cannot_bypass_review_with_patch[outcome-ready_for_matching]",
+      "outcome": "failed",
+      "detail": "AssertionError: Unauthorized outcome persisted (200)\nassert 'ready_for_matching' is None\n +  where 'ready_for_matching' = <ReadinessAssessment: Assessment for Synthetic Week 4 Supplier [Draft]>.readiness_outcome"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac2_ac3_analyst_cannot_bypass_review_with_patch[workflow_state-review_complete]",
+      "outcome": "failed",
+      "detail": "AssertionError: Review bypass through workflow_state (200)\nassert 'review_complete' == 'draft'\n  \n  - draft\n  + review_complete"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac2_ac3_analyst_cannot_bypass_review_with_patch[status-review_complete]",
+      "outcome": "failed",
+      "detail": "AssertionError: Review bypass through status (200)\nassert 'review_complete' == 'draft'\n  \n  - draft\n  + review_complete"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_gate_requires_referenced_evidence_record",
+      "outcome": "failed",
+      "detail": "AssertionError: Section 6.1: referenced document has no Evidence record\nassert 200 == 400\n +  where 200 = <Response status_code=200, \"application/json\">.status_code"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac07_ac08_unresolved_mandatory_evidence_blocks_ready[expired]",
+      "outcome": "blocked",
+      "detail": "Blocked: no agreed API field/contract identifies mandatory assessment evidence; free-text fixture labels do not prove applicability (W4-04)"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac07_ac08_unresolved_mandatory_evidence_blocks_ready[discrepancy]",
+      "outcome": "blocked",
+      "detail": "Blocked: no agreed API field/contract identifies mandatory assessment evidence; free-text fixture labels do not prove applicability (W4-04)"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac05_evidence_defaults_unverified",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_evidence_rejects_invalid_condition[verified]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_evidence_rejects_invalid_condition[approved]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_evidence_rejects_invalid_condition[]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_evidence_rejects_invalid_condition[None]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_create_requires_supplier",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac5_analyst_cannot_forge_workflow_actors[submitted_by]",
+      "outcome": "failed",
+      "detail": "AssertionError: Forged submitted_by accepted (200)\nassert UUID('47a34e38-5788-4c48-b6d3-ec85fc743420') is None\n +  where UUID('47a34e38-5788-4c48-b6d3-ec85fc743420') = getattr(<ReadinessAssessment: Assessment for Synthetic Week 4 Supplier [Draft]>, 'submitted_by_id')"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_ac5_analyst_cannot_forge_workflow_actors[reviewer]",
+      "outcome": "failed",
+      "detail": "AssertionError: Forged reviewer accepted (200)\nassert UUID('e2bc6af6-a739-4082-b259-23bcfbe659a6') is None\n +  where UUID('e2bc6af6-a739-4082-b259-23bcfbe659a6') = getattr(<ReadinessAssessment: Assessment for Synthetic Week 4 Supplier [Draft]>, 'reviewer_id')"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_m5_anonymous_mutation_denied[assessment-submit]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_m5_anonymous_mutation_denied[demand-mark-ready]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_m5_anonymous_mutation_denied[demand-close]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_current_policy_reviewer_lifecycle_denied[mark-ready]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_current_policy_reviewer_lifecycle_denied[close]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_ac2_invalid_patch_is_field_specific_and_atomic[buyer_organisation_name- ]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_ac2_invalid_patch_is_field_specific_and_atomic[quantity_value-0]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_ac2_invalid_patch_is_field_specific_and_atomic[quantity_value--0.01]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_ac2_invalid_patch_is_field_specific_and_atomic[quantity_value-0.001]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_ac2_invalid_patch_is_field_specific_and_atomic[quantity_value-1000000000000.00]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_ac2_invalid_patch_is_field_specific_and_atomic[target_price_min-0]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_ac2_invalid_patch_is_field_specific_and_atomic[target_price_max--1]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_ac2_invalid_patch_is_field_specific_and_atomic[delivery_window_end-not-a-date]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_quantity_valid_decimal_boundaries_persist[0.01]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_quantity_valid_decimal_boundaries_persist[999999999999.99]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_price_bounds[1-2-200]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_price_bounds[2-2-200]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_price_bounds[3-2-400]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_delivery_window_bounds[2026-11-20-2026-11-21-200]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_delivery_window_bounds[2026-11-20-2026-11-20-200]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_delivery_window_bounds[2026-11-21-2026-11-20-400]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_ac2_ready_gate_cannot_be_bypassed[action-quantity_value]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_ac2_ready_gate_cannot_be_bypassed[action-quantity_unit]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_ac2_ready_gate_cannot_be_bypassed[action-target_market]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_ac2_ready_gate_cannot_be_bypassed[action-delivery_location]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_ac2_ready_gate_cannot_be_bypassed[action-product_specifications]",
+      "outcome": "failed",
+      "detail": "AssertionError: Missing product_specifications bypassed readiness via action\nassert 200 == 400\n +  where 200 = <Response status_code=200, \"application/json\">.status_code"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_ac2_ready_gate_cannot_be_bypassed[patch-quantity_value]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_ac2_ready_gate_cannot_be_bypassed[patch-quantity_unit]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_ac2_ready_gate_cannot_be_bypassed[patch-target_market]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_ac2_ready_gate_cannot_be_bypassed[patch-delivery_location]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_ac2_ready_gate_cannot_be_bypassed[patch-product_specifications]",
+      "outcome": "failed",
+      "detail": "AssertionError: Missing product_specifications bypassed readiness via patch\nassert 200 == 400\n +  where 200 = <Response status_code=200, \"application/json\">.status_code"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m5_ac1_ac5_create_ready_close_persists_and_audits",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_m5_stale_patch_returns_409_without_mutation[assessment]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_m5_stale_patch_returns_409_without_mutation[demand]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_m5_anonymous_read_denied[/api/v1/assessments/]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_m5_anonymous_read_denied[/api/v1/requirements/]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_m5_anonymous_read_denied[/api/v1/assessment-evidence/]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_m5_current_policy_denies_source_edits[assessment-reviewer]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_m5_current_policy_denies_source_edits[assessment-admin]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_m5_current_policy_denies_source_edits[demand-reviewer]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_m5_current_policy_denies_source_edits[demand-admin]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_current_policy_denies_review_actions[complete-review-payload0-analyst]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_current_policy_denies_review_actions[complete-review-payload0-admin]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_current_policy_denies_review_actions[request-information-payload1-analyst]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_current_policy_denies_review_actions[request-information-payload1-admin]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_m5_session_mutations_require_csrf[assessment-submit]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_m5_session_mutations_require_csrf[demand-mark-ready]",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_m4_request_information_resubmit_preserves_reviewer_notes",
+      "outcome": "passed",
+      "detail": ""
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_week4_blocked_contracts[AC-06/AC-22 SEC-01/02: Contributor and Viewer roles absent; D-22 migration/contract pending]",
+      "outcome": "blocked",
+      "detail": "Blocked: AC-06/AC-22 SEC-01/02: Contributor and Viewer roles absent; D-22 migration/contract pending"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_week4_blocked_contracts[M4-AC4 AC-10: immutable submission/history API absent; counter increment is not snapshot evidence]",
+      "outcome": "blocked",
+      "detail": "Blocked: M4-AC4 AC-10: immutable submission/history API absent; counter increment is not snapshot evidence"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_week4_blocked_contracts[M5-AC3 AC-18/21: immutable requirement versions and match-run API absent]",
+      "outcome": "blocked",
+      "detail": "Blocked: M5-AC3 AC-18/21: immutable requirement versions and match-run API absent"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_week4_blocked_contracts[M4 v2.2 8.1: assignment/reassessment/archive action contracts absent]",
+      "outcome": "blocked",
+      "detail": "Blocked: M4 v2.2 8.1: assignment/reassessment/archive action contracts absent"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_week4_blocked_contracts[M5-AC4 D-23: approved reference/criteria-version API absent]",
+      "outcome": "blocked",
+      "detail": "Blocked: M5-AC4 D-23: approved reference/criteria-version API absent"
+    },
+    {
+      "suite": "e2e.backend.test_week4_workflows",
+      "test": "test_week4_blocked_contracts[SEC-03: record ownership/access boundary needs an agreed contract; no invented ownership policy]",
+      "outcome": "blocked",
+      "detail": "Blocked: SEC-03: record ownership/access boundary needs an agreed contract; no invented ownership policy"
+    }
+  ]
+}

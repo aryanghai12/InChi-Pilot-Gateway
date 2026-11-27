@@ -1,5 +1,23 @@
 # Defect process and register
 
+**Week 4 execution update, 23 November 2026:** [execution evidence](execution-2026-11-23-week4.md), [unsubmitted issue drafts](week4-issue-drafts.md). Base main `e4e320d`, QA branch `qa/week4-demand-readiness-boundaries`. Final run: 116 passed / 17 genuine product failures / 10 Blocked, 0 errors. No product changes or external issues/messages.
+
+| ID | Finding | Requirement | Proposed severity | Owner / reviewer | Actual result / status |
+|---|---|---|---|---|---|
+| W4-01 | Analyst PATCH bypasses reviewer outcome/status and can forge submitted-by/reviewer | M4-AC2/3/5 | High | Abhishek / Ajendra | 6 failures; 200 and unauthorized values stored; reproduced, draft only |
+| W4-02 | Review actions accept Draft, Submitted, Review Complete and Archived | M4-AC3/4, v2.2 section 8.1 | High | Abhishek / Adrika | 8 failures; 200; reproduced, draft only |
+| W4-03 | Submission accepts referenced document without Evidence record | M4-AC1, v2.2 section 6.1 | High | Abhishek / Vishal | 1 failure; 200; reproduced, draft only |
+| W4-04 | Mandatory assessment evidence applicability contract absent | v2.2 AC-07/08, M4-AC2/3 | Not assigned | Adrika / Abhishek | 2 cases Blocked at final review; mandatory status was only prose in the fixture; no confirmed defect draft |
+| W4-05 | Buyer readiness omits specification gate on action and PATCH | M5-AC2, v2.2 AC-11 | High | Abhishek / Adrika | 2 failures; 200; reproduced, draft only |
+
+GitHub open and closed issues were checked through the public REST API on 23 November. Existing open **#83 (QA-004/AUD-01), #84 (AUD-15), #85, #86 and #87** remain their existing records; none was recreated. W4-03/04 concern assessment evidence linkage/outcome guards, distinct from #86's registry verification write. Missing audit content belongs to #87. Existing security issues were not re-executed as part of this focused run and are not claimed fixed. The old QA-001/003/005/006 statuses below describe 16 November evidence; governance records later fixes. Closed clean-install/lint issues #63/#64 are not current blockers.
+
+Blocked work: mandatory assessment evidence applicability (W4-04), five-role acceptance (D-22), immutable version/history and match-run APIs, assignment/reassessment/archive contracts, approved criteria/reference API (D-23), SEC-03 record boundary definition, PostgreSQL trigger/concurrency and live browser stack. Final review corrected the earlier 19-failure/five-defect claim: 17 failures establish four findings; two cases require the applicability contract. These are deferred dependencies, not passing tests or newly reproduced defects. No Gate 2 acceptance is claimed.
+
+---
+
+The remainder preserves the original Week 1-3 defect record and execution context.
+
 **Owner:** Harish Pal · **Triage:** Aryan · **Updated:** 16 November 2026, integrated verification on `test@a7cc398` plus QA-only changes.
 
 All QA-001–004 findings are now confirmed by execution or a deterministic repository check; they are no longer suspected. [Execution report](execution-2026-11-16-integrated.md) links commands, environment and raw output. Product code remains unchanged. No GitHub Issues or messages were sent; owners below identify the required coordination, not a completed notification or accepted assignment.
