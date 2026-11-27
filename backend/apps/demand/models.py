@@ -162,6 +162,9 @@ class BuyerRequirement(models.Model):
         if not self.delivery_location or not self.delivery_location.strip():
             reasons.append("Delivery destination port or city in China is required.")
 
+        if not self.product_specifications or not self.product_specifications.strip():
+            reasons.append("Product specifications are required for matching readiness.")
+
         # Conditional Pricing Gate
         has_min = self.target_price_min is not None
         has_max = self.target_price_max is not None

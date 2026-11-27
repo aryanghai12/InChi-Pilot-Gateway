@@ -321,6 +321,17 @@ class ReadinessAssessmentViewSet(viewsets.ModelViewSet):
         Transitions state to Information Required.
         """
         assessment = self.get_object()
+        if assessment.workflow_state != WorkflowState.UNDER_REVIEW:
+            return Response(
+                {
+                    "code": "invalid_transition",
+                    "message": f"Cannot request information in state '{assessment.get_workflow_state_display()}'. Assessment must be in 'Under Review'.",
+                    "field_errors": {},
+                    "correlation_id": getattr(request, "correlation_id", ""),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
         serializer = AssessmentRequestInfoSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -347,6 +358,16 @@ class ReadinessAssessmentViewSet(viewsets.ModelViewSet):
         Enforces deny_self_review policy: reviewer cannot approve their own submitted assessment.
         """
         assessment = self.get_object()
+        if assessment.workflow_state != WorkflowState.UNDER_REVIEW:
+            return Response(
+                {
+                    "code": "invalid_transition",
+                    "message": f"Cannot complete review in state '{assessment.get_workflow_state_display()}'. Assessment must be in 'Under Review'.",
+                    "field_errors": {},
+                    "correlation_id": getattr(request, "correlation_id", ""),
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         # Enforce Object-level authorization (deny_self_review)
         self.check_object_permissions(request, assessment)
